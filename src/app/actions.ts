@@ -277,7 +277,7 @@ export async function summarizeMeeting(noteId: string, transcript: string) {
         actionItems: data.actionItems,
         rawTranscript: transcript
       })
-      .where(and(eq(notes.id, id), eq(notes.userId, userId)));
+      .where(and(eq(notes.id, noteId), eq(notes.userId, userId)));
 
     revalidatePath(`\/notes\/${noteId}`);
     return { success: true, data };
