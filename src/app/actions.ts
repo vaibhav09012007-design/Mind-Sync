@@ -293,35 +293,46 @@ export async function syncGoogleCalendar() {
   const { userId, getToken } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
+  console.log("[Sync] Starting Google Calendar sync...");
+
   // Get the OAuth Access Token from Clerk
+  // Ensure the template 'oauth_google' exists in Clerk Dashboard > JWT Templates
   const token = await getToken({ template: "oauth_google" }); 
   
   if (!token) {
-      console.error("No Google OAuth token found. Ensure you have connected Google Account in Clerk.");
-      return { success: false, error: "No Google Token" };
+      console.error("[Sync] No Google OAuth token found. Ensure you have connected Google Account in Clerk and created the 'oauth_google' JWT template.");
+      return { success: false, error: "Authentication Failed: Please Connect Google Calendar in Settings." };
   }
 
   try {
+      console.log("[Sync] Fetching events from Google...");
       // 1. Fetch from Google
       const response = await fetch(
-          `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${new Date().toISOString()}&maxResults=20&singleEvents=true&orderBy=startTime`,
+          `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${new Date().toISOString()}&maxResults=50&singleEvents=true&orderBy=startTime`,
           {
             headers: { Authorization: `Bearer ${token}` },
+            cache: 'no-store' 
           }
       );
 
       if (!response.ok) {
-          const err = await response.text();
-          console.error("Google API Error:", err);
-          throw new Error("Failed to fetch from Google");
+          const errText = await response.text();
+          console.error(`[Sync] Google API Error (${response.status}):`, errText);
+          
+          if (response.status === 401 || response.status === 403) {
+             return { success: false, error: "Permission denied. Please reconnect your Google account." };
+          }
+          throw new Error(`Google API returned ${response.status}`);
       }
 
       const data = await response.json();
       const googleEvents = data.items || [];
+      console.log(`[Sync] Found ${googleEvents.length} events from Google.`);
 
       // 2. Save to DB
       await syncUser();
 
+      let syncedCount = 0;
       for (const gEvent of googleEvents) {
           if (!gEvent.start || !gEvent.end) continue;
 
@@ -342,18 +353,27 @@ export async function syncGoogleCalendar() {
                   endTime: new Date(end),
                   meetingUrl: gEvent.hangoutLink || gEvent.htmlLink,
               });
+              syncedCount++;
+          } else {
+             // Optional: Update existing event
+             await db.update(events).set({
+                 title: gEvent.summary || "(No Title)",
+                 startTime: new Date(start),
+                 endTime: new Date(end),
+                 meetingUrl: gEvent.hangoutLink || gEvent.htmlLink,
+             }).where(eq(events.id, existing[0].id));
           }
       }
 
       revalidatePath("/calendar");
       revalidatePath("/dashboard");
-      return { success: true, count: googleEvents.length };
+      return { success: true, count: syncedCount, total: googleEvents.length };
 
   } catch (error) {
-      console.error("Sync Error:", error);
-            return { success: false, error: "Sync failed" };
-        }
-      }
+      console.error("[Sync] CRITICAL FAILURE:", error);
+      return { success: false, error: "Sync failed due to an internal error." };
+  }
+}
       
       // --- AI Scheduling ---
       
@@ -361,6 +381,11 @@ export async function syncGoogleCalendar() {
         const { userId } = await auth();
         if (!userId) throw new Error("Unauthorized");
       
+        if (!process.env.GEMINI_API_KEY) {
+            console.error("[AI Schedule] Missing GEMINI_API_KEY");
+            return { success: false, error: "Server configuration error: Missing API Key" };
+        }
+
         try {
           // 1. Fetch Context
           const today = new Date();
@@ -384,6 +409,8 @@ export async function syncGoogleCalendar() {
       
           if (todoTasks.length === 0) return { success: false, error: "No tasks to schedule" };
       
+          console.log(`[AI Schedule] Scheduling ${todoTasks.length} tasks around ${todaysEvents.length} events.`);
+
           // 2. Prompt Gemini
           const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
           
@@ -417,7 +444,16 @@ export async function syncGoogleCalendar() {
       
           const result = await model.generateContent(prompt);
           const response = await result.response;
-          const text = response.text().replace(/```json|```/g, '').trim(); // Clean cleanup
+          let text = response.text();
+
+          // Improved JSON cleaning
+          const startIdx = text.indexOf('[');
+          const endIdx = text.lastIndexOf(']');
+          if (startIdx !== -1 && endIdx !== -1) {
+              text = text.substring(startIdx, endIdx + 1);
+          } else {
+              throw new Error("AI did not return a valid JSON array");
+          }
           
           const proposedSchedule = JSON.parse(text);
       
@@ -450,9 +486,9 @@ export async function syncGoogleCalendar() {
           
           return { success: true, count: newEvents.length };
       
-        } catch (error) {
-          console.error("AI Schedule Error:", error);
-          return { success: false, error: "Failed to generate schedule" };
+        } catch (error: any) {
+          console.error("[AI Schedule] Error:", error);
+          return { success: false, error: error.message || "Failed to generate schedule" };
         }
       }
       
