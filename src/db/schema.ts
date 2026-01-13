@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp, uuid, jsonb, pgEnum } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("status", ["Todo", "InProgress", "Done"]);
+export const priorityEnum = pgEnum("priority", ["P0", "P1", "P2", "P3"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk User ID
@@ -15,8 +16,11 @@ export const tasks = pgTable("tasks", {
   userId: text("user_id").references(() => users.id).notNull(),
   title: text("title").notNull(),
   status: statusEnum("status").default("Todo").notNull(),
+  priority: priorityEnum("priority").default("P2"),
   dueDate: timestamp("due_date"),
   linkedEventId: uuid("linked_event_id"),
+  tags: text("tags").array(),
+  recurrence: jsonb("recurrence"), // { type: "daily"|"weekly"|"monthly", interval: number }
   createdAt: timestamp("created_at").defaultNow(),
 });
 

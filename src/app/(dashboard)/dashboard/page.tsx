@@ -79,7 +79,7 @@ export default function DashboardPage() {
           const result = await syncGoogleCalendar();
           
           if (result.success) {
-             toast.success(`Synced ${result.count} events from Google Calendar.`);
+             toast.success(`Synced ${result.data.count} events from Google Calendar.`);
           } else {
              if (result.error === "No Google Token") {
                  toast.error("Google Account not connected.", {
@@ -103,7 +103,7 @@ export default function DashboardPage() {
       try {
           const result = await generateSchedule();
           if (result.success) {
-              toast.success(`AI scheduled ${result.count} tasks!`);
+              toast.success(`AI scheduled ${result.data.count} tasks!`);
           } else {
               toast.error(result.error || "Failed to generate schedule");
           }
