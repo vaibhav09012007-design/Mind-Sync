@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { createClient, LiveClient, LiveTranscriptionEvents } from "@deepgram/sdk";
 
 export interface SpeechSegment {
@@ -12,12 +12,54 @@ export interface SpeechSegment {
 export function useSpeechRecognition(isRecording: boolean) {
   const [segments, setSegments] = useState<SpeechSegment[]>([]);
   const [interimResult, setInterimResult] = useState<string>('');
+  
   const deepgramLive = useRef<LiveClient | null>(null);
   const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const audioContext = useRef<AudioContext | null>(null);
+  const audioDestination = useRef<MediaStreamAudioDestinationNode | null>(null);
+  const micSource = useRef<MediaStreamAudioSourceNode | null>(null);
+  const sysSource = useRef<MediaStreamAudioSourceNode | null>(null);
+
+  // Initialize Audio Context & Mixer
+  const initMixer = useCallback(() => {
+      if (!audioContext.current) {
+          audioContext.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+          audioDestination.current = audioContext.current.createMediaStreamDestination();
+      }
+      return { ctx: audioContext.current, dest: audioDestination.current! };
+  }, []);
+
+  const startSystemAudio = async () => {
+      try {
+          const sysStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+          
+          // Check if user actually shared audio
+          if (sysStream.getAudioTracks().length === 0) {
+              console.warn("No system audio track found. Did you check 'Share tab audio'?");
+              sysStream.getTracks().forEach(t => t.stop());
+              return;
+          }
+
+          const { ctx, dest } = initMixer();
+          
+          // Connect System to Mixer
+          sysSource.current = ctx.createMediaStreamSource(sysStream);
+          sysSource.current.connect(dest);
+
+          // Stop handling when user stops sharing
+          sysStream.getVideoTracks()[0].onended = () => {
+              sysSource.current?.disconnect();
+              sysSource.current = null;
+          };
+
+      } catch (err) {
+          console.error("Error sharing system audio:", err);
+      }
+  };
 
   useEffect(() => {
     if (!isRecording) {
-      // Stop recording
+      // Cleanup
       if (mediaRecorder.current && mediaRecorder.current.state !== "inactive") {
         mediaRecorder.current.stop();
       }
@@ -33,15 +75,11 @@ export function useSpeechRecognition(isRecording: boolean) {
         // 1. Get Key
         const response = await fetch("/api/deepgram");
         const data = await response.json();
-        
-        if (!data.key) {
-            console.error("No Deepgram key found");
-            return;
-        }
+        if (!data.key) return;
 
         const deepgram = createClient(data.key);
 
-        // 2. Setup WebSocket
+        // 2. Setup Deepgram
         deepgramLive.current = deepgram.listen.live({
             model: "nova-2",
             language: "en-US",
@@ -50,10 +88,8 @@ export function useSpeechRecognition(isRecording: boolean) {
             diarize: true,
         });
 
-        // 3. Listen for events
+        // 3. Events
         deepgramLive.current.on(LiveTranscriptionEvents.Open, () => {
-            console.log("Deepgram connected");
-            
             deepgramLive.current?.on(LiveTranscriptionEvents.Transcript, (data) => {
                 const transcript = data.channel.alternatives[0].transcript;
                 if (!transcript) return;
@@ -76,9 +112,16 @@ export function useSpeechRecognition(isRecording: boolean) {
             });
         });
 
-        // 4. Start Audio
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder.current = new MediaRecorder(stream);
+        // 4. Setup Audio Chain
+        const { ctx, dest } = initMixer();
+
+        // Mic Stream
+        const micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        micSource.current = ctx.createMediaStreamSource(micStream);
+        micSource.current.connect(dest);
+
+        // Recorder listens to the DESTINATION (Mixed) stream
+        mediaRecorder.current = new MediaRecorder(dest.stream);
 
         mediaRecorder.current.ondataavailable = (event) => {
             if (event.data.size > 0 && deepgramLive.current) {
@@ -86,7 +129,7 @@ export function useSpeechRecognition(isRecording: boolean) {
             }
         };
 
-        mediaRecorder.current.start(250); // Send chunk every 250ms
+        mediaRecorder.current.start(250);
 
       } catch (e) {
         console.error("Error starting Deepgram:", e);
@@ -96,10 +139,13 @@ export function useSpeechRecognition(isRecording: boolean) {
     startRecording();
 
     return () => {
+        // Cleanup sources on unmount
+        micSource.current?.disconnect();
+        sysSource.current?.disconnect();
         if (mediaRecorder.current) mediaRecorder.current.stop();
         if (deepgramLive.current) deepgramLive.current.finish();
     };
-  }, [isRecording]);
+  }, [isRecording, initMixer]);
 
-  return { segments, interimResult };
+  return { segments, interimResult, startSystemAudio };
 }

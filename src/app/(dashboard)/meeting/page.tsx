@@ -11,6 +11,7 @@ import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStore } from "@/store/useStore";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from "@/components/ui/sheet";
+import { toast } from "sonner";
 
 export default function MeetingPage() {
   const router = useRouter();
@@ -19,8 +20,8 @@ export default function MeetingPage() {
   const [duration, setDuration] = useState(0);
   const [linkedEventId, setLinkedEventId] = useState<string>("");
   
-  // Real Speech Recognition
-  const { segments, interimResult } = useSpeechRecognition(isRecording);
+  // Real Speech Recognition with System Audio
+  const { segments, interimResult, startSystemAudio } = useSpeechRecognition(isRecording);
 
   // Timer logic
   useEffect(() => {
@@ -65,10 +66,11 @@ export default function MeetingPage() {
 
   const handleShareScreen = async () => {
       try {
-          await navigator.mediaDevices.getDisplayMedia({ video: true });
-          // In a real app, we'd stream this or record it.
+          await startSystemAudio();
+          toast.success("System audio sharing enabled. Recording meeting audio.");
       } catch (err) {
           console.error("Screen share cancelled", err);
+          toast.error("Failed to share system audio.");
       }
   };
 
@@ -123,7 +125,7 @@ export default function MeetingPage() {
                         </Select>
                      </div>
 
-                     <Button variant="ghost" size="icon" onClick={handleShareScreen} title="Share Screen" className="hidden sm:flex">
+                     <Button variant="ghost" size="icon" onClick={handleShareScreen} title="Share System Audio" className="hidden sm:flex">
                         <MonitorUp className="h-4 w-4" />
                      </Button>
 
