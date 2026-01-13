@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useStore } from "@/store/useStore";
 import { Play, Pause, RotateCcw, CheckCircle2, Zap } from "lucide-react";
-import { CircularProgress } from "@/components/ui/circular-progress"; // I will need to create this or use a simple SVG
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
