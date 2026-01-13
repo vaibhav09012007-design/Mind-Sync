@@ -5,6 +5,9 @@ import { tasks, events, notes, users } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!); 
 
 // --- User Sync ---
 export async function syncUser() {
@@ -72,6 +75,8 @@ export async function deleteTask(id: string) {
   revalidatePath("/dashboard");
 }
 
+import { GoogleCalendarService } from "@/lib/google-calendar";
+
 // --- Events ---
 
 export async function getEvents() {
@@ -82,10 +87,28 @@ export async function getEvents() {
 }
   
 export async function createEvent(data: { id: string; title: string; start: string; end: string; type: string }) {
-  const { userId } = await auth();
+  const { userId, getToken } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
   await syncUser();
+
+  let googleEventId = "local-" + data.id;
+
+  // Sync to Google Calendar
+  try {
+      const token = await getToken({ template: "oauth_google" });
+      if (token) {
+          const googleEvent = await GoogleCalendarService.insertEvent(token, {
+              title: data.title,
+              start: data.start,
+              end: data.end
+          });
+          googleEventId = googleEvent.id;
+      }
+  } catch (e) {
+      console.error("Failed to sync new event to Google Calendar", e);
+      // We continue to save locally even if sync fails
+  }
 
   await db.insert(events).values({
     id: data.id,
@@ -93,20 +116,69 @@ export async function createEvent(data: { id: string; title: string; start: stri
     title: data.title,
     startTime: new Date(data.start),
     endTime: new Date(data.end),
-    googleEventId: "local-" + data.id, // Placeholder until real Google Sync
+    googleEventId: googleEventId, 
   });
   
   revalidatePath("/calendar");
 }
 
 export async function deleteEvent(id: string) {
-    const { userId } = await auth();
+    const { userId, getToken } = await auth();
     if (!userId) throw new Error("Unauthorized");
   
+    // Get event to find Google ID
+    const [eventToDelete] = await db.select().from(events).where(and(eq(events.id, id), eq(events.userId, userId)));
+
+    if (eventToDelete && eventToDelete.googleEventId && !eventToDelete.googleEventId.startsWith("local-")) {
+        try {
+            const token = await getToken({ template: "oauth_google" });
+            if (token) {
+                await GoogleCalendarService.deleteEvent(token, eventToDelete.googleEventId);
+            }
+        } catch (e) {
+            console.error("Failed to delete event from Google Calendar", e);
+        }
+    }
+
     await db.delete(events)
       .where(and(eq(events.id, id), eq(events.userId, userId)));
       
     revalidatePath("/calendar");
+}
+
+export async function updateEvent(id: string, data: { title?: string; start?: string; end?: string }) {
+  const { userId, getToken } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const updates: any = {};
+  if (data.title) updates.title = data.title;
+  if (data.start) updates.startTime = new Date(data.start);
+  if (data.end) updates.endTime = new Date(data.end);
+
+  // Sync to Google Calendar
+  const [eventToUpdate] = await db.select().from(events).where(and(eq(events.id, id), eq(events.userId, userId)));
+  
+  if (eventToUpdate && eventToUpdate.googleEventId && !eventToUpdate.googleEventId.startsWith("local-")) {
+      try {
+          const token = await getToken({ template: "oauth_google" });
+          if (token) {
+              await GoogleCalendarService.updateEvent(token, eventToUpdate.googleEventId, {
+                  title: data.title,
+                  start: data.start,
+                  end: data.end
+              });
+          }
+      } catch (e) {
+          console.error("Failed to update event in Google Calendar", e);
+      }
+  }
+
+  await db.update(events)
+    .set(updates)
+    .where(and(eq(events.id, id), eq(events.userId, userId)));
+    
+  revalidatePath("/calendar");
+  revalidatePath("/dashboard");
 }
 
 // --- Notes ---
@@ -128,13 +200,26 @@ export async function createNote(data: { id: string; title: string; content: str
       id: data.id,
       userId,
       title: data.title,
-      content: JSON.stringify(data.content), // Storing HTML string as JSONB for now or plain text
-      // Note: schema has content as jsonb, but we are passing string. 
-      // Ideally we should match tiptap json. For now, let's wrap it.
+      content: JSON.stringify(data.content), 
       createdAt: new Date(data.date),
     });
     
     revalidatePath("/notes");
+}
+
+export async function updateNote(id: string, data: { title?: string; content?: string; preview?: string }) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  const updates: any = {};
+  if (data.title) updates.title = data.title;
+  if (data.content) updates.content = JSON.stringify(data.content);
+
+  await db.update(notes)
+    .set(updates)
+    .where(and(eq(notes.id, id), eq(notes.userId, userId)));
+    
+  revalidatePath("/notes");
 }
 
 export async function deleteNote(id: string) {
@@ -145,6 +230,51 @@ export async function deleteNote(id: string) {
       .where(and(eq(notes.id, id), eq(notes.userId, userId)));
       
     revalidatePath("/notes");
+}
+
+export async function summarizeMeeting(noteId: string, transcript: string) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    
+    const prompt = `
+      You are an expert meeting assistant. Below is a meeting transcript.
+      Please provide:
+      1. A concise summary of the meeting.
+      2. A list of key decisions made.
+      3. A list of actionable items with owners if mentioned.
+
+      Format the output as a clean JSON object with keys: "summary", "decisions", and "actionItems" (array of strings).
+
+      Transcript:
+      ${transcript}
+    `;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Attempt to parse JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    const data = jsonMatch ? JSON.parse(jsonMatch[0]) : { summary: text, decisions: [], actionItems: [] };
+
+    // Update note in DB
+    await db.update(notes)
+      .set({
+        aiSummary: data.summary,
+        actionItems: data.actionItems,
+        rawTranscript: transcript
+      })
+      .where(and(eq(notes.id, id), eq(notes.userId, userId)));
+
+    revalidatePath(`\/notes\/${noteId}`);
+    return { success: true, data };
+  } catch (error) {
+    console.error("AI Summarization Error:", error);
+    return { success: false, error: "Failed to summarize meeting" };
+  }
 }
 
 // --- Calendar Sync ---

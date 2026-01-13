@@ -4,8 +4,8 @@ import { v4 as uuidv4 } from "uuid";
 import { startOfDay } from "date-fns";
 import { 
   createTask, toggleTaskStatus, deleteTask, 
-  createEvent, deleteEvent, 
-  createNote, deleteNote 
+  createEvent, updateEvent as serverUpdateEvent, deleteEvent, 
+  createNote, updateNote as serverUpdateNote, deleteNote 
 } from "@/app/actions";
 
 export interface Task {
@@ -135,12 +135,21 @@ export const useStore = create<AppState>()(
           }
       },
 
-      updateEvent: (id, updates) => {
+      updateEvent: async (id, updates) => {
           set((state) => {
               const updatedEvents = state.events.map((e) => e.id === id ? { ...e, ...updates } : e);
               return { events: updatedEvents };
           });
-          // TODO: Implement Update Action
+          
+          try {
+             await serverUpdateEvent(id, {
+                 title: updates.title,
+                 start: updates.start,
+                 end: updates.end
+             });
+          } catch (error) {
+             console.error("Failed to update event", error);
+          }
       },
 
       deleteEvent: async (id) => {
@@ -161,12 +170,21 @@ export const useStore = create<AppState>()(
           }
       },
 
-      updateNote: (id, updates) => {
+      updateNote: async (id, updates) => {
           set((state) => {
               const updatedNotes = state.notes.map((n) => n.id === id ? { ...n, ...updates } : n);
               return { notes: updatedNotes };
           });
-          // TODO: Implement Update Action
+          
+          try {
+             await serverUpdateNote(id, {
+                 title: updates.title,
+                 content: updates.content,
+                 preview: updates.preview
+             });
+          } catch (error) {
+             console.error("Failed to update note", error);
+          }
       },
 
       deleteNote: async (id) => {
