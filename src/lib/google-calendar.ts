@@ -42,19 +42,44 @@ export const GoogleCalendarService = {
     return await response.json();
   },
 
+  async updateEvent(accessToken: string, eventId: string, event: { title?: string; start?: string; end?: string }) {
+    const body: any = {};
+    if (event.title) body.summary = event.title;
+    if (event.start) body.start = { dateTime: event.start };
+    if (event.end) body.end = { dateTime: event.end };
+
+    const response = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }
+    );
+
+    if (!response.ok) {
+        // Log error for debugging
+        const text = await response.text();
+        console.error("Google Update Error:", text);
+        throw new Error("Failed to update event in Google Calendar");
+    }
+    return await response.json();
+  },
+
   async deleteEvent(accessToken: string, eventId: string) {
-      // Note: This requires mapping local ID to Google ID, which we don't have perfectly synced yet.
-      // We would need to store the 'googleId' on the event object in our store.
-      // For this prototype, we'll implement the method signature.
-      
-      /* 
-      await fetch(
+      const response = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
         {
             method: "DELETE",
             headers: { Authorization: `Bearer ${accessToken}` }
         }
       ); 
-      */
+
+      if (!response.ok) {
+          throw new Error("Failed to delete event from Google Calendar");
+      }
   }
 };
