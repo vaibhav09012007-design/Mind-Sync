@@ -20,7 +20,7 @@ export default function SettingsPage() {
   }, []);
 
   const handleGoogleConnect = () => {
-    openUserProfile({ label: "Manage Connections" }); // Directs to connections tab if supported, or just open profile
+    openUserProfile(); // Directs to connections tab if supported, or just open profile
   };
 
   // Prevent hydration mismatch
