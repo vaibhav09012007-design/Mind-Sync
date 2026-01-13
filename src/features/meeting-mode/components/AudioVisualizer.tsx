@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 
-export function AudioVisualizer() {
+interface AudioVisualizerProps {
+  isActive?: boolean;
+}
+
+export function AudioVisualizer({ isActive = true }: AudioVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const animationRef = useRef<number | null>(null);
@@ -11,6 +15,8 @@ export function AudioVisualizer() {
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
 
   useEffect(() => {       
+    if (!isActive) return;
+
     async function startAudio() {
       try {
           const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -46,7 +52,7 @@ export function AudioVisualizer() {
             audioContextRef.current.close();
         }
     };
-  }, []);
+  }, [isActive]);
 
   const draw = () => {
       if (!canvasRef.current || !analyserRef.current) return;
