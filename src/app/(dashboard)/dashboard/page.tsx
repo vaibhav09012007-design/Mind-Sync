@@ -5,12 +5,12 @@ import { DndContext, DragEndEvent, DragOverlay, useSensor, useSensors, PointerSe
 import { useStore, Task } from "@/store/useStore";
 import { format, isSameDay, parseISO, startOfDay, addMinutes, setHours, setMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { ChevronLeft, ChevronRight, RefreshCw, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 import { EditEventDialog } from "@/features/dashboard/components/EditEventDialog";
 import { TaskColumn } from "@/features/dashboard/components/TaskColumn";
 import { TimeGrid } from "@/features/calendar/components/TimeGrid";
-import { syncGoogleCalendar } from "@/app/actions";
+import { syncGoogleCalendar, generateSchedule } from "@/app/actions";
 
 export default function DashboardPage() {
   const {
@@ -23,6 +23,7 @@ export default function DashboardPage() {
   const [activeId, setActiveId] = useState<string | null>(null);   
   const [activeTask, setActiveTask] = useState<Task | null>(null); 
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isPlanning, setIsPlanning] = useState(false);
 
   // Edit Modal State
   const [editEventOpen, setEditEventOpen] = useState(false);       
@@ -93,6 +94,24 @@ export default function DashboardPage() {
           toast.error("An unexpected error occurred during sync.");
       } finally {
           setIsSyncing(false);
+      }
+  };
+
+  const handlePlanDay = async () => {
+      setIsPlanning(true);
+      toast.info("Consulting AI to plan your day...", { duration: 3000 });
+      try {
+          const result = await generateSchedule();
+          if (result.success) {
+              toast.success(`AI scheduled ${result.count} tasks!`);
+          } else {
+              toast.error(result.error || "Failed to generate schedule");
+          }
+      } catch (err) {
+          console.error("Planning Error:", err);
+          toast.error("Failed to plan day.");
+      } finally {
+          setIsPlanning(false);
       }
   };
 
@@ -175,16 +194,28 @@ export default function DashboardPage() {
                         <Button variant="ghost" onClick={nextDay}>Next Day <ChevronRight className="ml-2 h-4 w-4" /></Button>
                      </div>
 
-                     <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleSync}
-                        disabled={isSyncing}
-                        title="Sync with Google Calendar"
-                    >
-                        <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
-                        Sync
-                    </Button>
+                     <div className="flex gap-2">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={handlePlanDay}
+                            disabled={isPlanning || isSyncing}
+                            title="Auto-schedule tasks with AI"
+                        >
+                            <Wand2 className={`mr-2 h-4 w-4 ${isPlanning ? "animate-pulse" : ""}`} />
+                            Plan Day
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleSync}
+                            disabled={isSyncing || isPlanning}
+                            title="Sync with Google Calendar"
+                        >
+                            <RefreshCw className={`mr-2 h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+                            Sync
+                        </Button>
+                     </div>
                  </div>
 
                 <div className="flex-1 min-h-0 border rounded-lg overflow-hidden">

@@ -341,6 +341,108 @@ export async function syncGoogleCalendar() {
 
   } catch (error) {
       console.error("Sync Error:", error);
-      return { success: false, error: "Sync failed" };
-  }
-}
+            return { success: false, error: "Sync failed" };
+        }
+      }
+      
+      // --- AI Scheduling ---
+      
+      export async function generateSchedule() {
+        const { userId } = await auth();
+        if (!userId) throw new Error("Unauthorized");
+      
+        try {
+          // 1. Fetch Context
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+      
+          const [todoTasks, dayEvents] = await Promise.all([
+            db.select().from(tasks).where(and(eq(tasks.userId, userId), eq(tasks.status, "Todo"))),
+            db.select().from(events).where(and(
+              eq(events.userId, userId),
+              // Simple day filter (in real app use date-fns startOfDay/endOfDay)
+            ))
+          ]);
+      
+          // Filter events for today in JS to save DB complexity for prototype
+          const todaysEvents = dayEvents.filter(e => {
+              const eDate = new Date(e.startTime);
+              return eDate >= today && eDate < tomorrow;
+          });
+      
+          if (todoTasks.length === 0) return { success: false, error: "No tasks to schedule" };
+      
+          // 2. Prompt Gemini
+          const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+          
+          const prompt = `
+            I am an AI assistant helping a user plan their day.
+            
+            Current Date: ${today.toDateString()}
+            Working Hours: 09:00 AM to 5:00 PM
+            
+            Existing Calendar Events:
+            ${todaysEvents.map(e => `- ${e.title}: ${e.startTime.toLocaleTimeString()} to ${e.endTime.toLocaleTimeString()}`).join('\n')}
+            
+            Tasks to Schedule (Prioritize by importance if implied, otherwise order is flexible):
+            ${todoTasks.map(t => `- ${t.title} (ID: ${t.id})`).join('\n')}
+            
+            Goal: create a schedule that fits as many tasks as possible into the free slots between 09:00 and 17:00. 
+            Do not overlap with existing events. 
+            Default task duration is 30 minutes unless the title implies otherwise (e.g., "Quick call" = 15m, "Deep work" = 60m).
+            
+            Return STRICTLY a JSON array of objects. No markdown formatting.
+            Format:
+            [
+              {
+                "taskId": "UUID",
+                "title": "Task Title",
+                "start": "ISO 8601 String",
+                "end": "ISO 8601 String"
+              }
+            ]
+          `;
+      
+          const result = await model.generateContent(prompt);
+          const response = await result.response;
+          const text = response.text().replace(/```json|```/g, '').trim(); // Clean cleanup
+          
+          const proposedSchedule = JSON.parse(text);
+      
+          // 3. Apply Schedule (Create Events)
+          const newEvents = [];
+          for (const item of proposedSchedule) {
+              // Double check taskId validity
+              const relatedTask = todoTasks.find(t => t.id === item.taskId);
+              if (!relatedTask) continue;
+      
+              // Create the event
+              const eventId = crypto.randomUUID();
+              
+              // Sync User & Insert
+              await syncUser();
+              await db.insert(events).values({
+                  id: eventId,
+                  userId,
+                  title: item.title,
+                  startTime: new Date(item.start),
+                  endTime: new Date(item.end),
+                  googleEventId: "local-ai-" + eventId
+              });
+      
+              newEvents.push(item);
+          }
+      
+          revalidatePath("/dashboard");
+          revalidatePath("/calendar");
+          
+          return { success: true, count: newEvents.length };
+      
+        } catch (error) {
+          console.error("AI Schedule Error:", error);
+          return { success: false, error: "Failed to generate schedule" };
+        }
+      }
+      
