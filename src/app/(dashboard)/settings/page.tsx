@@ -6,14 +6,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import { toast } from "sonner";
-import { useStore } from "@/store/useStore";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useClerk } from "@clerk/nextjs";
 
 export default function SettingsPage() {
   const { setTheme, theme } = useTheme();
-  // const { addEvent, setGoogleAccessToken } = useStore(); // Unused for now
   const { user } = useUser();
+  const { openUserProfile } = useClerk();
   const [notifications, setNotifications] = useState(true);
   const [mounted, setMounted] = useState(false);
 
@@ -21,9 +19,8 @@ export default function SettingsPage() {
     setMounted(true);
   }, []);
 
-  // Placeholder for Google Connect
-  const handleGoogleConnect = async () => {
-    toast.info("Please manage connections in your Clerk User Profile.");
+  const handleGoogleConnect = () => {
+    openUserProfile({ label: "Manage Connections" }); // Directs to connections tab if supported, or just open profile
   };
 
   // Prevent hydration mismatch
@@ -53,6 +50,9 @@ export default function SettingsPage() {
               <div className="space-y-1">
                 <div className="font-medium">{user?.fullName || "Guest User"}</div>
                 <div className="text-sm text-muted-foreground">{user?.primaryEmailAddress?.emailAddress || "Not signed in"}</div>
+                <Button variant="outline" size="sm" className="mt-2" onClick={() => openUserProfile()}>
+                    Edit Profile
+                </Button>
               </div>
             </div>
           </div>
@@ -74,9 +74,12 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {user ? (
-                   // We assume connected if logged in for now, or check externalAccounts
-                  <span className="text-sm text-green-600 font-medium bg-green-500/10 px-2 py-0.5 rounded-full">Managed by Clerk</span>
+                {/* We can check externalAccounts to see if google is linked */}
+                {user?.externalAccounts.some(acc => acc.provider === "google") ? (
+                  <div className="flex items-center gap-2">
+                      <span className="text-sm text-green-600 font-medium bg-green-500/10 px-2 py-0.5 rounded-full">Connected</span>
+                      <Button variant="ghost" size="sm" onClick={handleGoogleConnect} className="text-muted-foreground h-auto p-0 hover:bg-transparent hover:underline">Manage</Button>
+                  </div>
                 ) : (
                   <Button variant="outline" size="sm" onClick={handleGoogleConnect}>Connect</Button>
                 )}

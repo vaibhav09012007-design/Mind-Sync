@@ -4,11 +4,13 @@ import { TaskList } from "@/features/tasks/components/TaskList";
 import { useStore, Task } from "@/store/useStore";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { deleteCompletedTasks } from "@/app/actions";
+import { toast } from "sonner";
 
 interface TaskColumnProps {
   currentDate: Date;
@@ -17,10 +19,9 @@ interface TaskColumnProps {
 }
 
 export function TaskColumn({ currentDate, onNextDay, onPrevDay }: TaskColumnProps) {
-  const { tasks, addTask, toggleTask, deleteTask } = useStore();
+  const { tasks, addTask, toggleTask, deleteTask, setTasks } = useStore();
 
   // Filter Data locally for display
-  // Note: ideally selectors would be memoized
   const isSameDay = (d1: Date, d2: Date) => d1.toDateString() === d2.toDateString();
   const startOfToday = new Date();
   startOfToday.setHours(0,0,0,0);
@@ -31,6 +32,20 @@ export function TaskColumn({ currentDate, onNextDay, onPrevDay }: TaskColumnProp
 
   const totalDayTasks = todaysTasks.length + completedTasks.length;
   const progressPercent = totalDayTasks > 0 ? (completedTasks.length / totalDayTasks) * 100 : 0;
+
+  const handleClearCompleted = async () => {
+      // Optimistic update
+      const activeTasks = tasks.filter(t => !t.completed);
+      setTasks(activeTasks);
+      
+      try {
+          await deleteCompletedTasks();
+          toast.success("Completed tasks cleared");
+      } catch (e) {
+          console.error(e);
+          toast.error("Failed to clear tasks");
+      }
+  };
 
   return (
     <div className="w-full lg:w-[35%] lg:min-w-[320px] flex flex-col gap-6 lg:h-full overflow-hidden">
@@ -58,7 +73,20 @@ export function TaskColumn({ currentDate, onNextDay, onPrevDay }: TaskColumnProp
                                 <CheckCircle2 className="h-4 w-4 text-primary" />
                                 <span>Daily Progress</span>
                             </div>
-                            <span className="text-muted-foreground">{Math.round(progressPercent)}%</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-muted-foreground">{Math.round(progressPercent)}%</span>
+                                {completedTasks.length > 0 && (
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-6 w-6 text-muted-foreground hover:text-destructive" 
+                                        onClick={handleClearCompleted}
+                                        title="Clear completed tasks"
+                                    >
+                                        <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                         <Progress value={progressPercent} className="h-2" />
                         <div className="flex items-center justify-between text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">

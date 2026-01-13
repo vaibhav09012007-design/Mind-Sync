@@ -75,6 +75,16 @@ export async function deleteTask(id: string) {
   revalidatePath("/dashboard");
 }
 
+export async function deleteCompletedTasks() {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
+  await db.delete(tasks)
+    .where(and(eq(tasks.status, "Done"), eq(tasks.userId, userId)));
+    
+  revalidatePath("/dashboard");
+}
+
 import { GoogleCalendarService } from "@/lib/google-calendar";
 
 // --- Events ---
