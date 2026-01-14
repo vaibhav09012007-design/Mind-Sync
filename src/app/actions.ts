@@ -118,6 +118,19 @@ export async function toggleTaskStatus(
 
     await syncUser();
 
+    // Check if task exists first
+    const existingTask = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+
+    if (existingTask.length === 0) {
+      console.warn(`[toggleTaskStatus] Task not found: ${id} for user ${userId}`);
+      // Task doesn't exist in DB - this can happen with optimistic updates
+      // Return success to avoid showing error to user
+      return createSuccessResult(undefined);
+    }
+
     await db
       .update(tasks)
       .set({ status: completed ? "Done" : "Todo" })
@@ -126,6 +139,7 @@ export async function toggleTaskStatus(
     revalidatePath("/dashboard");
     return createSuccessResult(undefined);
   } catch (error) {
+    console.error("[toggleTaskStatus] Error:", error);
     return createErrorResult(error);
   }
 }
