@@ -407,7 +407,19 @@ export async function deleteNote(id: string): Promise<ActionResult<void>> {
       throw new ValidationError({ id: ["Invalid note ID"] });
     }
 
-    await db.delete(notes).where(and(eq(notes.id, id), eq(notes.userId, userId)));
+    try {
+      await db.delete(notes).where(and(eq(notes.id, id), eq(notes.userId, userId)));
+    } catch (dbError: any) {
+      // If code is "22P02" (invalid_text_representation for uuid), it means the ID
+      // provided was not a valid UUID (e.g. "9efxvmn1m").
+      // Since it's invalid, it can't exist in the DB, so we treat it as successfully deleted.
+      if (dbError.code === "22P02") {
+        console.warn(`[deleteNote] Ignored invalid UUID format: ${id}`);
+        // Fallthrough to return success
+      } else {
+        throw dbError;
+      }
+    }
 
     revalidatePath("/notes");
     return createSuccessResult(undefined);

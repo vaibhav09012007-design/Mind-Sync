@@ -83,7 +83,7 @@ export default function MeetingPage() {
       .map((s) => `<p><strong>${s.speaker} (${s.time}):</strong> ${s.text}</p>`)
       .join("");
 
-    const newId = Math.random().toString(36).substr(2, 9);
+    const newId = crypto.randomUUID();
 
     let content = `<h2>Meeting Transcript</h2>${transcriptHTML}`;
     if (meetingMinutes) {

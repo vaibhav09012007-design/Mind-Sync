@@ -7,16 +7,36 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { PriorityBadge, PrioritySelector, priorityConfig } from "../PriorityBadge";
 
 // Mock Radix UI DropdownMenu as it doesn't work well in JSDOM
-vi.mock("@/components/ui/dropdown-menu", () => ({
-  DropdownMenu: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuItem: ({ children, onClick }: any) => (
-    <div onClick={onClick} role="menuitem">
-      {children}
-    </div>
-  ),
-}));
+vi.mock("@/components/ui/dropdown-menu", () => {
+  return {
+    DropdownMenu: ({ children, open: propsOpen, onOpenChange }: any) => {
+      const [internalOpen, setInternalOpen] = vi.useState(false);
+      const open = propsOpen !== undefined ? propsOpen : internalOpen;
+      const setOpen = onOpenChange || setInternalOpen;
+      
+      // Pass open state to children via a simple mechanism
+      return <div data-state={open ? "open" : "closed"}>
+        {typeof children === 'function' ? children({ open }) : children}
+      </div>;
+    },
+    DropdownMenuTrigger: ({ children, asChild, ...props }: any) => {
+      // In a real mock we'd want to trigger setOpen here
+      // But for simplicity in this test, we can just render it
+      return <div {...props}>{children}</div>;
+    },
+    DropdownMenuContent: ({ children, ...props }: any) => {
+      // We'll use a data attribute to control visibility in tests if needed
+      // or just rely on the parent's state. 
+      // For these tests, let's actually just render it but make it toggleable
+      return <div data-slot="dropdown-menu-content">{children}</div>;
+    },
+    DropdownMenuItem: ({ children, onClick }: any) => (
+      <div onClick={onClick} role="menuitem">
+        {children}
+      </div>
+    ),
+  };
+});
 
 describe("PriorityBadge", () => {
   it("renders correctly with P0 priority", () => {
