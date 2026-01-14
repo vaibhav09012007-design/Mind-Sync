@@ -1,38 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+<div align="center">
+  <img src="public/assets/banner.png" alt="Mind-Sync Banner" width="100%" />
 
-## Getting Started
+# Mind-Sync
 
-First, run the development server:
+### **The Ultimate AI-Powered Productivity Workspace**
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+  <p align="center">
+    <img src="https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js" />
+    <img src="https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript" />
+    <img src="https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=flat-square&logo=tailwind-css" />
+    <img src="https://img.shields.io/badge/Drizzle-ORM-C5F74F?style=flat-square&logo=drizzle" />
+    <img src="https://img.shields.io/badge/PostgreSQL-15-336791?style=flat-square&logo=postgresql" />
+    <img src="https://img.shields.io/badge/Gemini-AI-8E75B2?style=flat-square&logo=google-bard" />
+  </p>
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+  <p align="center">
+    Mind-Sync is not just a todo list. It's an intelligent "Second Brain" that helps you capture, organize, and execute your life. From real-time meeting transcription to AI-driven scheduling, Mind-Sync keeps you in the flow.
+  </p>
+</div>
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Key Features
 
-## Learn More
+### 🎙️ **Meeting Mode & AI Assistant**
 
-To learn more about Next.js, take a look at the following resources:
+- **Real-time Transcription**: Transcribe meetings live directly in the browser.
+- **AI Summaries**: Instantly generate meeting minutes, action items, and key decisions using Google Gemini.
+- **Audio Visualizer**: Beautiful real-time audio visualization.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🧠 **Second Brain Notes**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Split-Pane Editor**: Write and reference notes simultaneously.
+- **Rich Text Support**: Full formatting capabilities.
+- **Deleted Note Recovery**: Safe deletion handling with database integrity.
 
-## Deploy on Vercel
+### 📅 **Smart Planning**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Day Planner**: Drag-and-drop tasks onto your calendar time grid.
+- **AI Auto-Schedule**: Let AI analyze your todo list and calendar holes to generate the perfect schedule.
+- **Google Calendar Sync**: Two-way synchronization with your primary calendar.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 🍅 **Focus & Analytics**
 
-![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/vaibhav09012007-design/Mind-Sync?utm_source=oss&utm_medium=github&utm_campaign=vaibhav09012007-design%2FMind-Sync&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
+- **Zen Mode**: Distraction-free timer with ambient soundscapes (rain, forest, etc.).
+- **Productivity Heatmap**: GitHub-style contribution graph for your task completion.
+- **Weekly Reports**: Interactive charts visualizing your focus time and goal progress.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js (v18+)
+- PostgreSQL Database
+- Google Gemini API Key
+
+### Installation
+
+1.  **Clone the repo**
+
+    ```bash
+    git clone https://github.com/vaibhav09012007-design/Mind-Sync.git
+    cd mind-sync
+    ```
+
+2.  **Install dependencies**
+
+    ```bash
+    npm install
+    ```
+
+3.  **Setup Environment**
+    Create a `.env.local` file:
+
+    ```env
+    DATABASE_URL="postgres://..."
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="..."
+    CLERK_SECRET_KEY="..."
+    GEMINI_API_KEY="..."
+    ```
+
+4.  **Run Development Server**
+    ```bash
+    npm run dev
+    ```
+
+## 📸 Screenshots
+
+_(Add screenshots here later!)_
+
+---
+
+<div align="center">
+  <p>Built with ❤️ by <a href="https://github.com/vaibhav09012007-design">Vaibhav Tiwari</a></p>
+</div>
