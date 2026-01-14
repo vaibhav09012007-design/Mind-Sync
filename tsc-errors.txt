@@ -1,0 +1,4 @@
+﻿src/components/analytics/category-breakdown.tsx(27,15): error TS2322: Type 'CategoryData[]' is not assignable to type 'ChartDataInput[]'.
+  Type 'CategoryData' is not assignable to type 'ChartDataInput'.
+    Index signature for type 'string' is missing in type 'CategoryData'.
+src/features/tasks/components/__tests__/PriorityBadge.test.tsx(13,50): error TS2339: Property 'useState' does not exist on type 'VitestUtils'.

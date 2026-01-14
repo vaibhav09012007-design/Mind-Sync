@@ -6,6 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 interface CategoryData {
   name: string;
   value: number;
+  [key: string]: string | number;
 }
 
 interface CategoryBreakdownProps {

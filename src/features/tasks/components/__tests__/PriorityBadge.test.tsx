@@ -3,6 +3,7 @@
  */
 
 import { describe, it, expect, vi } from "vitest";
+import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { PriorityBadge, PrioritySelector, priorityConfig } from "../PriorityBadge";
 
@@ -10,14 +11,16 @@ import { PriorityBadge, PrioritySelector, priorityConfig } from "../PriorityBadg
 vi.mock("@/components/ui/dropdown-menu", () => {
   return {
     DropdownMenu: ({ children, open: propsOpen, onOpenChange }: any) => {
-      const [internalOpen, setInternalOpen] = vi.useState(false);
+      const [internalOpen, setInternalOpen] = React.useState(false);
       const open = propsOpen !== undefined ? propsOpen : internalOpen;
       const setOpen = onOpenChange || setInternalOpen;
-      
+
       // Pass open state to children via a simple mechanism
-      return <div data-state={open ? "open" : "closed"}>
-        {typeof children === 'function' ? children({ open }) : children}
-      </div>;
+      return (
+        <div data-state={open ? "open" : "closed"}>
+          {typeof children === "function" ? children({ open }) : children}
+        </div>
+      );
     },
     DropdownMenuTrigger: ({ children, asChild, ...props }: any) => {
       // In a real mock we'd want to trigger setOpen here
@@ -26,7 +29,7 @@ vi.mock("@/components/ui/dropdown-menu", () => {
     },
     DropdownMenuContent: ({ children, ...props }: any) => {
       // We'll use a data attribute to control visibility in tests if needed
-      // or just rely on the parent's state. 
+      // or just rely on the parent's state.
       // For these tests, let's actually just render it but make it toggleable
       return <div data-slot="dropdown-menu-content">{children}</div>;
     },
@@ -90,7 +93,7 @@ describe("PrioritySelector", () => {
     render(<PrioritySelector value="P1" onChange={() => {}} />);
     const trigger = screen.getByRole("button");
     fireEvent.click(trigger);
-    
+
     // All priorities should be visible in dropdown
     expect(await screen.findByText("Critical")).toBeInTheDocument();
     expect(await screen.findByText("High")).toBeInTheDocument();
@@ -101,13 +104,13 @@ describe("PrioritySelector", () => {
   it("calls onChange when priority is selected", async () => {
     const onChange = vi.fn();
     render(<PrioritySelector value="P1" onChange={onChange} />);
-    
+
     const trigger = screen.getByRole("button");
     fireEvent.click(trigger);
-    
+
     const p0Option = await screen.findByText("Critical");
     fireEvent.click(p0Option.parentElement!);
-    
+
     expect(onChange).toHaveBeenCalledWith("P0");
   });
 });
@@ -115,7 +118,7 @@ describe("PrioritySelector", () => {
 describe("priorityConfig", () => {
   it("has correct configuration for all priorities", () => {
     const priorities = ["P0", "P1", "P2", "P3"] as const;
-    
+
     priorities.forEach((p) => {
       expect(priorityConfig[p]).toBeDefined();
       expect(priorityConfig[p].label).toBe(p);
