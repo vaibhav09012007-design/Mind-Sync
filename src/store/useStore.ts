@@ -21,10 +21,16 @@ export type Priority = "P0" | "P1" | "P2" | "P3";
 export interface Task {
   id: string;
   title: string;
+  description?: string;
   completed: boolean;
   dueDate: string; // ISO Date String
+  completedAt?: string;
   priority?: Priority;
   tags?: string[];
+  parentId?: string; // For subtasks
+  subtasks?: Task[]; // Nested subtasks
+  estimatedMinutes?: number;
+  actualMinutes?: number;
   recurrence?: {
     type: "daily" | "weekly" | "monthly";
     interval: number;

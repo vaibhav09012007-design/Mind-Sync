@@ -1,7 +1,8 @@
-import { pgTable, text, timestamp, uuid, jsonb, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb, pgEnum, integer } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("status", ["Todo", "InProgress", "Done"]);
 export const priorityEnum = pgEnum("priority", ["P0", "P1", "P2", "P3"]);
+export const attachmentTypeEnum = pgEnum("attachment_type", ["image", "file", "link"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk User ID
@@ -9,19 +10,26 @@ export const users = pgTable("users", {
   googleRefreshToken: text("google_refresh_token"),
   preferences: jsonb("preferences").default({ theme: "dark" }),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const tasks = pgTable("tasks", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: text("user_id").references(() => users.id).notNull(),
+  parentId: uuid("parent_id"), // Self-reference for subtasks
   title: text("title").notNull(),
+  description: text("description"),
   status: statusEnum("status").default("Todo").notNull(),
   priority: priorityEnum("priority").default("P2"),
   dueDate: timestamp("due_date"),
+  completedAt: timestamp("completed_at"),
+  estimatedMinutes: integer("estimated_minutes"),
+  actualMinutes: integer("actual_minutes"),
   linkedEventId: uuid("linked_event_id"),
   tags: text("tags").array(),
   recurrence: jsonb("recurrence"), // { type: "daily"|"weekly"|"monthly", interval: number }
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const events = pgTable("events", {
@@ -29,10 +37,14 @@ export const events = pgTable("events", {
   userId: text("user_id").references(() => users.id).notNull(),
   googleEventId: text("google_event_id").notNull(),
   title: text("title").notNull(),
+  description: text("description"),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
   meetingUrl: text("meeting_url"),
+  location: text("location"),
+  isRecurring: jsonb("is_recurring"), // { frequency, interval, until }
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export const notes = pgTable("notes", {
@@ -44,5 +56,42 @@ export const notes = pgTable("notes", {
   rawTranscript: text("raw_transcript"),
   aiSummary: text("ai_summary"),
   actionItems: jsonb("action_items"),
+  sentiment: text("sentiment"), // "positive" | "neutral" | "negative"
+  keyDecisions: jsonb("key_decisions"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Attachments for tasks and notes
+export const attachments = pgTable("attachments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").references(() => users.id).notNull(),
+  taskId: uuid("task_id").references(() => tasks.id),
+  noteId: uuid("note_id").references(() => notes.id),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  type: attachmentTypeEnum("type").notNull(),
+  size: integer("size"), // bytes
+  mimeType: text("mime_type"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Task templates for quick creation
+export const taskTemplates = pgTable("task_templates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id").references(() => users.id).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  tasks: jsonb("tasks").notNull(), // Array of task templates
+  isPublic: jsonb("is_public").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Recurring task instances
+export const recurringTaskInstances = pgTable("recurring_task_instances", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  templateTaskId: uuid("template_task_id").references(() => tasks.id).notNull(),
+  instanceDate: timestamp("instance_date").notNull(),
+  taskId: uuid("task_id").references(() => tasks.id), // Created task instance
   createdAt: timestamp("created_at").defaultNow(),
 });
