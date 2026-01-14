@@ -8,6 +8,8 @@ import { TranscriptionSidebar } from "@/features/meeting-mode/components/Transcr
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useBrowserSpeechRecognition } from "@/hooks/useBrowserSpeechRecognition";
+import { generateMeetingMinutes } from "./actions";
+import { Sparkles } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -24,6 +26,13 @@ import {
   SheetDescription,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 export default function MeetingPage() {
@@ -33,9 +42,20 @@ export default function MeetingPage() {
   const [duration, setDuration] = useState(0);
   const [linkedEventId, setLinkedEventId] = useState<string>("");
   const [hasStarted, setHasStarted] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [meetingMinutes, setMeetingMinutes] = useState<string | null>(null);
+  const [isMinutesOpen, setIsMinutesOpen] = useState(false);
 
   // Use Browser Speech Recognition (works without API key)
   const { segments, interimResult, error, isSupported } = useBrowserSpeechRecognition(isRecording);
+
+  // Error handling
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      setIsRecording(false);
+    }
+  }, [error]);
 
   // Timer logic
   useEffect(() => {
@@ -65,17 +85,55 @@ export default function MeetingPage() {
 
     const newId = Math.random().toString(36).substr(2, 9);
 
+    let content = `<h2>Meeting Transcript</h2>${transcriptHTML}`;
+    if (meetingMinutes) {
+      content = `${meetingMinutes}<hr/>${content}`;
+    }
+
     addNote({
       id: newId,
-      title: "Meeting Transcript",
-      preview: segments.length > 0 ? segments[0].text.slice(0, 100) + "..." : "No audio recorded.",
-      content: `<h2>Meeting Transcript</h2>${transcriptHTML}`,
+      title: meetingMinutes ? "Meeting Minutes & Transcript" : "Meeting Transcript",
+      preview: meetingMinutes
+        ? "Minutes generated. " + (segments.length > 0 ? segments[0].text.slice(0, 50) + "..." : "")
+        : segments.length > 0
+          ? segments[0].text.slice(0, 100) + "..."
+          : "No audio recorded.",
+      content: content,
       date: new Date().toISOString(),
       tags: ["Meeting", "Transcript"],
       type: "meeting",
     });
 
     router.push(`/notes/${newId}`);
+  };
+
+  const handleGenerateMinutes = async () => {
+    if (segments.length === 0) {
+      toast.error("No transcript available to summarize.");
+      return;
+    }
+
+    setIsGenerating(true);
+    toast.info("Generating meeting minutes... This may take a moment.");
+
+    const transcriptText = segments.map((s) => `${s.speaker} (${s.time}): ${s.text}`).join("\n");
+
+    const result = await generateMeetingMinutes(transcriptText);
+
+    setIsGenerating(false);
+
+    if (result.success && result.data) {
+      setMeetingMinutes(result.data);
+      setIsMinutesOpen(true);
+      toast.success("Meeting minutes generated successfully!");
+
+      // Optionally append to editor (this is a simple integration for now)
+      // trigger an event or state change to update editor content if needed
+      // For now we will just show it in a dialog or toast, or maybe we should
+      // automatically update the note content when ending the meeting if minutes exist.
+    } else {
+      toast.error(result.error || "Failed to generate minutes.");
+    }
   };
 
   const handleStartRecording = () => {
@@ -158,6 +216,21 @@ export default function MeetingPage() {
                 {isRecording ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
               </Button>
             )}
+
+            {/* Generate Minutes Button */}
+            {hasStarted && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleGenerateMinutes}
+                disabled={isGenerating || segments.length === 0}
+                className="hidden sm:flex"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                {isGenerating ? "Generating..." : "AI Summary"}
+              </Button>
+            )}
+
             <Button variant="destructive" size="sm" onClick={handleEndMeeting}>
               <Square className="mr-2 h-4 w-4" />
               <span className="hidden sm:inline">End Meeting</span>
@@ -175,6 +248,19 @@ export default function MeetingPage() {
       <div className="hidden h-full w-87.5 border-l lg:block">
         <TranscriptionSidebar segments={segments} interimResult={interimResult} />
       </div>
+
+      <Dialog open={isMinutesOpen} onOpenChange={setIsMinutesOpen}>
+        <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Meeting Minutes</DialogTitle>
+            <DialogDescription>AI-generated summary and action items.</DialogDescription>
+          </DialogHeader>
+          <div
+            className="prose dark:prose-invert mt-4"
+            dangerouslySetInnerHTML={{ __html: meetingMinutes || "" }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

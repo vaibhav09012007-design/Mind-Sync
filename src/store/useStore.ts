@@ -10,13 +10,20 @@ import {
   deleteEvent,
   createNote,
   updateNote as serverUpdateNote,
-  deleteNote,
+  deleteNote as serverDeleteNote,
 } from "@/app/actions";
 import { toast } from "sonner";
 
 // --- Types ---
 
 export type Priority = "P0" | "P1" | "P2" | "P3";
+
+export interface Attachment {
+  id: string;
+  url: string;
+  name: string;
+  type: "image" | "file";
+}
 
 export interface Task {
   id: string;
@@ -35,6 +42,11 @@ export interface Task {
     type: "daily" | "weekly" | "monthly";
     interval: number;
   } | null;
+  // New fields
+  assignees?: string[]; // IDs or names for now
+  coverImage?: string;
+  attachments?: Attachment[];
+  columnId?: string; // For custom columns mapping (optional for now, defaults to derived status)
 }
 
 export interface CalendarEvent {
@@ -44,6 +56,12 @@ export interface CalendarEvent {
   end: string; // ISO Date String
   type: "work" | "personal" | "meeting";
   googleId?: string; // ID from Google Calendar
+  recurrence?: {
+    frequency: "daily" | "weekly" | "monthly" | "yearly";
+    interval: number;
+    endDate?: string;
+    daysOfWeek?: number[]; // 0-6 for weekly, where 0 is Sunday
+  } | null;
 }
 
 export interface Note {
@@ -55,16 +73,65 @@ export interface Note {
   tags: string[];
   type: "meeting" | "personal";
   eventId?: string; // Link to CalendarEvent
+  metadata?: {
+    checklist?: { checked: number; total: number };
+    hasImages?: boolean;
+    images?: string[]; // Array of image URLs (thumbnails)
+  };
+}
+
+// --- Kanban Types ---
+
+export interface Column {
+  id: string;
+  title: string;
+  color: string; // Text color class
+  bgColor: string; // Background color class
+  wipLimit?: number;
+  order: number;
+}
+
+export interface ViewSettings {
+  mode: "board" | "swimlane";
+  density: "compact" | "comfortable";
+  swimlaneGroupBy: "priority" | "none" | "assignee"; // Grouping logic
+  showCoverImages: boolean;
 }
 
 // --- Undo/Redo Stack ---
 
 interface HistoryEntry {
-  type: "task" | "event" | "note";
+  type: "task" | "event" | "note" | "column";
   action: "add" | "update" | "delete";
-  before: Task | CalendarEvent | Note | null;
-  after: Task | CalendarEvent | Note | null;
+  before: Task | CalendarEvent | Note | Column | null;
+  after: Task | CalendarEvent | Note | Column | null;
 }
+
+// --- Store Interface ---
+
+// --- Timer Types ---
+
+export type TimerMode = "focus" | "shortBreak" | "longBreak";
+
+export interface TimerSettings {
+  focusDuration: number;
+  shortBreakDuration: number;
+  longBreakDuration: number;
+  sessionsBeforeLongBreak: number;
+  autoStartBreaks: boolean;
+  autoStartFocus: boolean;
+  soundEnabled: boolean;
+}
+
+const DEFAULT_TIMER_SETTINGS: TimerSettings = {
+  focusDuration: 25,
+  shortBreakDuration: 5,
+  longBreakDuration: 15,
+  sessionsBeforeLongBreak: 4,
+  autoStartBreaks: false,
+  autoStartFocus: false,
+  soundEnabled: true,
+};
 
 // --- Store Interface ---
 
@@ -73,8 +140,18 @@ interface AppState {
   tasks: Task[];
   events: CalendarEvent[];
   notes: Note[];
+  columns: Column[];
+  viewSettings: ViewSettings;
   selectedDate: string;
   googleAccessToken?: string;
+
+  // Timer State
+  timerMode: TimerMode;
+  timeLeft: number;
+  isTimerRunning: boolean;
+  completedSessions: number;
+  timerSettings: TimerSettings;
+  activeTaskId: string | null;
 
   // Undo/Redo
   history: HistoryEntry[];
@@ -85,17 +162,30 @@ interface AppState {
   // Actions
   setGoogleAccessToken: (token: string) => void;
   setSelectedDate: (date: Date) => void;
+  setViewSettings: (settings: Partial<ViewSettings>) => void;
 
   // Bulk set (for hydration from server)
   setTasks: (tasks: Task[]) => void;
   setEvents: (events: CalendarEvent[]) => void;
   setNotes: (notes: Note[]) => void;
+  setColumns: (columns: Column[]) => void;
 
   // Task Actions
-  addTask: (title: string, dueDate?: Date, priority?: Priority) => void;
+  addTask: (title: string, dueDate?: Date, priority?: Priority, columnId?: string) => void;
   toggleTask: (id: string) => void;
   deleteTask: (id: string) => void;
+  updateTask: (id: string, updates: Partial<Task>) => void;
   updateTaskPriority: (id: string, priority: Priority) => void;
+
+  // Bulk Actions
+  bulkDeleteTasks: (ids: string[]) => void;
+  bulkUpdateTasks: (ids: string[], updates: Partial<Task>) => void;
+
+  // Column Actions
+  addColumn: (column: Omit<Column, "id" | "order">) => void;
+  updateColumn: (id: string, updates: Partial<Column>) => void;
+  deleteColumn: (id: string) => void;
+  reorderColumns: (columns: Column[]) => void;
 
   // Event Actions
   addEvent: (event: Omit<CalendarEvent, "id">) => void;
@@ -107,6 +197,16 @@ interface AppState {
   updateNote: (id: string, updates: Partial<Note>) => void;
   deleteNote: (id: string) => void;
 
+  // Timer Actions
+  setTimerMode: (mode: TimerMode) => void;
+  setTimerRunning: (isRunning: boolean) => void;
+  setTimeLeft: (time: number) => void;
+  tickTimer: () => void;
+  updateTimerSettings: (settings: Partial<TimerSettings>) => void;
+  incrementCompletedSessions: () => void;
+  setActiveTimerTask: (taskId: string | null) => void;
+  resetTimer: () => void;
+
   // Undo/Redo
   undo: () => void;
   redo: () => void;
@@ -115,14 +215,62 @@ interface AppState {
 
 const MAX_HISTORY = 50;
 
+const DEFAULT_COLUMNS: Column[] = [
+  {
+    id: "Todo",
+    title: "To Do",
+    color: "text-slate-600 dark:text-slate-400",
+    bgColor: "bg-slate-50 dark:bg-slate-900/50",
+    order: 0,
+  },
+  {
+    id: "InProgress",
+    title: "In Progress",
+    color: "text-blue-600 dark:text-blue-400",
+    bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    order: 1,
+  },
+  {
+    id: "Done",
+    title: "Done",
+    color: "text-green-600 dark:text-green-400",
+    bgColor: "bg-green-50 dark:bg-green-900/20",
+    order: 2,
+  },
+  {
+    id: "Backlog",
+    title: "Backlog",
+    color: "text-amber-600 dark:text-amber-400",
+    bgColor: "bg-amber-50 dark:bg-amber-900/20",
+    order: 3,
+  },
+];
+
+const DEFAULT_VIEW_SETTINGS: ViewSettings = {
+  mode: "board",
+  density: "comfortable",
+  swimlaneGroupBy: "none",
+  showCoverImages: true,
+};
+
 export const useStore = create<AppState>()(
   persist(
     (set, get) => ({
       tasks: [],
       events: [],
       notes: [],
+      columns: DEFAULT_COLUMNS,
+      viewSettings: DEFAULT_VIEW_SETTINGS,
       selectedDate: new Date().toISOString(),
       googleAccessToken: undefined,
+
+      // Timer Initial State
+      timerMode: "focus",
+      timeLeft: DEFAULT_TIMER_SETTINGS.focusDuration * 60,
+      isTimerRunning: false,
+      completedSessions: 0,
+      timerSettings: DEFAULT_TIMER_SETTINGS,
+      activeTaskId: null,
 
       // Undo/Redo state
       history: [],
@@ -132,10 +280,13 @@ export const useStore = create<AppState>()(
 
       setGoogleAccessToken: (token) => set({ googleAccessToken: token }),
       setSelectedDate: (date) => set({ selectedDate: date.toISOString() }),
+      setViewSettings: (settings) =>
+        set((state) => ({ viewSettings: { ...state.viewSettings, ...settings } })),
 
       setTasks: (tasks) => set({ tasks }),
       setEvents: (events) => set({ events }),
       setNotes: (notes) => set({ notes }),
+      setColumns: (columns) => set({ columns }),
 
       pushHistory: (entry) => {
         const { history, historyIndex } = get();
@@ -155,7 +306,7 @@ export const useStore = create<AppState>()(
       },
 
       undo: () => {
-        const { history, historyIndex, tasks, events, notes } = get();
+        const { history, historyIndex, tasks, events, notes, columns } = get();
         if (historyIndex < 0) return;
 
         const entry = history[historyIndex];
@@ -173,6 +324,14 @@ export const useStore = create<AppState>()(
               ),
             });
           }
+        } else if (entry.type === "column" && entry.before) {
+          if (entry.action === "update") {
+            set({
+              columns: columns.map((c) =>
+                c.id === (entry.before as Column).id ? (entry.before as Column) : c
+              ),
+            });
+          }
         }
 
         set({
@@ -185,7 +344,7 @@ export const useStore = create<AppState>()(
       },
 
       redo: () => {
-        const { history, historyIndex, tasks, events, notes } = get();
+        const { history, historyIndex, tasks, events, notes, columns } = get();
         if (historyIndex >= history.length - 1) return;
 
         const entry = history[historyIndex + 1];
@@ -216,7 +375,7 @@ export const useStore = create<AppState>()(
 
       // --- Task Actions ---
 
-      addTask: async (title, dueDate = new Date(), priority = "P2") => {
+      addTask: async (title, dueDate = new Date(), priority = "P2", columnId) => {
         const newTask: Task = {
           id: uuidv4(),
           title,
@@ -225,6 +384,7 @@ export const useStore = create<AppState>()(
           priority,
           tags: [],
           recurrence: null,
+          columnId: columnId || "Todo",
         };
 
         // Optimistic update
@@ -314,6 +474,19 @@ export const useStore = create<AppState>()(
         }
       },
 
+      updateTask: (id, updates) => {
+        const task = get().tasks.find((t) => t.id === id);
+        if (!task) return;
+
+        const updatedTask = { ...task, ...updates };
+
+        set((state) => ({
+          tasks: state.tasks.map((t) => (t.id === id ? updatedTask : t)),
+        }));
+
+        // Optimistic only for now unless specific fields need server sync that aren't covered by other methods
+      },
+
       updateTaskPriority: (id, priority) => {
         const task = get().tasks.find((t) => t.id === id);
         if (!task) return;
@@ -331,8 +504,48 @@ export const useStore = create<AppState>()(
           after: updatedTask,
         });
 
-        // Note: Priority is stored locally only for now
         toast.success(`Priority set to ${priority}`);
+      },
+
+      bulkDeleteTasks: (ids) => {
+        const tasksToDelete = get().tasks.filter((t) => ids.includes(t.id));
+        set((state) => ({ tasks: state.tasks.filter((t) => !ids.includes(t.id)) }));
+        toast.success(`Deleted ${ids.length} tasks`);
+        ids.forEach((id) => deleteTask(id).catch(console.error));
+      },
+
+      bulkUpdateTasks: (ids, updates) => {
+        set((state) => ({
+          tasks: state.tasks.map((t) => (ids.includes(t.id) ? { ...t, ...updates } : t)),
+        }));
+        toast.success(`Updated ${ids.length} tasks`);
+      },
+
+      // --- Column Actions ---
+
+      addColumn: (column) => {
+        const newColumn: Column = {
+          ...column,
+          id: uuidv4(),
+          order: get().columns.length,
+        };
+        set((state) => ({ columns: [...state.columns, newColumn] }));
+      },
+
+      updateColumn: (id, updates) => {
+        set((state) => ({
+          columns: state.columns.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+        }));
+      },
+
+      deleteColumn: (id) => {
+        set((state) => ({ columns: state.columns.filter((c) => c.id !== id) }));
+      },
+
+      reorderColumns: (columns) => {
+        // Assume columns are passed in new order
+        const updated = columns.map((c, i) => ({ ...c, order: i }));
+        set({ columns: updated });
       },
 
       // --- Event Actions ---
@@ -416,6 +629,10 @@ export const useStore = create<AppState>()(
             title: updates.title,
             content: updates.content,
             preview: updates.preview,
+            tags: updates.tags,
+            type: updates.type,
+            metadata: updates.metadata,
+            date: updates.date,
           });
           if (!result.success) {
             toast.error(result.error || "Failed to update note");
@@ -430,7 +647,7 @@ export const useStore = create<AppState>()(
         set((state) => ({ notes: state.notes.filter((n) => n.id !== id) }));
 
         try {
-          const result = await deleteNote(id);
+          const result = await serverDeleteNote(id);
           if (!result.success && note) {
             set((state) => ({ notes: [...state.notes, note] }));
             toast.error(result.error || "Failed to delete note");
@@ -439,6 +656,51 @@ export const useStore = create<AppState>()(
           console.error("Failed to delete note", error);
         }
       },
+
+      // --- Timer Actions ---
+      setTimerMode: (mode) =>
+        set((state) => {
+          let duration = state.timerSettings.focusDuration * 60;
+          if (mode === "shortBreak") duration = state.timerSettings.shortBreakDuration * 60;
+          if (mode === "longBreak") duration = state.timerSettings.longBreakDuration * 60;
+
+          return {
+            timerMode: mode,
+            timeLeft: duration,
+            isTimerRunning: false,
+          };
+        }),
+
+      setTimerRunning: (isRunning) => set({ isTimerRunning: isRunning }),
+      setTimeLeft: (time) => set({ timeLeft: time }),
+      tickTimer: () =>
+        set((state) => ({
+          timeLeft: Math.max(0, state.timeLeft - 1),
+        })),
+
+      updateTimerSettings: (settings) =>
+        set((state) => ({
+          timerSettings: { ...state.timerSettings, ...settings },
+        })),
+
+      incrementCompletedSessions: () =>
+        set((state) => ({ completedSessions: state.completedSessions + 1 })),
+
+      setActiveTimerTask: (taskId) => set({ activeTaskId: taskId }),
+
+      resetTimer: () =>
+        set((state) => {
+          let duration = state.timerSettings.focusDuration * 60;
+          if (state.timerMode === "shortBreak")
+            duration = state.timerSettings.shortBreakDuration * 60;
+          if (state.timerMode === "longBreak")
+            duration = state.timerSettings.longBreakDuration * 60;
+
+          return {
+            isTimerRunning: false,
+            timeLeft: duration,
+          };
+        }),
     }),
     {
       name: "mindsync-storage",
@@ -447,8 +709,15 @@ export const useStore = create<AppState>()(
         tasks: state.tasks,
         events: state.events,
         notes: state.notes,
+        columns: state.columns,
+        viewSettings: state.viewSettings,
         selectedDate: state.selectedDate,
-        // Don't persist history
+        timerMode: state.timerMode,
+        timeLeft: state.timeLeft,
+        completedSessions: state.completedSessions,
+        timerSettings: state.timerSettings,
+        activeTaskId: state.activeTaskId,
+        // Don't persist history or isTimerRunning (reset on load)
       }),
     }
   )

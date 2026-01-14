@@ -3,6 +3,9 @@ import { pgTable, text, timestamp, uuid, jsonb, pgEnum, integer } from "drizzle-
 export const statusEnum = pgEnum("status", ["Todo", "InProgress", "Done"]);
 export const priorityEnum = pgEnum("priority", ["P0", "P1", "P2", "P3"]);
 export const attachmentTypeEnum = pgEnum("attachment_type", ["image", "file", "link"]);
+export const goalMetricEnum = pgEnum("goal_metric", ["hours", "tasks", "streak"]);
+export const goalPeriodEnum = pgEnum("goal_period", ["weekly", "monthly"]);
+export const goalStatusEnum = pgEnum("goal_status", ["active", "completed", "failed"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk User ID
@@ -15,7 +18,9 @@ export const users = pgTable("users", {
 
 export const tasks = pgTable("tasks", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id").references(() => users.id).notNull(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
   parentId: uuid("parent_id"), // Self-reference for subtasks
   title: text("title").notNull(),
   description: text("description"),
@@ -34,7 +39,9 @@ export const tasks = pgTable("tasks", {
 
 export const events = pgTable("events", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id").references(() => users.id).notNull(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
   googleEventId: text("google_event_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
@@ -49,10 +56,16 @@ export const events = pgTable("events", {
 
 export const notes = pgTable("notes", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id").references(() => users.id).notNull(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
   eventId: uuid("event_id").references(() => events.id),
   title: text("title").notNull().default("Untitled"),
   content: jsonb("content"), // Tiptap JSON content
+  preview: text("preview"),
+  tags: text("tags").array(),
+  type: text("type").default("personal"), // "meeting" | "personal"
+  metadata: jsonb("metadata"), // { checklist, images, etc. }
   rawTranscript: text("raw_transcript"),
   aiSummary: text("ai_summary"),
   actionItems: jsonb("action_items"),
@@ -65,9 +78,11 @@ export const notes = pgTable("notes", {
 // Attachments for tasks and notes
 export const attachments = pgTable("attachments", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id").references(() => users.id).notNull(),
-  taskId: uuid("task_id").references(() => tasks.id),
-  noteId: uuid("note_id").references(() => notes.id),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
+  taskId: uuid("task_id").references(() => tasks.id, { onDelete: "cascade" }),
+  noteId: uuid("note_id").references(() => notes.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   url: text("url").notNull(),
   type: attachmentTypeEnum("type").notNull(),
@@ -79,7 +94,9 @@ export const attachments = pgTable("attachments", {
 // Task templates for quick creation
 export const taskTemplates = pgTable("task_templates", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: text("user_id").references(() => users.id).notNull(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
   name: text("name").notNull(),
   description: text("description"),
   tasks: jsonb("tasks").notNull(), // Array of task templates
@@ -90,8 +107,27 @@ export const taskTemplates = pgTable("task_templates", {
 // Recurring task instances
 export const recurringTaskInstances = pgTable("recurring_task_instances", {
   id: uuid("id").primaryKey().defaultRandom(),
-  templateTaskId: uuid("template_task_id").references(() => tasks.id).notNull(),
+  templateTaskId: uuid("template_task_id")
+    .references(() => tasks.id)
+    .notNull(),
   instanceDate: timestamp("instance_date").notNull(),
   taskId: uuid("task_id").references(() => tasks.id), // Created task instance
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const goals = pgTable("goals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
+  title: text("title").notNull(),
+  targetValue: integer("target_value").notNull(),
+  currentValue: integer("current_value").default(0).notNull(),
+  metric: goalMetricEnum("metric").notNull(),
+  period: goalPeriodEnum("period").notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  status: goalStatusEnum("status").default("active").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });

@@ -16,6 +16,7 @@ import {
   useSensors,
   DragStartEvent,
   DragEndEvent,
+  useDroppable,
 } from "@dnd-kit/core";
 import {
   useSortable,
@@ -24,70 +25,49 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Task, useStore } from "@/store/useStore";
+import { Task, useStore, Column } from "@/store/useStore";
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriorityBadge } from "@/features/tasks/components/PriorityBadge";
+import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   GripVertical,
   Calendar,
   Clock,
   MoreHorizontal,
   Plus,
+  Image as ImageIcon,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format, isToday, isTomorrow, isPast } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Column types for Kanban
-type ColumnType = "Todo" | "InProgress" | "Done";
-
-interface Column {
-  id: ColumnType;
-  title: string;
-  color: string;
-  bgColor: string;
-}
-
-const columns: Column[] = [
-  {
-    id: "Todo",
-    title: "To Do",
-    color: "text-slate-600 dark:text-slate-400",
-    bgColor: "bg-slate-50 dark:bg-slate-900/50",
-  },
-  {
-    id: "InProgress",
-    title: "In Progress",
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-  },
-  {
-    id: "Done",
-    title: "Done",
-    color: "text-green-600 dark:text-green-400",
-    bgColor: "bg-green-50 dark:bg-green-900/20",
-  },
-];
+import { BulkActionBar } from "@/components/kanban/bulk-action-bar";
 
 // Sortable Task Card Component
 function SortableTaskCard({
   task,
   onToggle,
+  isSelected,
+  onSelect,
+  selectionMode,
 }: {
   task: Task;
   onToggle: (id: string) => void;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  selectionMode: boolean;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: task.id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: task.id,
+  });
+
+  const { viewSettings } = useStore();
+  const isCompact = viewSettings.density === "compact";
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -100,35 +80,39 @@ function SortableTaskCard({
 
     if (isPast(date) && !task.completed) {
       return (
-        <span className="text-red-500 dark:text-red-400 text-xs flex items-center gap-1">
+        <span className="flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
           <Calendar className="h-3 w-3" />
-          Overdue
+          {!isCompact && "Overdue"}
         </span>
       );
     }
     if (isToday(date)) {
       return (
-        <span className="text-amber-600 dark:text-amber-400 text-xs flex items-center gap-1">
+        <span className="flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
           <Calendar className="h-3 w-3" />
-          Today
+          {!isCompact && "Today"}
         </span>
       );
     }
     if (isTomorrow(date)) {
       return (
-        <span className="text-blue-500 dark:text-blue-400 text-xs flex items-center gap-1">
+        <span className="flex items-center gap-1 text-xs text-blue-500 dark:text-blue-400">
           <Calendar className="h-3 w-3" />
-          Tomorrow
+          {!isCompact && "Tomorrow"}
         </span>
       );
     }
     return (
-      <span className="text-muted-foreground text-xs flex items-center gap-1">
+      <span className="text-muted-foreground flex items-center gap-1 text-xs">
         <Calendar className="h-3 w-3" />
         {format(date, "MMM d")}
       </span>
     );
   };
+
+  const completedSubtasks = task.subtasks?.filter((s) => s.completed).length || 0;
+  const totalSubtasks = task.subtasks?.length || 0;
+  const progress = totalSubtasks > 0 ? (completedSubtasks / totalSubtasks) * 100 : 0;
 
   return (
     <motion.div
@@ -139,63 +123,120 @@ function SortableTaskCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        "bg-white dark:bg-slate-800 rounded-lg border shadow-sm p-3 cursor-grab active:cursor-grabbing",
-        "hover:shadow-md transition-shadow",
-        isDragging && "opacity-50 shadow-lg ring-2 ring-primary"
+        "cursor-grab rounded-lg border bg-white shadow-sm active:cursor-grabbing dark:bg-slate-800",
+        "group relative transition-shadow hover:shadow-md",
+        isDragging && "ring-primary opacity-50 shadow-lg ring-2",
+        isSelected && "border-blue-500 bg-blue-50 ring-2 ring-blue-500 dark:bg-blue-900/20",
+        isCompact ? "p-2" : "p-3"
       )}
       {...attributes}
       {...listeners}
+      onClick={(e) => {
+        if (e.ctrlKey || e.metaKey || selectionMode) {
+          e.preventDefault();
+          e.stopPropagation();
+          onSelect(task.id);
+        }
+      }}
     >
+      {/* Cover Image */}
+      {viewSettings.showCoverImages && task.coverImage && !isCompact && (
+        <div className="relative mb-3 h-32 w-full overflow-hidden rounded-md bg-slate-100 dark:bg-slate-900">
+          <img src={task.coverImage} alt={task.title} className="h-full w-full object-cover" />
+        </div>
+      )}
+
       <div className="flex items-start gap-3">
-        <GripVertical className="h-4 w-4 text-muted-foreground/50 mt-1 flex-shrink-0" />
-        <div className="flex-1 min-w-0">
+        {!isCompact && (
+          <GripVertical className="text-muted-foreground/50 mt-1 h-4 w-4 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+        )}
+        <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
               <Checkbox
-                checked={task.completed}
-                onCheckedChange={() => onToggle(task.id)}
-                className="mt-0.5"
+                checked={selectionMode ? isSelected : task.completed}
+                onCheckedChange={() => {
+                  if (selectionMode) onSelect(task.id);
+                  else onToggle(task.id);
+                }}
+                className={cn(
+                  "mt-0.5",
+                  selectionMode ? "border-blue-500 data-[state=checked]:bg-blue-500" : ""
+                )}
               />
               <span
                 className={cn(
-                  "font-medium text-sm",
-                  task.completed && "line-through text-muted-foreground"
+                  "truncate text-sm font-medium",
+                  task.completed && !selectionMode && "text-muted-foreground line-through"
                 )}
               >
                 {task.title}
               </span>
             </div>
-            {task.priority && <PriorityBadge priority={task.priority} size="sm" />}
+            {task.priority && !isCompact && <PriorityBadge priority={task.priority} size="sm" />}
+            {task.priority && isCompact && (
+              <div
+                className={cn(
+                  "h-2 w-2 flex-shrink-0 rounded-full",
+                  task.priority === "P0"
+                    ? "bg-red-500"
+                    : task.priority === "P1"
+                      ? "bg-orange-500"
+                      : task.priority === "P2"
+                        ? "bg-blue-500"
+                        : "bg-slate-500"
+                )}
+              />
+            )}
           </div>
 
-          <div className="flex items-center gap-3 mt-2 ml-6">
-            {getDueDateDisplay()}
-            {task.estimatedMinutes && (
-              <span className="text-muted-foreground text-xs flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {task.estimatedMinutes}m
-              </span>
-            )}
-            {task.tags && task.tags.length > 0 && (
-              <div className="flex gap-1">
-                {task.tags.slice(0, 2).map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant="secondary"
-                    className="text-[10px] px-1 py-0"
-                  >
-                    {tag}
-                  </Badge>
-                ))}
+          {!isCompact && (
+            <>
+              <div className="mt-2 ml-6 flex items-center gap-3">
+                {getDueDateDisplay()}
+                {task.estimatedMinutes && (
+                  <span className="text-muted-foreground flex items-center gap-1 text-xs">
+                    <Clock className="h-3 w-3" />
+                    {task.estimatedMinutes}m
+                  </span>
+                )}
+                {task.tags && task.tags.length > 0 && (
+                  <div className="flex gap-1">
+                    {task.tags.slice(0, 2).map((tag) => (
+                      <Badge key={tag} variant="secondary" className="px-1 py-0 text-[10px]">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
 
-          {task.subtasks && task.subtasks.length > 0 && (
-            <div className="mt-2 ml-6 text-xs text-muted-foreground">
-              {task.subtasks.filter((s) => s.completed).length}/
-              {task.subtasks.length} subtasks
-            </div>
+              {/* Subtask Progress */}
+              {totalSubtasks > 0 && (
+                <div className="mt-2 ml-6 space-y-1">
+                  <div className="text-muted-foreground flex items-center justify-between text-xs">
+                    <span>
+                      {completedSubtasks}/{totalSubtasks} subtasks
+                    </span>
+                    <span>{Math.round(progress)}%</span>
+                  </div>
+                  <Progress value={progress} className="h-1.5" />
+                </div>
+              )}
+
+              {/* Footer with Assignees */}
+              {task.assignees && task.assignees.length > 0 && (
+                <div className="mt-3 ml-6 flex -space-x-2 overflow-hidden">
+                  {task.assignees.map((assignee, i) => (
+                    <Avatar key={i} className="ring-background inline-block h-6 w-6 ring-2">
+                      <AvatarFallback className="bg-primary/10 text-primary text-[10px]">
+                        {assignee.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -206,10 +247,10 @@ function SortableTaskCard({
 // Task Card for Drag Overlay
 function TaskCardOverlay({ task }: { task: Task }) {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-lg border shadow-xl p-3 cursor-grabbing ring-2 ring-primary opacity-90">
+    <div className="ring-primary cursor-grabbing rounded-lg border bg-white p-3 opacity-90 shadow-xl ring-2 dark:bg-slate-800">
       <div className="flex items-center gap-2">
-        <GripVertical className="h-4 w-4 text-muted-foreground/50" />
-        <span className="font-medium text-sm">{task.title}</span>
+        <GripVertical className="text-muted-foreground/50 h-4 w-4" />
+        <span className="text-sm font-medium">{task.title}</span>
         {task.priority && <PriorityBadge priority={task.priority} size="sm" />}
       </div>
     </div>
@@ -222,24 +263,44 @@ function KanbanColumn({
   tasks,
   onToggleTask,
   onAddTask,
+  selectedIds,
+  onSelectTask,
 }: {
   column: Column;
   tasks: Task[];
   onToggleTask: (id: string) => void;
-  onAddTask: (status: ColumnType) => void;
+  onAddTask: (columnId: string) => void;
+  selectedIds: string[];
+  onSelectTask: (id: string) => void;
 }) {
+  const isOverLimit =
+    column.wipLimit && tasks.length > column.wipLimit && column.id === "InProgress";
+
+  // Make column a droppable zone for empty states
+  const { setNodeRef, isOver } = useDroppable({
+    id: column.id,
+    data: {
+      type: "Column",
+      column,
+    },
+  });
+
   return (
     <div
+      ref={setNodeRef}
       className={cn(
-        "flex-1 min-w-[280px] max-w-[360px] rounded-xl p-4",
-        column.bgColor
+        "flex max-h-[calc(100vh-12rem)] max-w-[360px] min-w-[280px] flex-1 flex-col rounded-xl p-4",
+        column.bgColor,
+        isOverLimit && "bg-red-50/50 ring-2 ring-red-500/20 dark:bg-red-900/10",
+        isOver && "ring-primary ring-2 ring-inset"
       )}
     >
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex flex-shrink-0 items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className={cn("font-semibold", column.color)}>{column.title}</h3>
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant={isOverLimit ? "destructive" : "secondary"} className="text-xs">
             {tasks.length}
+            {column.wipLimit ? `/${column.wipLimit}` : ""}
           </Badge>
         </div>
         <Button
@@ -252,22 +313,22 @@ function KanbanColumn({
         </Button>
       </div>
 
-      <SortableContext
-        items={tasks.map((t) => t.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        <div className="space-y-2 min-h-[100px]">
+      <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
+        <div className="scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 min-h-[100px] flex-1 space-y-2 overflow-y-auto pr-1">
           <AnimatePresence>
             {tasks.map((task) => (
               <SortableTaskCard
                 key={task.id}
                 task={task}
                 onToggle={onToggleTask}
+                isSelected={selectedIds.includes(task.id)}
+                onSelect={onSelectTask}
+                selectionMode={selectedIds.length > 0}
               />
             ))}
           </AnimatePresence>
           {tasks.length === 0 && (
-            <div className="text-center text-muted-foreground text-sm py-8 border-2 border-dashed rounded-lg">
+            <div className="text-muted-foreground rounded-lg border-2 border-dashed py-8 text-center text-sm">
               Drop tasks here
             </div>
           )}
@@ -277,10 +338,13 @@ function KanbanColumn({
   );
 }
 
+import { SwimlaneBoard } from "@/components/kanban/swimlane-board";
+
 // Main Kanban Board Component
 export function KanbanBoard() {
-  const { tasks, toggleTask } = useStore();
+  const { tasks, toggleTask, updateTask, columns, viewSettings } = useStore();
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -293,12 +357,19 @@ export function KanbanBoard() {
     })
   );
 
-  // Group tasks by status
-  const getTasksByStatus = (status: ColumnType) => {
+  // Group tasks by status (or columnId if present)
+  const getTasksByStatus = (columnId: string) => {
     return tasks.filter((task) => {
-      if (status === "Done") return task.completed;
-      if (status === "InProgress") return !task.completed && task.tags?.includes("in-progress");
-      return !task.completed && !task.tags?.includes("in-progress");
+      // Explicit assignment
+      if (task.columnId === columnId) return true;
+
+      // Fallback for legacy/unmigrated data
+      if (!task.columnId) {
+        if (columnId === "Done") return task.completed;
+        if (columnId === "InProgress") return !task.completed && task.tags?.includes("in-progress");
+        if (columnId === "Todo") return !task.completed && !task.tags?.includes("in-progress");
+      }
+      return false;
     });
   };
 
@@ -312,18 +383,49 @@ export function KanbanBoard() {
 
     if (!over) return;
 
-    // Handle status change based on drop zone
-    // This would need to be extended to update task status
+    const activeTask = tasks.find((t) => t.id === active.id);
+    if (!activeTask) return;
+
+    // In dnd-kit sortable, dropping A over B implies A should be in B's list.
+    const overTask = tasks.find((t) => t.id === over.id);
+    let targetColumnId = overTask?.columnId;
+
+    // Fallback if overTask doesn't have columnId
+    if (!targetColumnId && overTask) {
+      if (overTask.completed) targetColumnId = "Done";
+      else if (overTask.tags?.includes("in-progress")) targetColumnId = "InProgress";
+      else targetColumnId = "Todo";
+    }
+
+    // Check if we dropped directly onto a column (e.g., empty state)
+    if (!targetColumnId && columns.some((c) => c.id === over.id)) {
+      targetColumnId = over.id as string;
+    }
+
+    if (targetColumnId && targetColumnId !== activeTask.columnId) {
+      updateTask(activeTask.id, { columnId: targetColumnId });
+
+      if (targetColumnId === "Done" && !activeTask.completed) {
+        toggleTask(activeTask.id);
+      } else if (targetColumnId !== "Done" && activeTask.completed) {
+        toggleTask(activeTask.id);
+      }
+    }
   };
 
-  const handleAddTask = (status: ColumnType) => {
-    // Open task creation modal with pre-selected status
-    console.log("Add task to:", status);
+  const handleAddTask = (columnId: string) => {
+    console.log("Add task to:", columnId);
   };
 
-  const activeTask = activeId
-    ? tasks.find((t) => t.id === activeId)
-    : null;
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+
+  const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
+
+  if (viewSettings.mode === "swimlane") {
+    return <SwimlaneBoard />;
+  }
 
   return (
     <DndContext
@@ -332,7 +434,7 @@ export function KanbanBoard() {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div className="flex h-full gap-4 overflow-x-auto pb-4">
         {columns.map((column) => (
           <KanbanColumn
             key={column.id}
@@ -340,13 +442,15 @@ export function KanbanBoard() {
             tasks={getTasksByStatus(column.id)}
             onToggleTask={toggleTask}
             onAddTask={handleAddTask}
+            selectedIds={selectedIds}
+            onSelectTask={toggleSelection}
           />
         ))}
       </div>
 
-      <DragOverlay>
-        {activeTask && <TaskCardOverlay task={activeTask} />}
-      </DragOverlay>
+      <DragOverlay>{activeTask && <TaskCardOverlay task={activeTask} />}</DragOverlay>
+
+      <BulkActionBar selectedIds={selectedIds} onClearSelection={() => setSelectedIds([])} />
     </DndContext>
   );
 }

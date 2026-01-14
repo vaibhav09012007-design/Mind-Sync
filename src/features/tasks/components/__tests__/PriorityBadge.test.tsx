@@ -6,6 +6,18 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { PriorityBadge, PrioritySelector, priorityConfig } from "../PriorityBadge";
 
+// Mock Radix UI DropdownMenu as it doesn't work well in JSDOM
+vi.mock("@/components/ui/dropdown-menu", () => ({
+  DropdownMenu: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuItem: ({ children, onClick }: any) => (
+    <div onClick={onClick} role="menuitem">
+      {children}
+    </div>
+  ),
+}));
+
 describe("PriorityBadge", () => {
   it("renders correctly with P0 priority", () => {
     render(<PriorityBadge priority="P0" />);
