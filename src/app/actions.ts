@@ -116,6 +116,8 @@ export async function toggleTaskStatus(
       throw new ValidationError({ id: ["Invalid task ID"] });
     }
 
+    await syncUser();
+
     await db
       .update(tasks)
       .set({ status: completed ? "Done" : "Todo" })
