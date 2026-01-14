@@ -29,3 +29,28 @@ vi.mock("@clerk/nextjs/server", () => ({
     })
   ),
 }));
+
+// Mock Radix UI requirements
+class ResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
+window.ResizeObserver = ResizeObserver;
+
+// Mock PointerEvent
+if (!window.PointerEvent) {
+  class PointerEvent extends MouseEvent {
+    constructor(type: string, params: PointerEventInit = {}) {
+      super(type, params);
+    }
+  }
+  // @ts-ignore
+  window.PointerEvent = PointerEvent;
+}
+
+// Mock scrollIntoView
+HTMLElement.prototype.scrollIntoView = vi.fn();
+HTMLElement.prototype.releasePointerCapture = vi.fn();
+HTMLElement.prototype.hasPointerCapture = vi.fn();
