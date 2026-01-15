@@ -171,7 +171,18 @@ interface AppState {
   setColumns: (columns: Column[]) => void;
 
   // Task Actions
-  addTask: (title: string, dueDate?: Date, priority?: Priority, columnId?: string) => void;
+  addTask: (
+    title: string,
+    dueDate?: Date,
+    priority?: Priority,
+    columnId?: string,
+    options?: {
+      description?: string;
+      subtasks?: Task[];
+      estimatedMinutes?: number;
+      tags?: string[];
+    }
+  ) => void;
   toggleTask: (id: string) => void;
   deleteTask: (id: string) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
@@ -375,14 +386,17 @@ export const useStore = create<AppState>()(
 
       // --- Task Actions ---
 
-      addTask: async (title, dueDate = new Date(), priority = "P2", columnId) => {
+      addTask: async (title, dueDate = new Date(), priority = "P2", columnId, options = {}) => {
         const newTask: Task = {
           id: uuidv4(),
           title,
+          description: options.description || "",
           completed: false,
-          dueDate: dueDate.toISOString(),
+          dueDate: dueDate?.toISOString() || new Date().toISOString(),
           priority,
-          tags: [],
+          tags: options.tags || [],
+          subtasks: options.subtasks || [],
+          estimatedMinutes: options.estimatedMinutes || 25,
           recurrence: null,
           columnId: columnId || "Todo",
         };
