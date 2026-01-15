@@ -6,17 +6,22 @@ import {
   CheckCircle2,
   Calendar,
   TrendingUp,
+  TrendingDown,
   Play,
   Sparkles,
   ArrowRight,
+  Activity,
+  Target,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useStore } from "@/store/useStore"; // Real Data Store
+import { useStore, Task } from "@/store/useStore";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useMemo } from "react";
+import { format, subDays, startOfWeek, endOfWeek, isWithinInterval, isSameDay } from "date-fns";
 
 // Helper for animations
 const container = {
@@ -34,60 +39,172 @@ const item = {
   show: { opacity: 1, y: 0 },
 };
 
+// Time-based greeting helper
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+// Calculate week-over-week change
+function calculateTrend(current: number, previous: number): { change: string; isUp: boolean } {
+  if (previous === 0) {
+    return { change: current > 0 ? "+100%" : "0%", isUp: current > 0 };
+  }
+  const percentChange = Math.round(((current - previous) / previous) * 100);
+  return {
+    change: `${percentChange >= 0 ? "+" : ""}${percentChange}%`,
+    isUp: percentChange >= 0,
+  };
+}
+
+// Calculate streak from tasks
+function calculateStreak(tasks: Task[]): number {
+  const completedDates = tasks
+    .filter((t) => t.completed && t.completedAt)
+    .map((t) => format(new Date(t.completedAt!), "yyyy-MM-dd"))
+    .filter((v, i, a) => a.indexOf(v) === i)
+    .sort()
+    .reverse();
+
+  if (completedDates.length === 0) return 0;
+
+  let streak = 0;
+  let currentDate = new Date();
+
+  for (const dateStr of completedDates) {
+    const date = new Date(dateStr);
+    if (isSameDay(date, currentDate) || isSameDay(date, subDays(currentDate, 1))) {
+      streak++;
+      currentDate = subDays(currentDate, 1);
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+}
+
 export default function DashboardPage() {
   const { tasks, events } = useStore();
   const { user } = useUser();
 
-  // --- Real Stats Calculation ---
-  const completedTasks = tasks.filter((t) => t.completed).length;
-  const totalTasks = tasks.length;
+  // Calculate streak
+  const streak = useMemo(() => calculateStreak(tasks), [tasks]);
 
-  // Naive focus hours calc (sum of estimated minutes of completed tasks / 60)
-  // Or actualMinutes if available
-  const focusMinutes = tasks.reduce(
-    (acc, t) => acc + (t.actualMinutes || (t.completed ? t.estimatedMinutes || 25 : 0)),
-    0
-  );
-  const focusHours = Math.round(focusMinutes / 60);
+  // --- Real Stats Calculation with Week-over-Week Trends ---
+  const stats = useMemo(() => {
+    const now = new Date();
+    const thisWeekStart = startOfWeek(now, { weekStartsOn: 1 });
+    const thisWeekEnd = endOfWeek(now, { weekStartsOn: 1 });
+    const lastWeekStart = subDays(thisWeekStart, 7);
+    const lastWeekEnd = subDays(thisWeekEnd, 7);
 
-  // Meeting time saved (mock logic: assume 10% of meeting time saved via async)
-  // Real logic would check "meeting" type events
-  const meetingMinutes = events
-    .filter((e) => e.type === "meeting")
-    .reduce((acc, e) => {
-      const start = new Date(e.start);
-      const end = new Date(e.end);
-      return acc + (end.getTime() - start.getTime()) / 60000;
-    }, 0);
-  const meetingHoursSaved = Math.round(((meetingMinutes * 0.1) / 60) * 10) / 10; // Mock 10% efficiency
+    // Tasks completed this week vs last week
+    const tasksThisWeek = tasks.filter(
+      (t) =>
+        t.completed &&
+        t.completedAt &&
+        isWithinInterval(new Date(t.completedAt), { start: thisWeekStart, end: thisWeekEnd })
+    ).length;
 
-  const stats = [
-    {
-      label: "Focus Hours",
-      value: focusHours.toString(),
-      unit: "h",
-      change: "+12%", // Mock trend
-      trend: "up",
-      icon: Clock,
-      color: "success",
-    },
-    {
-      label: "Tasks Completed",
-      value: completedTasks.toString(),
-      change:
-        totalTasks > 0 ? `+${tasks.filter((t) => !t.completed).length} pending` : "No pending",
-      trend: "up",
-      icon: CheckCircle2,
-      color: "primary",
-    },
-    {
-      label: "Meeting Time Saved",
-      value: meetingHoursSaved > 0 ? `${meetingHoursSaved}h` : "--",
-      badge: "Async",
-      icon: Calendar,
-      color: "info",
-    },
-  ];
+    const tasksLastWeek = tasks.filter(
+      (t) =>
+        t.completed &&
+        t.completedAt &&
+        isWithinInterval(new Date(t.completedAt), { start: lastWeekStart, end: lastWeekEnd })
+    ).length;
+
+    const tasksTrend = calculateTrend(tasksThisWeek, tasksLastWeek);
+
+    // Focus minutes this week vs last week
+    const focusMinutesThisWeek = tasks
+      .filter(
+        (t) =>
+          t.completed &&
+          t.completedAt &&
+          isWithinInterval(new Date(t.completedAt), { start: thisWeekStart, end: thisWeekEnd })
+      )
+      .reduce((acc, t) => acc + (t.actualMinutes || t.estimatedMinutes || 25), 0);
+
+    const focusMinutesLastWeek = tasks
+      .filter(
+        (t) =>
+          t.completed &&
+          t.completedAt &&
+          isWithinInterval(new Date(t.completedAt), { start: lastWeekStart, end: lastWeekEnd })
+      )
+      .reduce((acc, t) => acc + (t.actualMinutes || t.estimatedMinutes || 25), 0);
+
+    const focusHoursThisWeek = Math.round(focusMinutesThisWeek / 60);
+    const focusTrend = calculateTrend(focusMinutesThisWeek, focusMinutesLastWeek);
+
+    // Total pending
+    const pendingTasks = tasks.filter((t) => !t.completed).length;
+
+    // Meeting time saved
+    const meetingMinutes = events
+      .filter((e) => e.type === "meeting")
+      .reduce((acc, e) => {
+        const start = new Date(e.start);
+        const end = new Date(e.end);
+        return acc + (end.getTime() - start.getTime()) / 60000;
+      }, 0);
+    const meetingHoursSaved = Math.round(((meetingMinutes * 0.1) / 60) * 10) / 10;
+
+    return [
+      {
+        label: "Focus Hours",
+        value: focusHoursThisWeek.toString(),
+        unit: "h",
+        change: focusTrend.change,
+        trend: focusTrend.isUp ? "up" : "down",
+        subtext: "this week",
+        icon: Clock,
+        color: "success",
+      },
+      {
+        label: "Tasks Completed",
+        value: tasksThisWeek.toString(),
+        change: tasksTrend.change,
+        trend: tasksTrend.isUp ? "up" : "down",
+        subtext: `${pendingTasks} pending`,
+        icon: CheckCircle2,
+        color: "primary",
+      },
+      {
+        label: "Current Streak",
+        value: streak.toString(),
+        unit: " days",
+        icon: Target,
+        color: "warning",
+        badge: streak >= 3 ? "🔥" : undefined,
+      },
+      {
+        label: "Meeting Time Saved",
+        value: meetingHoursSaved > 0 ? `${meetingHoursSaved}` : "--",
+        unit: meetingHoursSaved > 0 ? "h" : undefined,
+        badge: "Async",
+        icon: Calendar,
+        color: "info",
+      },
+    ];
+  }, [tasks, events, streak]);
+
+  // Recent activity (last 5 completed tasks)
+  const recentActivity = useMemo(() => {
+    return tasks
+      .filter((t) => t.completed && t.completedAt)
+      .sort((a, b) => new Date(b.completedAt!).getTime() - new Date(a.completedAt!).getTime())
+      .slice(0, 5)
+      .map((t) => ({
+        id: t.id,
+        text: `Completed "${t.title}"`,
+        time: format(new Date(t.completedAt!), "h:mm a"),
+        date: format(new Date(t.completedAt!), "MMM d"),
+      }));
+  }, [tasks]);
 
   const quickActions = [
     {
@@ -112,17 +229,17 @@ export default function DashboardPage() {
 
   const recentTasks = tasks
     .filter((t) => !t.completed)
-    .sort((a, b) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime()) // Sort by due date
+    .sort((a, b) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime())
     .slice(0, 4);
+
+  const greeting = getGreeting();
 
   return (
     <div className="min-h-screen bg-transparent">
-      {" "}
-      {/* bg controlled by layout/globals */}
-      <Header title="Dashboard" subtitle={`Welcome back, ${user?.firstName || "Traveler"}`} />
+      <Header title="Dashboard" subtitle={`${greeting}, ${user?.firstName || "Traveler"}`} />
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        {/* Stats Cards - Now 4 columns */}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
             <motion.div key={stat.label} variants={item} className="card p-5">
               <div className="flex items-start justify-between">
@@ -136,8 +253,19 @@ export default function DashboardPage() {
                   </div>
                   {stat.change && (
                     <div className="mt-2 flex items-center gap-1">
-                      <TrendingUp size={14} className="text-[var(--success)]" />
-                      <span className="text-sm text-[var(--success)]">{stat.change}</span>
+                      {stat.trend === "up" ? (
+                        <TrendingUp size={14} className="text-[var(--success)]" />
+                      ) : (
+                        <TrendingDown size={14} className="text-[var(--danger)]" />
+                      )}
+                      <span
+                        className={`text-sm ${stat.trend === "up" ? "text-[var(--success)]" : "text-[var(--danger)]"}`}
+                      >
+                        {stat.change}
+                      </span>
+                      {stat.subtext && (
+                        <span className="text-xs text-[var(--text-muted)]">{stat.subtext}</span>
+                      )}
                     </div>
                   )}
                   {stat.badge && (
@@ -181,7 +309,7 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Today's Tasks */}
-          <motion.div variants={item} className="card p-5 lg:col-span-2">
+          <motion.div variants={item} className="card p-5">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <h2 className="text-lg font-semibold text-white">Pending Tasks</h2>
@@ -206,12 +334,14 @@ export default function DashboardPage() {
                     key={task.id}
                     className="flex items-center gap-3 rounded-lg bg-[var(--surface-elevated)] p-3 transition-colors hover:bg-[var(--surface-hover)]"
                   >
-                    <div className={`badge badge-medium text-xs uppercase`}>
-                      {task.priority || "Normal"}
+                    <div className="badge badge-medium text-xs uppercase">
+                      {task.priority || "P2"}
                     </div>
-                    <span className="flex-1 text-sm font-medium text-white">{task.title}</span>
+                    <span className="flex-1 truncate text-sm font-medium text-white">
+                      {task.title}
+                    </span>
                     <span className="text-xs text-[var(--text-muted)]">
-                      {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No due date"}
+                      {task.dueDate ? format(new Date(task.dueDate), "MMM d") : "No due"}
                     </span>
                   </div>
                 ))
@@ -226,6 +356,37 @@ export default function DashboardPage() {
                       </Button>
                     </CreateTaskDialog>
                   </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Recent Activity */}
+          <motion.div variants={item} className="card p-5">
+            <div className="mb-4 flex items-center gap-2">
+              <Activity size={18} className="text-[var(--primary)]" />
+              <h2 className="text-lg font-semibold text-white">Recent Activity</h2>
+            </div>
+            <div className="space-y-3">
+              {recentActivity.length > 0 ? (
+                recentActivity.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-start gap-3 rounded-lg bg-[var(--surface-elevated)] p-3"
+                  >
+                    <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[var(--success)]" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm text-white">{activity.text}</p>
+                      <p className="text-xs text-[var(--text-muted)]">
+                        {activity.date} at {activity.time}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-[var(--text-muted)]">
+                  <p className="text-sm">No recent activity</p>
+                  <p className="mt-1 text-xs">Complete tasks to see your progress here</p>
                 </div>
               )}
             </div>

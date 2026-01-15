@@ -41,12 +41,14 @@ import {
   Plus,
   Image as ImageIcon,
   User,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format, isToday, isTomorrow, isPast } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { BulkActionBar } from "@/components/kanban/bulk-action-bar";
+import { TaskPreviewDialog } from "@/components/kanban/task-preview-dialog";
 
 // Sortable Task Card Component
 function SortableTaskCard({
@@ -345,6 +347,7 @@ export function KanbanBoard() {
   const { tasks, toggleTask, updateTask, columns, viewSettings } = useStore();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [previewTask, setPreviewTask] = useState<Task | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -428,30 +431,38 @@ export function KanbanBoard() {
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-    >
-      <div className="flex h-full gap-4 overflow-x-auto pb-4">
-        {columns.map((column) => (
-          <KanbanColumn
-            key={column.id}
-            column={column}
-            tasks={getTasksByStatus(column.id)}
-            onToggleTask={toggleTask}
-            onAddTask={handleAddTask}
-            selectedIds={selectedIds}
-            onSelectTask={toggleSelection}
-          />
-        ))}
-      </div>
+    <>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+      >
+        <div className="flex h-full gap-4 overflow-x-auto pb-4">
+          {columns.map((column) => (
+            <KanbanColumn
+              key={column.id}
+              column={column}
+              tasks={getTasksByStatus(column.id)}
+              onToggleTask={toggleTask}
+              onAddTask={handleAddTask}
+              selectedIds={selectedIds}
+              onSelectTask={toggleSelection}
+            />
+          ))}
+        </div>
 
-      <DragOverlay>{activeTask && <TaskCardOverlay task={activeTask} />}</DragOverlay>
+        <DragOverlay>{activeTask && <TaskCardOverlay task={activeTask} />}</DragOverlay>
 
-      <BulkActionBar selectedIds={selectedIds} onClearSelection={() => setSelectedIds([])} />
-    </DndContext>
+        <BulkActionBar selectedIds={selectedIds} onClearSelection={() => setSelectedIds([])} />
+      </DndContext>
+
+      <TaskPreviewDialog
+        task={previewTask}
+        open={!!previewTask}
+        onOpenChange={(open) => !open && setPreviewTask(null)}
+      />
+    </>
   );
 }
 
