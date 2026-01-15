@@ -14,6 +14,9 @@ import { motion } from "framer-motion";
 import { useStore } from "@/store/useStore"; // Real Data Store
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
+import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 // Helper for animations
 const container = {
@@ -180,7 +183,18 @@ export default function DashboardPage() {
           {/* Today's Tasks */}
           <motion.div variants={item} className="card p-5 lg:col-span-2">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">Pending Tasks</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-semibold text-white">Pending Tasks</h2>
+                <CreateTaskDialog>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 rounded-full hover:bg-white/10"
+                  >
+                    <Plus size={14} className="text-white" />
+                  </Button>
+                </CreateTaskDialog>
+              </div>
               <Link href="/kanban" className="text-sm text-[var(--primary)] hover:underline">
                 View all
               </Link>
@@ -204,6 +218,14 @@ export default function DashboardPage() {
               ) : (
                 <div className="text-muted-foreground py-8 text-center">
                   <p>No pending tasks. You're all caught up!</p>
+                  <div className="mt-4">
+                    <CreateTaskDialog>
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <Plus size={14} />
+                        Add your first task
+                      </Button>
+                    </CreateTaskDialog>
+                  </div>
                 </div>
               )}
             </div>
