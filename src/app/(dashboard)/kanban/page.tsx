@@ -2,19 +2,17 @@
 
 import KanbanBoard from "@/components/kanban-board";
 import { ViewSettings } from "@/components/kanban/view-settings";
+import { Header } from "@/components/layout/Header";
 
 export default function KanbanPage() {
   return (
-    <div className="h-full overflow-auto">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Kanban Board</h1>
-          <p className="text-muted-foreground">
-            Drag and drop tasks between columns to update their status
-          </p>
-        </div>
+    <div className="h-full overflow-auto p-6">
+      <Header
+        title="Kanban Board"
+        subtitle="Drag and drop tasks between columns to update their status"
+      >
         <ViewSettings />
-      </div>
+      </Header>
       <KanbanBoard />
     </div>
   );
