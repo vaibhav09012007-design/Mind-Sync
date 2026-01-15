@@ -1,11 +1,18 @@
 "use client";
 
-import KanbanBoard from "@/components/kanban-board";
+import dynamic from "next/dynamic";
 import { ViewSettings } from "@/components/kanban/view-settings";
 import { Header } from "@/components/layout/Header";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { Button } from "@/components/ui/button";
+import { KanbanBoardSkeleton } from "@/components/ui/skeleton";
 import { Plus } from "lucide-react";
+
+// Dynamic import for heavy Kanban component with loading skeleton
+const KanbanBoard = dynamic(() => import("@/components/kanban-board"), {
+  loading: () => <KanbanBoardSkeleton />,
+  ssr: false,
+});
 
 export default function KanbanPage() {
   return (

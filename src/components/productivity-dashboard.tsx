@@ -85,11 +85,17 @@ export function ProductivityDashboard() {
     });
   }, [tasks]);
 
-  const streak = StatsCalculator.calculateStreak(activityData);
-  const roiHours = StatsCalculator.calculateROI(tasks.filter((t) => t.completed).length);
+  // Memoize streak calculation
+  const streak = useMemo(() => StatsCalculator.calculateStreak(activityData), [activityData]);
 
-  // Data for Weekly Chart (Last 7 days)
-  const weeklyData = activityData.slice(-7);
+  // Memoize ROI calculation
+  const roiHours = useMemo(
+    () => StatsCalculator.calculateROI(tasks.filter((t) => t.completed).length),
+    [tasks]
+  );
+
+  // Data for Weekly Chart (Last 7 days) - memoized
+  const weeklyData = useMemo(() => activityData.slice(-7), [activityData]);
 
   // Data for Breakdown
   const breakdownData = useMemo(() => {
