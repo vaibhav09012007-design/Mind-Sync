@@ -164,12 +164,12 @@ describe("useStore - View Settings", () => {
     const store = useStore.getState();
 
     store.setViewSettings({
-      mode: "list",
+      mode: "swimlane",
       density: "compact",
     });
 
     const settings = useStore.getState().viewSettings;
-    expect(settings.mode).toBe("list");
+    expect(settings.mode).toBe("swimlane");
     expect(settings.density).toBe("compact");
   });
 
