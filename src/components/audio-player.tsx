@@ -75,7 +75,16 @@ export function AudioPlayer() {
 
   return (
     <div className="bg-muted/50 flex items-center gap-2 rounded-full border p-2 shadow-sm">
-      <audio ref={audioRef} src={currentTrack.src} loop preload="none" />
+      <audio
+        ref={audioRef}
+        src={currentTrack.src}
+        loop
+        preload="none"
+        onError={(e) => {
+          console.warn("Audio source failed to load:", currentTrack.label, e);
+          setIsPlaying(false);
+        }}
+      />
 
       <Popover>
         <PopoverTrigger asChild>
