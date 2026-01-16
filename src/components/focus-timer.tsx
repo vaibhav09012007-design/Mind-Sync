@@ -37,6 +37,7 @@ import { useStore, TimerMode } from "@/store/useStore";
 import { toast } from "sonner";
 import { AudioPlayer } from "@/components/audio-player";
 import { Maximize2, Minimize2 } from "lucide-react";
+import { BELL_SOUND } from "@/lib/sounds";
 
 const modeConfig = {
   focus: {
@@ -124,9 +125,10 @@ export function FocusTimer() {
 
   const playSound = () => {
     if (timerSettings.soundEnabled && typeof window !== "undefined") {
-      const audio = new Audio("/sounds/bell.mp3");
+      // Use built-in sound for reliability
+      const audio = new Audio(BELL_SOUND);
       audio.volume = 0.5;
-      audio.play().catch(() => console.log("Audio play failed"));
+      audio.play().catch((e) => console.warn("Audio play failed", e));
     }
   };
 
