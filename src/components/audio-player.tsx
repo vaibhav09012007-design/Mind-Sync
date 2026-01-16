@@ -1,17 +1,16 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Volume2, VolumeX, Play, Pause, Music } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const SOUNDSCAPES = [
   {
     id: "rain",
     label: "Rain",
-    src: "https://assets.mixkit.co/sfx/preview/mixkit-light-rain-loop-2393.mp3", // Short loop example
+    src: "https://assets.mixkit.co/sfx/preview/mixkit-light-rain-loop-2393.mp3",
   },
   {
     id: "forest",
@@ -21,7 +20,7 @@ const SOUNDSCAPES = [
   {
     id: "white-noise",
     label: "White Noise",
-    src: "https://assets.mixkit.co/sfx/preview/mixkit-radio-static-noise-1221.mp3", // Placeholder
+    src: "https://assets.mixkit.co/sfx/preview/mixkit-radio-static-noise-1221.mp3",
   },
   {
     id: "cafe",
@@ -34,57 +33,101 @@ export function AudioPlayer() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrack, setCurrentTrack] = useState(SOUNDSCAPES[0]);
   const [volume, setVolume] = useState(0.5);
+  const [audioError, setAudioError] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Create audio element lazily only when needed
+  const getOrCreateAudio = useCallback(() => {
+    if (!audioRef.current) {
+      const audio = new Audio();
+      audio.loop = true;
+      audio.preload = "none";
+      audio.onerror = () => {
+        console.warn("Audio source failed to load:", currentTrack.label);
+        setAudioError(true);
+        setIsPlaying(false);
+      };
+      audioRef.current = audio;
+    }
+    return audioRef.current;
+  }, [currentTrack.label]);
+
+  // Update volume
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
     }
   }, [volume]);
 
+  // Handle play/pause
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.play().catch((e) => {
+        console.warn("Audio playback error:", e);
+        setAudioError(true);
+        setIsPlaying(false);
+      });
+    } else {
+      audioRef.current.pause();
+    }
+  }, [isPlaying]);
+
+  // Handle track change
   useEffect(() => {
     if (audioRef.current) {
+      audioRef.current.src = currentTrack.src;
+      setAudioError(false);
       if (isPlaying) {
         audioRef.current.play().catch((e) => {
-          console.error("Audio playback error:", e);
+          console.warn("Audio playback error:", e);
+          setAudioError(true);
           setIsPlaying(false);
         });
-      } else {
-        audioRef.current.pause();
       }
     }
-  }, [isPlaying, currentTrack]);
+  }, [currentTrack, isPlaying]);
 
-  const togglePlay = () => setIsPlaying(!isPlaying);
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const togglePlay = () => {
+    // Lazily create audio element on first play
+    const audio = getOrCreateAudio();
+    if (!audio.src || audio.src !== currentTrack.src) {
+      audio.src = currentTrack.src;
+      audio.volume = volume;
+    }
+    setAudioError(false);
+    setIsPlaying(!isPlaying);
+  };
 
   const selectTrack = (track: typeof currentTrack) => {
-    if (currentTrack.id === track.id) {
-      // Just toggle if same track
-      // togglePlay();
-      return;
-    }
-    const wasPlaying = isPlaying;
+    if (currentTrack.id === track.id) return;
+
     setCurrentTrack(track);
-    // Auto play if switching tracks
-    if (wasPlaying) {
-      // React effect will handle the play call when currentTrack changes
-    } else {
+    setAudioError(false);
+
+    // If not already playing, start playback
+    if (!isPlaying) {
+      const audio = getOrCreateAudio();
+      audio.src = track.src;
+      audio.volume = volume;
       setIsPlaying(true);
     }
   };
 
   return (
     <div className="bg-muted/50 flex items-center gap-2 rounded-full border p-2 shadow-sm">
-      <audio
-        ref={audioRef}
-        src={currentTrack.src}
-        loop
-        preload="none"
-        onError={(e) => {
-          console.warn("Audio source failed to load:", currentTrack.label, e);
-          setIsPlaying(false);
-        }}
-      />
+      {/* No audio element in DOM - created dynamically */}
 
       <Popover>
         <PopoverTrigger asChild>
@@ -114,6 +157,10 @@ export function AudioPlayer() {
                 </Button>
               ))}
             </div>
+
+            {audioError && (
+              <p className="text-xs text-amber-400">Audio unavailable. Try another track.</p>
+            )}
 
             <div className="border-t pt-2">
               <div className="flex items-center gap-2">
