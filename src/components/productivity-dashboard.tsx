@@ -7,22 +7,29 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/store/useStore";
-import { cn } from "@/lib/utils";
-import { RefreshCw } from "lucide-react";
-import { format, startOfYear, eachDayOfInterval, isSameDay } from "date-fns";
+import { RefreshCw, Target, Timer, CheckCircle2, Flame } from "lucide-react";
+import { format, startOfYear, eachDayOfInterval, subDays, isWithinInterval } from "date-fns";
 import { StatsCalculator, DailyActivity } from "@/lib/stats-calculator";
 
-// New Components
-import { ActivityHeatmap } from "@/components/analytics/activity-heatmap";
+// Analytics Components
+import {
+  DateRangeFilter,
+  DateRangeOption,
+  DateRange,
+  getDateRangeFromOption,
+} from "@/components/analytics/date-range-filter";
+import { EnhancedWeeklyChart } from "@/components/analytics/enhanced-weekly-chart";
+import { EnhancedActivityHeatmap } from "@/components/analytics/enhanced-activity-heatmap";
+import { FocusTimeCard } from "@/components/analytics/focus-time-card";
+import { ProductivityScore } from "@/components/analytics/productivity-score";
+import { StatCardWithTrend } from "@/components/analytics/stat-card-with-trend";
 import { CoachWidget } from "@/components/analytics/coach-widget";
 import { GoalsWidget } from "@/components/analytics/goals-widget";
-import { WeeklyChart } from "@/components/analytics/weekly-chart";
 import { CategoryBreakdown } from "@/components/analytics/category-breakdown";
 import { ExportStats } from "@/components/analytics/export-stats";
-import { getGoals } from "@/actions/goals"; // Server Action
+import { getGoals } from "@/actions/goals";
 
 interface Goal {
   id: string;
@@ -37,18 +44,16 @@ export function ProductivityDashboard() {
   const { tasks } = useStore();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [dateRangeOption, setDateRangeOption] = useState<DateRangeOption>("30d");
+  const [dateRange, setDateRange] = useState<DateRange>(getDateRangeFromOption("30d"));
 
-  // Assuming current user ID is available in store or we pass it.
-  // For now, hardcode or fetch from auth hook if available.
   const userId = "user_2rOp5...";
 
   useEffect(() => {
-    // Fetch goals
     async function loadGoals() {
       if (!userId) return;
       try {
         const data = await getGoals(userId);
-        // data matches basic structure, casting to interface
         setGoals(data as unknown as Goal[]);
       } catch (e) {
         console.error("Failed to load goals", e);
@@ -57,11 +62,16 @@ export function ProductivityDashboard() {
     loadGoals();
   }, [userId]);
 
-  // Transform Tasks into DailyActivity[]
-  const activityData: DailyActivity[] = useMemo(() => {
+  // Handle date range change
+  const handleDateRangeChange = (option: DateRangeOption, range: DateRange) => {
+    setDateRangeOption(option);
+    setDateRange(range);
+  };
+
+  // Transform Tasks into DailyActivity[] for full year
+  const fullYearActivityData: DailyActivity[] = useMemo(() => {
     if (!tasks) return [];
 
-    // Generate dates for the current year (or relevant range) to ensure continuity
     const today = new Date();
     const start = startOfYear(today);
     const range = eachDayOfInterval({ start, end: today });
@@ -74,7 +84,6 @@ export function ProductivityDashboard() {
           t.completed && t.completedAt && format(new Date(t.completedAt), "yyyy-MM-dd") === dayStr
       );
 
-      // Naive focus minutes calculation: 25 mins per task
       const focusMinutes = completedOnDay.reduce((acc, t) => acc + (t.actualMinutes || 25), 0);
 
       return {
@@ -85,19 +94,55 @@ export function ProductivityDashboard() {
     });
   }, [tasks]);
 
-  // Memoize streak calculation
-  const streak = useMemo(() => StatsCalculator.calculateStreak(activityData), [activityData]);
+  // Filter activity data by selected date range
+  const filteredActivityData = useMemo(() => {
+    return fullYearActivityData.filter((d) =>
+      isWithinInterval(d.date, { start: dateRange.from, end: dateRange.to })
+    );
+  }, [fullYearActivityData, dateRange]);
 
-  // Memoize ROI calculation
-  const roiHours = useMemo(
-    () => StatsCalculator.calculateROI(tasks.filter((t) => t.completed).length),
-    [tasks]
+  // Previous period data for comparison
+  const previousPeriodData = useMemo(() => {
+    const periodLength = filteredActivityData.length;
+    const prevStart = subDays(dateRange.from, periodLength);
+    const prevEnd = subDays(dateRange.from, 1);
+
+    return fullYearActivityData.filter((d) =>
+      isWithinInterval(d.date, { start: prevStart, end: prevEnd })
+    );
+  }, [fullYearActivityData, dateRange, filteredActivityData.length]);
+
+  // Stats calculations
+  const streak = useMemo(
+    () => StatsCalculator.calculateStreak(fullYearActivityData),
+    [fullYearActivityData]
   );
 
-  // Data for Weekly Chart (Last 7 days) - memoized
-  const weeklyData = useMemo(() => activityData.slice(-7), [activityData]);
+  const totalCompletedTasks = useMemo(
+    () => filteredActivityData.reduce((acc, d) => acc + d.tasksCompleted, 0),
+    [filteredActivityData]
+  );
 
-  // Data for Breakdown
+  const previousTotalTasks = useMemo(
+    () => previousPeriodData.reduce((acc, d) => acc + d.tasksCompleted, 0),
+    [previousPeriodData]
+  );
+
+  const tasksTrend =
+    previousTotalTasks > 0
+      ? ((totalCompletedTasks - previousTotalTasks) / previousTotalTasks) * 100
+      : 0;
+
+  const roiHours = useMemo(
+    () => StatsCalculator.calculateROI(totalCompletedTasks),
+    [totalCompletedTasks]
+  );
+
+  // Weekly data for chart (last 7 days of selected period)
+  const weeklyData = useMemo(() => filteredActivityData.slice(-7), [filteredActivityData]);
+  const previousWeekData = useMemo(() => previousPeriodData.slice(-7), [previousPeriodData]);
+
+  // Category breakdown
   const breakdownData = useMemo(() => {
     const counts: Record<string, number> = {};
     tasks
@@ -109,10 +154,21 @@ export function ProductivityDashboard() {
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [tasks]);
 
+  // Goals progress for productivity score
+  const goalsProgress = useMemo(() => {
+    if (goals.length === 0) return 50;
+    const avgProgress =
+      goals.reduce((acc, g) => {
+        const progress = Math.min(100, (g.currentValue / g.targetValue) * 100);
+        return acc + progress;
+      }, 0) / goals.length;
+    return avgProgress;
+  }, [goals]);
+
   return (
     <div className="animate-in fade-in space-y-6 duration-500">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="from-primary bg-gradient-to-r to-purple-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
             Analytics & Insights
@@ -120,68 +176,68 @@ export function ProductivityDashboard() {
           <p className="text-muted-foreground">Visualize your productivity journey.</p>
         </div>
         <div className="flex items-center gap-2">
-          <ExportStats data={activityData} />
+          <DateRangeFilter value={dateRangeOption} onChange={handleDateRangeChange} />
+          <ExportStats data={filteredActivityData} />
           <Button variant="outline" size="icon" onClick={() => window.location.reload()}>
-            <RefreshCw className={cn("h-4 w-4", isLoading && "animate-spin")} />
+            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           </Button>
         </div>
       </div>
 
-      {/* Top Level Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              Current Streak
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-2xl font-bold">
-              {streak} <span className="text-muted-foreground text-sm font-normal">days</span>
-              {streak > 3 && <span className="text-xl">🔥</span>}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">
-              ROI (Time Saved)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {roiHours.toFixed(1)}{" "}
-              <span className="text-muted-foreground text-sm font-normal">hours</span>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-sm font-medium">Total Tasks</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{tasks.filter((t) => t.completed).length}</div>
-          </CardContent>
-        </Card>
-        <CoachWidget data={activityData} />
+      {/* Top Stats Row */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+        <StatCardWithTrend
+          title="Current Streak"
+          value={streak}
+          unit="days"
+          icon={Flame}
+          description={streak > 3 ? "🔥 On fire!" : undefined}
+        />
+        <StatCardWithTrend
+          title="Tasks Completed"
+          value={totalCompletedTasks}
+          unit="tasks"
+          trend={tasksTrend}
+          icon={CheckCircle2}
+        />
+        <FocusTimeCard data={filteredActivityData} previousPeriodData={previousPeriodData} />
+        <StatCardWithTrend
+          title="ROI (Time Saved)"
+          value={roiHours.toFixed(1)}
+          unit="hours"
+          icon={Timer}
+        />
+        <CoachWidget data={filteredActivityData} />
       </div>
 
-      <div className="grid gap-6 md:grid-cols-7">
-        {/* Main Chart Area */}
-        <div className="space-y-6 md:col-span-4">
-          <WeeklyChart data={weeklyData} />
+      {/* Main Content Grid */}
+      <div className="grid gap-6 lg:grid-cols-7">
+        {/* Left: Charts */}
+        <div className="space-y-6 lg:col-span-4">
+          <EnhancedWeeklyChart data={weeklyData} previousPeriodData={previousWeekData} />
+
           <Card>
             <CardHeader>
-              <CardTitle>Activity Heatmap (Year)</CardTitle>
+              <CardTitle className="flex items-center justify-between">
+                <span>Activity Heatmap</span>
+                <span className="text-muted-foreground text-sm font-normal">This Year</span>
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <ActivityHeatmap data={activityData} />
+              <EnhancedActivityHeatmap data={fullYearActivityData} />
             </CardContent>
           </Card>
         </div>
 
-        {/* Sidebar Widgets */}
-        <div className="space-y-6 md:col-span-3">
+        {/* Right: Sidebar Widgets */}
+        <div className="space-y-6 lg:col-span-3">
+          <ProductivityScore
+            data={filteredActivityData}
+            previousPeriodData={previousPeriodData}
+            streak={streak}
+            totalTasks={totalCompletedTasks}
+            goalsProgress={goalsProgress}
+          />
           <GoalsWidget initialGoals={goals} userId={userId} />
           <CategoryBreakdown data={breakdownData} />
         </div>
