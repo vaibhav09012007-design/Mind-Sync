@@ -12,15 +12,18 @@ import {
   ArrowRight,
   Activity,
   Target,
+  Circle,
+  Edit3,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useStore, Task } from "@/store/useStore";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
+import { EditTaskDialog } from "@/components/tasks/edit-task-dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { format, subDays, startOfWeek, endOfWeek, isWithinInterval, isSameDay } from "date-fns";
 
 // Helper for animations
@@ -87,8 +90,9 @@ function calculateStreak(tasks: Task[]): number {
 }
 
 export default function DashboardPage() {
-  const { tasks, events } = useStore();
+  const { tasks, events, toggleTask } = useStore();
   const { user } = useUser();
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   // Calculate streak
   const streak = useMemo(() => calculateStreak(tasks), [tasks]);
@@ -334,6 +338,21 @@ export default function DashboardPage() {
                     key={task.id}
                     className="flex items-center gap-3 rounded-lg bg-[var(--surface-elevated)] p-3 transition-colors hover:bg-[var(--surface-hover)]"
                   >
+                    {/* Checkmark button */}
+                    <button
+                      onClick={() => toggleTask(task.id)}
+                      className="flex-shrink-0 rounded-full focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
+                      title="Mark as complete"
+                    >
+                      {task.completed ? (
+                        <CheckCircle2 size={20} className="text-[var(--success)]" />
+                      ) : (
+                        <Circle
+                          size={20}
+                          className="text-[var(--text-muted)] hover:text-[var(--primary)]"
+                        />
+                      )}
+                    </button>
                     <div className="badge badge-medium text-xs uppercase">
                       {task.priority || "P2"}
                     </div>
@@ -343,6 +362,14 @@ export default function DashboardPage() {
                     <span className="text-xs text-[var(--text-muted)]">
                       {task.dueDate ? format(new Date(task.dueDate), "MMM d") : "No due"}
                     </span>
+                    {/* Edit button */}
+                    <button
+                      onClick={() => setEditingTask(task)}
+                      className="flex-shrink-0 rounded p-1 hover:bg-white/10 focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
+                      title="Edit task"
+                    >
+                      <Edit3 size={14} className="text-[var(--text-muted)] hover:text-white" />
+                    </button>
                   </div>
                 ))
               ) : (
@@ -359,6 +386,15 @@ export default function DashboardPage() {
                 </div>
               )}
             </div>
+
+            {/* Edit Task Dialog */}
+            {editingTask && (
+              <EditTaskDialog
+                task={editingTask}
+                open={!!editingTask}
+                onOpenChange={(open) => !open && setEditingTask(null)}
+              />
+            )}
           </motion.div>
 
           {/* Recent Activity */}

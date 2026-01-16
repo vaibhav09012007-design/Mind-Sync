@@ -184,6 +184,7 @@ interface AppState {
     }
   ) => void;
   toggleTask: (id: string) => void;
+  toggleSubtask: (taskId: string, subtaskId: string) => void;
   deleteTask: (id: string) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   updateTaskPriority: (id: string, priority: Priority) => void;
@@ -436,7 +437,13 @@ export const useStore = create<AppState>()(
         const task = get().tasks.find((t) => t.id === id);
         if (!task) return;
 
-        const updatedTask = { ...task, completed: !task.completed };
+        const isCompleting = !task.completed;
+        const updatedTask = {
+          ...task,
+          completed: isCompleting,
+          completedAt: isCompleting ? new Date().toISOString() : undefined,
+          actualMinutes: isCompleting ? task.estimatedMinutes || 25 : task.actualMinutes,
+        };
 
         set((state) => ({
           tasks: state.tasks.map((t) => (t.id === id ? updatedTask : t)),
@@ -461,6 +468,34 @@ export const useStore = create<AppState>()(
         } catch (error) {
           console.error("Failed to toggle task", error);
         }
+      },
+
+      toggleSubtask: (taskId, subtaskId) => {
+        const task = get().tasks.find((t) => t.id === taskId);
+        if (!task || !task.subtasks) return;
+
+        const updatedSubtasks = task.subtasks.map((st) =>
+          st.id === subtaskId
+            ? {
+                ...st,
+                completed: !st.completed,
+                completedAt: !st.completed ? new Date().toISOString() : undefined,
+              }
+            : st
+        );
+
+        const updatedTask = { ...task, subtasks: updatedSubtasks };
+
+        set((state) => ({
+          tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
+        }));
+
+        get().pushHistory({
+          type: "task",
+          action: "update",
+          before: task,
+          after: updatedTask,
+        });
       },
 
       deleteTask: async (id) => {
