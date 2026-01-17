@@ -125,10 +125,10 @@ function SortableTaskCard({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       className={cn(
-        "cursor-grab rounded-lg border bg-white shadow-sm active:cursor-grabbing dark:bg-slate-800",
-        "group relative transition-shadow hover:shadow-md",
-        isDragging && "ring-primary opacity-50 shadow-lg ring-2",
-        isSelected && "border-blue-500 bg-blue-50 ring-2 ring-blue-500 dark:bg-blue-900/20",
+        "border-border bg-card cursor-grab rounded-lg border shadow-sm active:cursor-grabbing",
+        "group hover:border-primary/30 card-hover relative transition-all duration-200 hover:shadow-lg",
+        isDragging && "ring-primary opacity-50 shadow-xl ring-2",
+        isSelected && "border-primary bg-primary/10 ring-primary ring-2",
         isCompact ? "p-2" : "p-3"
       )}
       {...attributes}
@@ -249,7 +249,7 @@ function SortableTaskCard({
 // Task Card for Drag Overlay
 function TaskCardOverlay({ task }: { task: Task }) {
   return (
-    <div className="ring-primary cursor-grabbing rounded-lg border bg-white p-3 opacity-90 shadow-xl ring-2 dark:bg-slate-800">
+    <div className="ring-primary border-primary/50 bg-card animate-pulse-glow cursor-grabbing rounded-lg border p-3 shadow-2xl ring-2">
       <div className="flex items-center gap-2">
         <GripVertical className="text-muted-foreground/50 h-4 w-4" />
         <span className="text-sm font-medium">{task.title}</span>
@@ -292,9 +292,9 @@ function KanbanColumn({
       ref={setNodeRef}
       className={cn(
         "flex max-h-[calc(100vh-12rem)] max-w-[360px] min-w-[280px] flex-1 flex-col rounded-xl p-4",
-        column.bgColor,
-        isOverLimit && "bg-red-50/50 ring-2 ring-red-500/20 dark:bg-red-900/10",
-        isOver && "ring-primary ring-2 ring-inset"
+        "bg-surface/50 border-border/50 border backdrop-blur-sm",
+        isOverLimit && "bg-danger/5 ring-danger/20 ring-2",
+        isOver && "ring-primary bg-primary/5 ring-2 ring-inset"
       )}
     >
       <div className="mb-4 flex flex-shrink-0 items-center justify-between">

@@ -84,16 +84,23 @@ export function AppSidebar() {
             >
               <Icon
                 size={18}
-                className={`transition-colors ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
+                className={`icon-bounce transition-all duration-200 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
               />
               <span className="text-sm font-medium">{item.label}</span>
               {isActive && (
-                <motion.div
-                  layoutId="activeIndicator"
-                  className="bg-primary absolute left-0 h-5 w-1 rounded-r-full"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                />
+                <>
+                  <motion.div
+                    layoutId="activeIndicator"
+                    className="bg-primary absolute left-0 h-5 w-1 rounded-r-full"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  />
+                  {/* Active glow effect */}
+                  <div
+                    className="bg-primary/5 animate-pulse-glow absolute inset-0 rounded-lg"
+                    style={{ animationDuration: "3s" }}
+                  />
+                </>
               )}
             </Link>
           );
