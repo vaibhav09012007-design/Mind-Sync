@@ -1,0 +1,48 @@
+{
+  "name": "MindSync - AI Productivity Workspace",
+  "short_name": "MindSync",
+  "description": "Focus better, achieve more with AI-powered task management and focus tools",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#a855f7",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Dashboard with task management"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "New Task",
+      "short_name": "Task",
+      "url": "/dashboard?action=new-task",
+      "icons": [{ "src": "/icons/task-icon.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Focus Timer",
+      "short_name": "Focus",
+      "url": "/focus",
+      "icons": [{ "src": "/icons/focus-icon.png", "sizes": "96x96" }]
+    }
+  ]
+}
