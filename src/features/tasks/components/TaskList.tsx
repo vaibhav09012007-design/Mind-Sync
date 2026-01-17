@@ -87,7 +87,7 @@ export function TaskList({ title, tasks, onToggle, onAdd, onDelete }: TaskListPr
         // NLP Parsing
         const parsedResults = chrono.parse(newTask);
         let finalDate = date;
-        let finalTitle = newTask;
+        const finalTitle = newTask;
 
         if (parsedResults.length > 0) {
             finalDate = parsedResults[0].start.date();

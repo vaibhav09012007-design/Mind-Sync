@@ -425,11 +425,11 @@ export async function deleteNote(id: string): Promise<ActionResult<void>> {
 
     try {
       await db.delete(notes).where(and(eq(notes.id, id), eq(notes.userId, userId)));
-    } catch (dbError: any) {
+    } catch (dbError: unknown) {
       // If code is "22P02" (invalid_text_representation for uuid), it means the ID
       // provided was not a valid UUID (e.g. "9efxvmn1m").
       // Since it's invalid, it can't exist in the DB, so we treat it as successfully deleted.
-      if (dbError.code === "22P02") {
+      if (typeof dbError === 'object' && dbError !== null && 'code' in dbError && (dbError as { code: string }).code === "22P02") {
         console.warn(`[deleteNote] Ignored invalid UUID format: ${id}`);
         // Fallthrough to return success
       } else {
@@ -502,7 +502,7 @@ export async function summarizeMeeting(
 
     revalidatePath(`/notes/${noteId}`);
     return createSuccessResult(data);
-  } catch (error) {
+  } catch (error: unknown) {
     if (error instanceof RateLimitError) {
       return createErrorResult(error);
     }
@@ -594,7 +594,7 @@ export async function syncGoogleCalendar(): Promise<
     revalidatePath("/calendar");
     revalidatePath("/dashboard");
     return createSuccessResult({ count: syncedCount, total: googleEvents.length });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("[Sync] CRITICAL FAILURE:", error);
     return createErrorResult(error);
   }
@@ -714,7 +714,7 @@ export async function generateSchedule(): Promise<ActionResult<{ count: number }
     revalidatePath("/calendar");
 
     return createSuccessResult({ count: newEvents.length });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("[AI Schedule] Error:", error);
     return createErrorResult(error);
   }

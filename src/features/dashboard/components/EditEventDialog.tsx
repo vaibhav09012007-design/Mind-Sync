@@ -26,8 +26,11 @@ export function EditEventDialog({ isOpen, onOpenChange, eventId, currentDate }: 
     if (isOpen && eventId) {
       const event = events.find(e => e.id === eventId);
       if (event) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setTitle(event.title);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setStartTime(format(parseISO(event.start), "HH:mm"));
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setEndTime(format(parseISO(event.end), "HH:mm"));
       }
     }

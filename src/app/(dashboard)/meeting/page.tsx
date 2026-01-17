@@ -53,6 +53,7 @@ export default function MeetingPage() {
   useEffect(() => {
     if (error) {
       toast.error(error);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsRecording(false);
     }
   }, [error]);

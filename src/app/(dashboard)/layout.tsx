@@ -9,6 +9,7 @@ import { UserButton } from "@clerk/nextjs";
 import { SkipLink } from "@/components/accessibility/skip-link";
 import { KeyboardShortcutsHelp } from "@/components/accessibility/keyboard-shortcuts-help";
 import { GlobalKeyboardShortcuts } from "@/components/accessibility/global-keyboard-shortcuts";
+import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -21,6 +22,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Global Keyboard Shortcuts (G+D, G+K, Ctrl+Z, etc.) */}
       <GlobalKeyboardShortcuts />
+
+      {/* PWA Service Worker Registration */}
+      <ServiceWorkerRegistration />
 
       {/* Global Command Palette */}
       <CommandMenu />

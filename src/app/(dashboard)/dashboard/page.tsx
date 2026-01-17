@@ -374,7 +374,7 @@ export default function DashboardPage() {
                 ))
               ) : (
                 <div className="text-muted-foreground py-8 text-center">
-                  <p>No pending tasks. You're all caught up!</p>
+                  <p>No pending tasks. You&apos;re all caught up!</p>
                   <div className="mt-4">
                     <CreateTaskDialog>
                       <Button variant="outline" size="sm" className="gap-2">

@@ -127,7 +127,7 @@ export function PlanDayWizard({ open, onOpenChange, onGenerate }: PlanDayWizardP
             Plan Your Day
           </DialogTitle>
           <DialogDescription>
-            Tell us how you're feeling and we'll create an optimal schedule.
+            Tell us how you&apos;re feeling and we&apos;ll create an optimal schedule.
           </DialogDescription>
         </DialogHeader>
 
@@ -148,7 +148,7 @@ export function PlanDayWizard({ open, onOpenChange, onGenerate }: PlanDayWizardP
           {/* Step 1: Energy Level */}
           {step === 1 && (
             <div className="space-y-4">
-              <Label className="text-base font-medium">How's your energy today?</Label>
+              <Label className="text-base font-medium">How&apos;s your energy today?</Label>
               <div className="grid gap-3">
                 {ENERGY_OPTIONS.map((option) => {
                   const Icon = option.icon;

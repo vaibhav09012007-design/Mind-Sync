@@ -46,7 +46,7 @@ if (!window.PointerEvent) {
       super(type, params);
     }
   }
-  // @ts-ignore
+  // @ts-expect-error - PointerEvent is not defined in JSDOM
   window.PointerEvent = PointerEvent;
 }
 

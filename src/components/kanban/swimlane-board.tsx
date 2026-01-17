@@ -143,7 +143,7 @@ export function SwimlaneBoard() {
     const overTask = tasks.find((t) => t.id === over.id);
 
     if (activeTask && overTask) {
-      let updates: Partial<Task> = {};
+      const updates: Partial<Task> = {};
 
       // Update Column
       let targetColumnId = overTask.columnId;

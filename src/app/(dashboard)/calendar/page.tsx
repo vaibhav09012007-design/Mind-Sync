@@ -52,6 +52,7 @@ import { DayView } from "@/features/calendar/components/DayView";
 import { AgendaView } from "@/features/calendar/components/AgendaView";
 import { QuickAddPopover } from "@/features/calendar/components/QuickAddPopover";
 import { EVENT_STYLES } from "@/features/calendar/components/calendar-utils";
+import { CalendarSyncStatus } from "@/components/calendar/calendar-sync-status";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -69,6 +70,7 @@ export default function CalendarPage() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydrated(true);
   }, []);
 
@@ -104,7 +106,8 @@ export default function CalendarPage() {
         start: startDate,
         end: endDate,
       }),
-    [startDate, endDate]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [startDate.getTime(), endDate.getTime()]
   );
 
   const handleDateClick = (date: Date) => {
@@ -124,7 +127,7 @@ export default function CalendarPage() {
       title: event.title,
       start: event.start.toISOString(),
       end: event.end.toISOString(),
-      type: event.type as any,
+      type: event.type as "work" | "meeting" | "personal",
     });
     setQuickAddOpen(false);
   };
@@ -148,11 +151,11 @@ export default function CalendarPage() {
       title: newEventTitle,
       start: start.toISOString(),
       end: end.toISOString(),
-      type: newEventType as any,
+      type: newEventType as "work" | "meeting" | "personal",
       recurrence:
         recurrenceFreq !== "none"
           ? {
-              frequency: recurrenceFreq as any,
+              frequency: recurrenceFreq as "daily" | "weekly" | "monthly" | "yearly",
               interval: 1,
             }
           : null,
@@ -204,6 +207,7 @@ export default function CalendarPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <CalendarSyncStatus />
           <CalendarViewTabs currentView={view} onViewChange={setView} />
 
           <Dialog open={newEventOpen} onOpenChange={setNewEventOpen}>

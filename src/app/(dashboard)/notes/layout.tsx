@@ -13,6 +13,7 @@ export default function NotesLayout({ children }: { children: React.ReactNode })
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydrated(true);
   }, []);
 

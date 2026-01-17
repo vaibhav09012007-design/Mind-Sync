@@ -123,7 +123,7 @@ export function GoalsWidget({ initialGoals, userId }: GoalsWidgetProps) {
                 </div>
                 <div className="space-y-2">
                   <Label>Metric</Label>
-                  <Select value={metric} onValueChange={(v: any) => setMetric(v)}>
+                  <Select value={metric} onValueChange={(v: "hours" | "tasks" | "streak") => setMetric(v)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -137,7 +137,7 @@ export function GoalsWidget({ initialGoals, userId }: GoalsWidgetProps) {
               </div>
               <div className="space-y-2">
                 <Label>Period</Label>
-                <Select value={period} onValueChange={(v: any) => setPeriod(v)}>
+                <Select value={period} onValueChange={(v: "weekly" | "monthly") => setPeriod(v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

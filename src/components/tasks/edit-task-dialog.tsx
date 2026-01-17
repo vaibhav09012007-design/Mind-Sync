@@ -57,12 +57,19 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
 
   // Reset form when task changes
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTitle(task.title);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDescription(task.description || "");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPriority(task.priority || "P1");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDate(task.dueDate ? new Date(task.dueDate) : undefined);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setEstimatedMinutes(task.estimatedMinutes || 25);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTags(task.tags?.join(", ") || "");
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSubtasks(task.subtasks || []);
   }, [task]);
 

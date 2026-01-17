@@ -34,6 +34,56 @@ interface EnhancedWeeklyChartProps {
 type ViewMode = "tasks" | "focus";
 type ChartType = "bar" | "line";
 
+interface ChartData extends DailyActivity {
+  dayName: string;
+  formattedDate: string;
+  previousTasks: number;
+  previousFocus: number;
+}
+
+const CustomTooltip = ({
+  active,
+  payload,
+  viewMode,
+  unit,
+  color,
+  previousColor,
+  previousPeriodData,
+}: {
+  active?: boolean;
+  payload?: { payload: ChartData }[];
+  viewMode: ViewMode;
+  unit: string;
+  color: string;
+  previousColor: string;
+  previousPeriodData?: DailyActivity[];
+}) => {
+  if (active && payload && payload.length) {
+    const d = payload[0].payload;
+    const currentValue = viewMode === "tasks" ? d.tasksCompleted : d.focusMinutes;
+    const previousValue = viewMode === "tasks" ? d.previousTasks : d.previousFocus;
+
+    return (
+      <div className="bg-popover rounded-lg border p-3 text-sm shadow-lg">
+        <p className="mb-2 font-bold">{d.formattedDate}</p>
+        <div className="space-y-1">
+          <p className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
+            Current: {currentValue} {unit}
+          </p>
+          {previousPeriodData && (
+            <p className="text-muted-foreground flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: previousColor }} />
+              Previous: {previousValue} {unit}
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeeklyChartProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("tasks");
   const [chartType, setChartType] = useState<ChartType>("bar");
@@ -72,39 +122,6 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
   const unit = viewMode === "tasks" ? "tasks" : "min";
   const color = viewMode === "tasks" ? "#8b5cf6" : "#22c55e";
   const previousColor = "#666";
-
-  const CustomTooltip = ({
-    active,
-    payload,
-  }: {
-    active?: boolean;
-    payload?: Array<{ payload: (typeof formattedData)[0] }>;
-  }) => {
-    if (active && payload && payload.length) {
-      const d = payload[0].payload;
-      const currentValue = viewMode === "tasks" ? d.tasksCompleted : d.focusMinutes;
-      const previousValue = viewMode === "tasks" ? d.previousTasks : d.previousFocus;
-
-      return (
-        <div className="bg-popover rounded-lg border p-3 text-sm shadow-lg">
-          <p className="mb-2 font-bold">{d.formattedDate}</p>
-          <div className="space-y-1">
-            <p className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-              Current: {currentValue} {unit}
-            </p>
-            {previousPeriodData && (
-              <p className="text-muted-foreground flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: previousColor }} />
-                Previous: {previousValue} {unit}
-              </p>
-            )}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <Card>
@@ -163,7 +180,17 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
               <XAxis dataKey="dayName" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip
+                content={
+                  <CustomTooltip
+                    viewMode={viewMode}
+                    unit={unit}
+                    color={color}
+                    previousColor={previousColor}
+                    previousPeriodData={previousPeriodData}
+                  />
+                }
+              />
               {previousPeriodData && (
                 <Bar
                   dataKey={previousKey}
@@ -186,7 +213,17 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
               <XAxis dataKey="dayName" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip
+                content={
+                  <CustomTooltip
+                    viewMode={viewMode}
+                    unit={unit}
+                    color={color}
+                    previousColor={previousColor}
+                    previousPeriodData={previousPeriodData}
+                  />
+                }
+              />
               {previousPeriodData && (
                 <Line
                   type="monotone"

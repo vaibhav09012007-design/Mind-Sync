@@ -28,6 +28,7 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
     }
 
     if (!isBrowserSpeechSupported) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(
         "Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari."
       );

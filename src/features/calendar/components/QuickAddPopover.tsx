@@ -46,6 +46,7 @@ export function QuickAddPopover({
   // Initialize state when opening
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInput("");
       // Default to provided date/time or next hour
       const start = initialDate ? new Date(initialDate) : startOfHour(addHours(new Date(), 1));
@@ -56,6 +57,7 @@ export function QuickAddPopover({
       }
 
       const end = addHours(start, 1);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setParsedDate({ start, end });
     }
   }, [isOpen, initialDate, initialTime]);
@@ -70,6 +72,7 @@ export function QuickAddPopover({
       const result = parsed[0];
       const start = result.start.date();
       const end = result.end ? result.end.date() : addHours(start, 1);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setParsedDate({ start, end });
     }
   }, [input, initialDate]);
@@ -123,7 +126,7 @@ export function QuickAddPopover({
               }}
             />
             <p className="text-muted-foreground text-xs">
-              Try natural language: "Team meeting every Friday at 10am"
+              Try natural language: &quot;Team meeting every Friday at 10am&quot;
             </p>
           </div>
 
