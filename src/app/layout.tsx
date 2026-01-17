@@ -17,7 +17,19 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MindSync | AI-Powered Productivity Workspace",
-  description: "Bridge the gap between planning and execution with intelligent meeting notes and smart calendar integration.",
+  description:
+    "Bridge the gap between planning and execution with intelligent meeting notes and smart calendar integration.",
+  manifest: "/manifest.json",
+  themeColor: "#a855f7",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "MindSync",
+  },
+  icons: {
+    icon: "/icons/icon-512.png",
+    apple: "/icons/icon-192.png",
+  },
 };
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -32,15 +44,16 @@ export default function RootLayout({
       <html lang="en" suppressHydrationWarning>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+          suppressHydrationWarning
         >
           <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
           >
-              {children}
-              <Toaster />
+            {children}
+            <Toaster />
           </ThemeProvider>
         </body>
       </html>

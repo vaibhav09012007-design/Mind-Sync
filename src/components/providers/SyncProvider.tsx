@@ -1,67 +1,82 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useStore } from "@/store/useStore";
 import { getTasks, getEvents, getNotes } from "@/app/actions";
 import { useAuth } from "@clerk/nextjs";
 
-export function SyncProvider({ children }: { children: React.ReactNode }) {
+interface SyncProviderProps {
+  children: React.ReactNode;
+}
+
+export function SyncProvider({ children }: SyncProviderProps) {
   const { isSignedIn, isLoaded } = useAuth();
   const { setTasks, setEvents, setNotes } = useStore();
+  const hasHydrated = useRef(false);
 
+  // Fetch data client-side when authenticated
   useEffect(() => {
     async function fetchData() {
-        if (!isLoaded || !isSignedIn) return;
-        
-        try {
-            console.log("Fetching initial data from server...");
-            const [tasksResult, eventsResult, notesResult] = await Promise.all([
-                getTasks(),
-                getEvents(),
-                getNotes()
-            ]);
+      if (!isLoaded || !isSignedIn) return;
+      if (hasHydrated.current) return;
 
-            // Handle ActionResult types - extract data if successful
-            if (tasksResult.success) {
-              setTasks(tasksResult.data.map(t => ({
-                  id: t.id,
-                  title: t.title,
-                  completed: t.status === "Done",
-                  dueDate: t.dueDate ? t.dueDate.toISOString() : new Date().toISOString(),
-                  priority: (t.priority as "P0" | "P1" | "P2" | "P3") || "P2",
-                  tags: t.tags || [],
-                  recurrence: t.recurrence as { type: "daily" | "weekly" | "monthly"; interval: number } | null
-              })));
-            }
+      try {
+        console.log("[SyncProvider] Fetching data client-side...");
+        const [tasksResult, eventsResult, notesResult] = await Promise.all([
+          getTasks(),
+          getEvents(),
+          getNotes(),
+        ]);
 
-            if (eventsResult.success) {
-              setEvents(eventsResult.data.map(e => ({
-                  id: e.id,
-                  title: e.title,
-                  start: e.startTime.toISOString(),
-                  end: e.endTime.toISOString(),
-                  type: 'work' as const,
-                  googleId: e.googleEventId
-              })));
-            }
-
-            if (notesResult.success) {
-              setNotes(notesResult.data.map(n => ({
-                  id: n.id,
-                  title: n.title, 
-                  preview: "...",
-                  content: n.content as string, 
-                  date: n.createdAt ? n.createdAt.toISOString() : new Date().toISOString(),
-                  tags: [],
-                  type: 'personal' as const
-              })));
-            }
-
-            console.log("Data sync complete");
-
-        } catch (error) {
-            console.error("Failed to fetch initial data", error);
+        if (tasksResult.success) {
+          setTasks(
+            tasksResult.data.map((t) => ({
+              id: t.id,
+              title: t.title,
+              completed: t.status === "Done",
+              dueDate: t.dueDate ? t.dueDate.toISOString() : new Date().toISOString(),
+              priority: (t.priority as "P0" | "P1" | "P2" | "P3") || "P2",
+              tags: t.tags || [],
+              recurrence: t.recurrence as {
+                type: "daily" | "weekly" | "monthly";
+                interval: number;
+              } | null,
+            }))
+          );
         }
+
+        if (eventsResult.success) {
+          setEvents(
+            eventsResult.data.map((e) => ({
+              id: e.id,
+              title: e.title,
+              start: e.startTime.toISOString(),
+              end: e.endTime.toISOString(),
+              type: "work" as const,
+              googleId: e.googleEventId,
+            }))
+          );
+        }
+
+        if (notesResult.success) {
+          setNotes(
+            notesResult.data.map((n) => ({
+              id: n.id,
+              title: n.title,
+              preview: "...",
+              content: n.content as string,
+              date: n.createdAt ? n.createdAt.toISOString() : new Date().toISOString(),
+              tags: [],
+              type: "personal" as const,
+            }))
+          );
+        }
+
+        hasHydrated.current = true;
+        console.log("[SyncProvider] Data sync complete");
+      } catch (error) {
+        console.error("[SyncProvider] Failed to fetch data:", error);
+      }
     }
 
     fetchData();

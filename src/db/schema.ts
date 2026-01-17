@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, jsonb, pgEnum, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb, pgEnum, integer, index } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("status", ["Todo", "InProgress", "Done"]);
 export const priorityEnum = pgEnum("priority", ["P0", "P1", "P2", "P3"]);
@@ -35,7 +35,11 @@ export const tasks = pgTable("tasks", {
   recurrence: jsonb("recurrence"), // { type: "daily"|"weekly"|"monthly", interval: number }
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_tasks_user_status").on(table.userId, table.status),
+  index("idx_tasks_user_due").on(table.userId, table.dueDate),
+  index("idx_tasks_user_priority").on(table.userId, table.priority),
+]);
 
 export const events = pgTable("events", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -52,7 +56,10 @@ export const events = pgTable("events", {
   isRecurring: jsonb("is_recurring"), // { frequency, interval, until }
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_events_user_start").on(table.userId, table.startTime),
+  index("idx_events_user_end").on(table.userId, table.endTime),
+]);
 
 export const notes = pgTable("notes", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -73,7 +80,10 @@ export const notes = pgTable("notes", {
   keyDecisions: jsonb("key_decisions"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => [
+  index("idx_notes_user_updated").on(table.userId, table.updatedAt),
+  index("idx_notes_user_type").on(table.userId, table.type),
+]);
 
 // Attachments for tasks and notes
 export const attachments = pgTable("attachments", {
