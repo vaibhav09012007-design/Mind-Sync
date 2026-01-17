@@ -10,6 +10,7 @@ import { SkipLink } from "@/components/accessibility/skip-link";
 import { KeyboardShortcutsHelp } from "@/components/accessibility/keyboard-shortcuts-help";
 import { GlobalKeyboardShortcuts } from "@/components/accessibility/global-keyboard-shortcuts";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
+import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -76,13 +77,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Main Content Area */}
         <main
           id="main-content"
-          className="custom-scrollbar flex-1 overflow-y-auto p-4 md:p-6"
+          className="custom-scrollbar flex-1 overflow-y-auto p-4 pb-20 md:p-6 md:pb-6"
           role="main"
           aria-label="Main content"
         >
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
 
       {/* ARIA Live Region for Announcements */}
       <div aria-live="polite" aria-atomic="true" className="sr-only" id="announcements" />
