@@ -28,6 +28,7 @@ import { format } from "date-fns";
 import { CalendarIcon, Plus, X, ListTodo } from "lucide-react";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
+import { TaskDependencyPicker } from "./task-dependency-picker";
 
 interface CreateTaskDialogProps {
   children?: React.ReactNode;
@@ -52,6 +53,7 @@ export function CreateTaskDialog({ children, defaultColumnId }: CreateTaskDialog
   const [newSubtask, setNewSubtask] = useState("");
   const [estimatedMinutes, setEstimatedMinutes] = useState(25);
   const [tags, setTags] = useState("");
+  const [dependsOn, setDependsOn] = useState<string | undefined>(undefined);
 
   // Global keyboard shortcut for quick add (N key)
   useEffect(() => {
@@ -116,6 +118,7 @@ export function CreateTaskDialog({ children, defaultColumnId }: CreateTaskDialog
       subtasks: subtaskTasks,
       estimatedMinutes,
       tags: tagArray,
+      dependsOn,
     });
     toast.success("Task created successfully");
 
@@ -133,6 +136,7 @@ export function CreateTaskDialog({ children, defaultColumnId }: CreateTaskDialog
     setNewSubtask("");
     setEstimatedMinutes(25);
     setTags("");
+    setDependsOn(undefined);
   };
 
   return (
@@ -286,6 +290,9 @@ export function CreateTaskDialog({ children, defaultColumnId }: CreateTaskDialog
               </div>
             </div>
           </div>
+
+          {/* Task Dependencies */}
+          <TaskDependencyPicker value={dependsOn} onChange={setDependsOn} />
 
           <DialogFooter className="pt-4">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>

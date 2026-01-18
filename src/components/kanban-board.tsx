@@ -42,6 +42,7 @@ import {
   Image as ImageIcon,
   User,
   Eye,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format, isToday, isTomorrow, isPast } from "date-fns";
@@ -68,8 +69,12 @@ function SortableTaskCard({
     id: task.id,
   });
 
-  const { viewSettings } = useStore();
+  const { viewSettings, tasks } = useStore();
   const isCompact = viewSettings.density === "compact";
+
+  // Check if task is blocked by another task
+  const blockingTask = task.dependsOn ? tasks.find((t) => t.id === task.dependsOn) : null;
+  const isBlocked = blockingTask && !blockingTask.completed;
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -129,6 +134,7 @@ function SortableTaskCard({
         "group hover:border-primary/30 card-hover relative transition-all duration-200 hover:shadow-lg",
         isDragging && "ring-primary opacity-50 shadow-xl ring-2",
         isSelected && "border-primary bg-primary/10 ring-primary ring-2",
+        isBlocked && "opacity-60 border-orange-300 dark:border-orange-700",
         isCompact ? "p-2" : "p-3"
       )}
       {...attributes}
@@ -141,6 +147,12 @@ function SortableTaskCard({
         }
       }}
     >
+      {/* Blocked Indicator */}
+      {isBlocked && (
+        <div className="absolute -top-2 -right-2 z-10 rounded-full bg-orange-500 p-1" title={`Blocked by: ${blockingTask?.title}`}>
+          <Lock className="h-3 w-3 text-white" />
+        </div>
+      )}
       {/* Cover Image */}
       {viewSettings.showCoverImages && task.coverImage && !isCompact && (
         <div className="relative mb-3 h-32 w-full overflow-hidden rounded-md bg-slate-100 dark:bg-slate-900">

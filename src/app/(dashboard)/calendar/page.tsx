@@ -41,7 +41,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useStore } from "@/store/useStore";
+import { useStore, CalendarEvent } from "@/store/useStore";
+import { useCalendarSync } from "@/hooks/use-calendar-sync";
 // Import new components
 import {
   CalendarViewTabs,
@@ -59,6 +60,7 @@ const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 export default function CalendarPage() {
   const router = useRouter();
   const { events, setSelectedDate, addEvent } = useStore();
+  const { pushToGoogle, hasGoogleAccount } = useCalendarSync();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarViewType>("month");
 
@@ -123,12 +125,23 @@ export default function CalendarPage() {
   };
 
   const handleQuickAddSave = (event: { title: string; start: Date; end: Date; type: string }) => {
-    addEvent({
+    const newEvent = {
       title: event.title,
       start: event.start.toISOString(),
       end: event.end.toISOString(),
       type: event.type as "work" | "meeting" | "personal",
-    });
+    };
+    addEvent(newEvent);
+
+    // Sync to Google Calendar if connected
+    if (hasGoogleAccount) {
+      const eventForSync: CalendarEvent = {
+        id: crypto.randomUUID(),
+        ...newEvent,
+        recurrence: null,
+      };
+      pushToGoogle(eventForSync);
+    }
     setQuickAddOpen(false);
   };
 
@@ -147,19 +160,32 @@ export default function CalendarPage() {
     // Basic validation
     if (end < start) end.setHours(startH + 1);
 
-    addEvent({
+    const recurrence =
+      recurrenceFreq !== "none"
+        ? {
+            frequency: recurrenceFreq as "daily" | "weekly" | "monthly" | "yearly",
+            interval: 1,
+          }
+        : null;
+
+    const newEvent = {
       title: newEventTitle,
       start: start.toISOString(),
       end: end.toISOString(),
       type: newEventType as "work" | "meeting" | "personal",
-      recurrence:
-        recurrenceFreq !== "none"
-          ? {
-              frequency: recurrenceFreq as "daily" | "weekly" | "monthly" | "yearly",
-              interval: 1,
-            }
-          : null,
-    });
+      recurrence,
+    };
+
+    addEvent(newEvent);
+
+    // Sync to Google Calendar if connected
+    if (hasGoogleAccount) {
+      const eventForSync: CalendarEvent = {
+        id: crypto.randomUUID(),
+        ...newEvent,
+      };
+      pushToGoogle(eventForSync);
+    }
 
     setNewEventOpen(false);
     setNewEventTitle("");

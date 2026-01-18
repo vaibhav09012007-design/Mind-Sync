@@ -22,6 +22,7 @@ export const tasks = pgTable("tasks", {
     .references(() => users.id)
     .notNull(),
   parentId: uuid("parent_id"), // Self-reference for subtasks
+  dependsOn: uuid("depends_on"), // Task dependency - blocked by another task
   title: text("title").notNull(),
   description: text("description"),
   status: statusEnum("status").default("Todo").notNull(),
@@ -39,6 +40,7 @@ export const tasks = pgTable("tasks", {
   index("idx_tasks_user_status").on(table.userId, table.status),
   index("idx_tasks_user_due").on(table.userId, table.dueDate),
   index("idx_tasks_user_priority").on(table.userId, table.priority),
+  index("idx_tasks_depends_on").on(table.dependsOn),
 ]);
 
 export const events = pgTable("events", {

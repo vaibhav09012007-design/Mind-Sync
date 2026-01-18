@@ -1,16 +1,16 @@
 "use client";
 
 import { NotesSidebar } from "@/features/notes/components/NotesSidebar";
-import { useStore } from "@/store/useStore";
-import { useRouter, usePathname, useParams } from "next/navigation";
+import { TemplatePicker } from "@/components/notes/template-picker";
+import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export default function NotesLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { addNote } = useStore();
   const params = useParams();
   const currentNoteId = params.id as string;
   const [hydrated, setHydrated] = useState(false);
+  const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -18,17 +18,7 @@ export default function NotesLayout({ children }: { children: React.ReactNode })
   }, []);
 
   const handleCreateNote = () => {
-    const newId = crypto.randomUUID();
-    addNote({
-      id: newId,
-      title: "Untitled Note",
-      preview: "No content yet...",
-      content: "",
-      date: new Date().toISOString(),
-      tags: ["Personal"],
-      type: "personal",
-    });
-    router.push(`/notes/${newId}`);
+    setTemplatePickerOpen(true);
   };
 
   if (!hydrated) return null;
@@ -41,6 +31,11 @@ export default function NotesLayout({ children }: { children: React.ReactNode })
         onCreateNote={handleCreateNote}
       />
       <div className="flex-1 overflow-auto">{children}</div>
+
+      <TemplatePicker
+        isOpen={templatePickerOpen}
+        onClose={() => setTemplatePickerOpen(false)}
+      />
     </div>
   );
 }

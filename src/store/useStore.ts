@@ -36,6 +36,7 @@ export interface Task {
   tags?: string[];
   parentId?: string; // For subtasks
   subtasks?: Task[]; // Nested subtasks
+  dependsOn?: string; // ID of blocking task (task dependency)
   estimatedMinutes?: number;
   actualMinutes?: number;
   recurrence?: {
@@ -181,6 +182,7 @@ interface AppState {
       subtasks?: Task[];
       estimatedMinutes?: number;
       tags?: string[];
+      dependsOn?: string;
     }
   ) => void;
   toggleTask: (id: string) => void;
@@ -400,6 +402,7 @@ export const useStore = create<AppState>()(
           estimatedMinutes: options.estimatedMinutes || 25,
           recurrence: null,
           columnId: columnId || "Todo",
+          dependsOn: options.dependsOn,
         };
 
         // Optimistic update
@@ -448,6 +451,14 @@ export const useStore = create<AppState>()(
         set((state) => ({
           tasks: state.tasks.map((t) => (t.id === id ? updatedTask : t)),
         }));
+
+        // Check if completing this task unblocks any other tasks
+        if (isCompleting) {
+          const unblockedTasks = get().tasks.filter((t) => t.dependsOn === id && !t.completed);
+          if (unblockedTasks.length > 0) {
+            toast.success(`Unblocked ${unblockedTasks.length} task${unblockedTasks.length > 1 ? "s" : ""}: ${unblockedTasks.map((t) => t.title).join(", ")}`);
+          }
+        }
 
         get().pushHistory({
           type: "task",

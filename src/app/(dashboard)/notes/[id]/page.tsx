@@ -2,16 +2,18 @@
 
 import { Editor } from "@/features/notes/components/Editor";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MoreHorizontal, Share, Trash2 } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Share, Trash2, Download } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useStore } from "@/store/useStore";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { exportNoteToMarkdown } from "@/lib/export-utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -64,6 +66,11 @@ export default function NoteEditorPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => exportNoteToMarkdown(note)}>
+                <Download className="mr-2 h-4 w-4" />
+                Export as Markdown
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 className="text-destructive focus:text-destructive"
                 onClick={handleDelete}

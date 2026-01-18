@@ -7,11 +7,16 @@ import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useUser, useClerk } from "@clerk/nextjs";
+import { useStore } from "@/store/useStore";
+import { exportAllData } from "@/lib/export-utils";
+import { Download } from "lucide-react";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
   const { setTheme, theme } = useTheme();
   const { user } = useUser();
   const { openUserProfile } = useClerk();
+  const { tasks, events, notes } = useStore();
   const [notifications, setNotifications] = useState(true);
   const [mounted, setMounted] = useState(false);
 
@@ -22,6 +27,11 @@ export default function SettingsPage() {
 
   const handleGoogleConnect = () => {
     openUserProfile(); // Directs to connections tab if supported, or just open profile
+  };
+
+  const handleExportAllData = () => {
+    exportAllData({ tasks, events, notes });
+    toast.success("Data exported successfully!");
   };
 
   // Prevent hydration mismatch
@@ -112,6 +122,22 @@ export default function SettingsPage() {
                 checked={notifications}
                 onCheckedChange={setNotifications}
               />
+            </div>
+          </div>
+
+          {/* Data & Privacy Section */}
+          <div className="border rounded-lg p-6 space-y-4">
+            <h2 className="text-lg font-medium">Data & Privacy</h2>
+            <Separator />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <div className="font-medium">Export All Data</div>
+                <div className="text-sm text-muted-foreground">Download all your tasks, events, and notes as JSON</div>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleExportAllData}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+              </Button>
             </div>
           </div>
         </div>
