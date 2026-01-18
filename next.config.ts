@@ -1,7 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Remove hardcoded Clerk key - use environment variable instead
+  env: {
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_ZW5oYW5jZWQta29hbGEtODQuY2xlcmsuYWNjb3VudHMuZGV2JA",
+  },
 
   // Security Headers
   async headers() {
