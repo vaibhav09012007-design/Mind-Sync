@@ -11,6 +11,9 @@ import {
   createNote,
   updateNote as serverUpdateNote,
   deleteNote as serverDeleteNote,
+  syncSubtask,
+  deleteSubtask,
+  cloneTaskToDb,
 } from "@/app/actions";
 import { toast } from "sonner";
 
@@ -195,6 +198,13 @@ interface AppState {
   bulkDeleteTasks: (ids: string[]) => void;
   bulkUpdateTasks: (ids: string[], updates: Partial<Task>) => void;
 
+  // Task Clone
+  cloneTask: (id: string, options?: { newTitle?: string; shiftDays?: number }) => void;
+
+  // Subtask Sync
+  addSubtask: (taskId: string, title: string) => void;
+  deleteSubtask: (taskId: string, subtaskId: string) => void;
+
   // Column Actions
   addColumn: (column: Omit<Column, "id" | "order">) => void;
   updateColumn: (id: string, updates: Partial<Column>) => void;
@@ -325,16 +335,40 @@ export const useStore = create<AppState>()(
 
         const entry = history[historyIndex];
 
-        // Restore previous state
-        if (entry.type === "task" && entry.before) {
+        // Restore previous state based on entity type
+        if (entry.type === "task") {
           if (entry.action === "add") {
             set({ tasks: tasks.filter((t) => t.id !== (entry.after as Task).id) });
-          } else if (entry.action === "delete") {
+          } else if (entry.action === "delete" && entry.before) {
             set({ tasks: [...tasks, entry.before as Task] });
-          } else if (entry.action === "update") {
+          } else if (entry.action === "update" && entry.before) {
             set({
               tasks: tasks.map((t) =>
                 t.id === (entry.before as Task).id ? (entry.before as Task) : t
+              ),
+            });
+          }
+        } else if (entry.type === "event") {
+          if (entry.action === "add") {
+            set({ events: events.filter((e) => e.id !== (entry.after as CalendarEvent).id) });
+          } else if (entry.action === "delete" && entry.before) {
+            set({ events: [...events, entry.before as CalendarEvent] });
+          } else if (entry.action === "update" && entry.before) {
+            set({
+              events: events.map((e) =>
+                e.id === (entry.before as CalendarEvent).id ? (entry.before as CalendarEvent) : e
+              ),
+            });
+          }
+        } else if (entry.type === "note") {
+          if (entry.action === "add") {
+            set({ notes: notes.filter((n) => n.id !== (entry.after as Note).id) });
+          } else if (entry.action === "delete" && entry.before) {
+            set({ notes: [...notes, entry.before as Note] });
+          } else if (entry.action === "update" && entry.before) {
+            set({
+              notes: notes.map((n) =>
+                n.id === (entry.before as Note).id ? (entry.before as Note) : n
               ),
             });
           }
@@ -363,7 +397,7 @@ export const useStore = create<AppState>()(
 
         const entry = history[historyIndex + 1];
 
-        // Apply the action again
+        // Apply the action again based on entity type
         if (entry.type === "task" && entry.after) {
           if (entry.action === "add") {
             set({ tasks: [...tasks, entry.after as Task] });
@@ -373,6 +407,30 @@ export const useStore = create<AppState>()(
             set({
               tasks: tasks.map((t) =>
                 t.id === (entry.after as Task).id ? (entry.after as Task) : t
+              ),
+            });
+          }
+        } else if (entry.type === "event" && entry.after) {
+          if (entry.action === "add") {
+            set({ events: [...events, entry.after as CalendarEvent] });
+          } else if (entry.action === "delete") {
+            set({ events: events.filter((e) => e.id !== (entry.before as CalendarEvent).id) });
+          } else if (entry.action === "update") {
+            set({
+              events: events.map((e) =>
+                e.id === (entry.after as CalendarEvent).id ? (entry.after as CalendarEvent) : e
+              ),
+            });
+          }
+        } else if (entry.type === "note" && entry.after) {
+          if (entry.action === "add") {
+            set({ notes: [...notes, entry.after as Note] });
+          } else if (entry.action === "delete") {
+            set({ notes: notes.filter((n) => n.id !== (entry.before as Note).id) });
+          } else if (entry.action === "update") {
+            set({
+              notes: notes.map((n) =>
+                n.id === (entry.after as Note).id ? (entry.after as Note) : n
               ),
             });
           }
@@ -481,16 +539,21 @@ export const useStore = create<AppState>()(
         }
       },
 
-      toggleSubtask: (taskId, subtaskId) => {
+      toggleSubtask: async (taskId, subtaskId) => {
         const task = get().tasks.find((t) => t.id === taskId);
         if (!task || !task.subtasks) return;
+
+        const subtask = task.subtasks.find((st) => st.id === subtaskId);
+        if (!subtask) return;
+
+        const isCompleting = !subtask.completed;
 
         const updatedSubtasks = task.subtasks.map((st) =>
           st.id === subtaskId
             ? {
                 ...st,
-                completed: !st.completed,
-                completedAt: !st.completed ? new Date().toISOString() : undefined,
+                completed: isCompleting,
+                completedAt: isCompleting ? new Date().toISOString() : undefined,
               }
             : st
         );
@@ -507,6 +570,18 @@ export const useStore = create<AppState>()(
           before: task,
           after: updatedTask,
         });
+
+        // Sync to database
+        try {
+          await syncSubtask({
+            id: subtaskId,
+            parentId: taskId,
+            title: subtask.title,
+            completed: isCompleting,
+          });
+        } catch (error) {
+          console.error("Failed to sync subtask", error);
+        }
       },
 
       deleteTask: async (id) => {
@@ -579,6 +654,146 @@ export const useStore = create<AppState>()(
           tasks: state.tasks.map((t) => (ids.includes(t.id) ? { ...t, ...updates } : t)),
         }));
         toast.success(`Updated ${ids.length} tasks`);
+      },
+
+      // --- Task Clone ---
+
+      cloneTask: async (id, options = {}) => {
+        const task = get().tasks.find((t) => t.id === id);
+        if (!task) return;
+
+        const newId = uuidv4();
+        let newDueDate = task.dueDate;
+
+        if (options.shiftDays && task.dueDate) {
+          const date = new Date(task.dueDate);
+          date.setDate(date.getDate() + options.shiftDays);
+          newDueDate = date.toISOString();
+        }
+
+        // Clone subtasks with new IDs
+        const clonedSubtasks = task.subtasks?.map((st) => ({
+          ...st,
+          id: uuidv4(),
+          completed: false,
+          completedAt: undefined,
+        })) || [];
+
+        const clonedTask: Task = {
+          ...task,
+          id: newId,
+          title: options.newTitle || `${task.title} (copy)`,
+          completed: false,
+          completedAt: undefined,
+          dueDate: newDueDate,
+          subtasks: clonedSubtasks,
+          actualMinutes: undefined,
+          dependsOn: undefined,
+          columnId: "Todo",
+        };
+
+        // Optimistic update
+        set((state) => ({ tasks: [...state.tasks, clonedTask] }));
+
+        get().pushHistory({
+          type: "task",
+          action: "add",
+          before: null,
+          after: clonedTask,
+        });
+
+        toast.success("Task cloned");
+
+        try {
+          await cloneTaskToDb({
+            id: newId,
+            title: clonedTask.title,
+            description: clonedTask.description,
+            dueDate: clonedTask.dueDate,
+            priority: clonedTask.priority,
+            estimatedMinutes: clonedTask.estimatedMinutes,
+            tags: clonedTask.tags,
+            subtasks: clonedSubtasks.map((st) => ({
+              id: st.id,
+              title: st.title,
+              completed: st.completed,
+            })),
+          });
+        } catch (error) {
+          console.error("Failed to clone task", error);
+          toast.error("Failed to save cloned task");
+        }
+      },
+
+      // --- Subtask Actions ---
+
+      addSubtask: async (taskId, title) => {
+        const task = get().tasks.find((t) => t.id === taskId);
+        if (!task) return;
+
+        const newSubtask: Task = {
+          id: uuidv4(),
+          title,
+          completed: false,
+          dueDate: new Date().toISOString(),
+          parentId: taskId,
+        };
+
+        const updatedTask = {
+          ...task,
+          subtasks: [...(task.subtasks || []), newSubtask],
+        };
+
+        set((state) => ({
+          tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
+        }));
+
+        get().pushHistory({
+          type: "task",
+          action: "update",
+          before: task,
+          after: updatedTask,
+        });
+
+        // Sync to database
+        try {
+          await syncSubtask({
+            id: newSubtask.id,
+            parentId: taskId,
+            title: newSubtask.title,
+            completed: newSubtask.completed,
+          });
+        } catch (error) {
+          console.error("Failed to sync subtask", error);
+        }
+      },
+
+      deleteSubtask: async (taskId, subtaskId) => {
+        const task = get().tasks.find((t) => t.id === taskId);
+        if (!task) return;
+
+        const updatedTask = {
+          ...task,
+          subtasks: task.subtasks?.filter((st) => st.id !== subtaskId) || [],
+        };
+
+        set((state) => ({
+          tasks: state.tasks.map((t) => (t.id === taskId ? updatedTask : t)),
+        }));
+
+        get().pushHistory({
+          type: "task",
+          action: "update",
+          before: task,
+          after: updatedTask,
+        });
+
+        // Sync to database
+        try {
+          await deleteSubtask(subtaskId);
+        } catch (error) {
+          console.error("Failed to delete subtask", error);
+        }
       },
 
       // --- Column Actions ---

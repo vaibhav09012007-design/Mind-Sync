@@ -174,6 +174,158 @@ export async function deleteCompletedTasks(): Promise<ActionResult<void>> {
   }
 }
 
+// --- Subtask Sync ---
+
+export async function syncSubtask(data: {
+  id: string;
+  parentId: string;
+  title: string;
+  completed: boolean;
+}): Promise<ActionResult<void>> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Check if subtask exists
+    const existing = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.id, data.id), eq(tasks.userId, userId)));
+
+    if (existing.length === 0) {
+      // Create new subtask
+      await db.insert(tasks).values({
+        id: data.id,
+        userId,
+        parentId: data.parentId,
+        title: data.title,
+        status: data.completed ? "Done" : "Todo",
+      });
+    } else {
+      // Update existing subtask
+      await db
+        .update(tasks)
+        .set({
+          title: data.title,
+          status: data.completed ? "Done" : "Todo",
+          completedAt: data.completed ? new Date() : null,
+        })
+        .where(and(eq(tasks.id, data.id), eq(tasks.userId, userId)));
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/kanban");
+    return createSuccessResult(undefined);
+  } catch (error) {
+    return createErrorResult(error);
+  }
+}
+
+export async function deleteSubtask(id: string): Promise<ActionResult<void>> {
+  try {
+    const { userId } = await requireAuth();
+
+    await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+
+    revalidatePath("/dashboard");
+    return createSuccessResult(undefined);
+  } catch (error) {
+    return createErrorResult(error);
+  }
+}
+
+// --- Task Clone ---
+
+export async function cloneTaskToDb(data: {
+  id: string;
+  title: string;
+  description?: string;
+  dueDate?: string;
+  priority?: string;
+  estimatedMinutes?: number;
+  tags?: string[];
+  subtasks?: Array<{ id: string; title: string; completed: boolean }>;
+}): Promise<ActionResult<void>> {
+  try {
+    const { userId } = await requireAuth();
+
+    await syncUser();
+
+    // Create cloned task
+    await db.insert(tasks).values({
+      id: data.id,
+      userId,
+      title: data.title,
+      description: data.description,
+      dueDate: data.dueDate ? new Date(data.dueDate) : null,
+      priority: (data.priority as "P0" | "P1" | "P2" | "P3") || "P2",
+      estimatedMinutes: data.estimatedMinutes,
+      tags: data.tags,
+      status: "Todo",
+    });
+
+    // Create subtasks
+    if (data.subtasks && data.subtasks.length > 0) {
+      for (const st of data.subtasks) {
+        await db.insert(tasks).values({
+          id: st.id,
+          userId,
+          parentId: data.id,
+          title: st.title,
+          status: st.completed ? "Done" : "Todo",
+        });
+      }
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/kanban");
+    return createSuccessResult(undefined);
+  } catch (error) {
+    return createErrorResult(error);
+  }
+}
+
+// --- Bulk Import ---
+
+export async function bulkImportTasks(
+  tasksData: Array<{
+    id: string;
+    title: string;
+    description?: string;
+    dueDate?: string;
+    priority?: string;
+    estimatedMinutes?: number;
+    tags?: string[];
+  }>
+): Promise<ActionResult<{ imported: number }>> {
+  try {
+    const { userId } = await requireAuth();
+
+    await syncUser();
+
+    let imported = 0;
+    for (const task of tasksData) {
+      await db.insert(tasks).values({
+        id: task.id,
+        userId,
+        title: task.title,
+        description: task.description,
+        dueDate: task.dueDate ? new Date(task.dueDate) : null,
+        priority: (task.priority as "P0" | "P1" | "P2" | "P3") || "P2",
+        estimatedMinutes: task.estimatedMinutes,
+        tags: task.tags,
+        status: "Todo",
+      });
+      imported++;
+    }
+
+    revalidatePath("/dashboard");
+    revalidatePath("/kanban");
+    return createSuccessResult({ imported });
+  } catch (error) {
+    return createErrorResult(error);
+  }
+}
+
 // --- Events ---
 
 export async function getEvents(): Promise<ActionResult<(typeof events.$inferSelect)[]>> {
