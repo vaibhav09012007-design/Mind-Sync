@@ -304,9 +304,9 @@ function KanbanColumn({
       ref={setNodeRef}
       className={cn(
         "flex max-h-[calc(100vh-12rem)] max-w-[360px] min-w-[280px] flex-1 flex-col rounded-xl p-4",
-        "bg-surface/50 border-border/50 border backdrop-blur-sm",
-        isOverLimit && "bg-danger/5 ring-danger/20 ring-2",
-        isOver && "ring-primary bg-primary/5 ring-2 ring-inset"
+        "bg-muted/30 border",
+        isOverLimit && "bg-destructive/10 ring-destructive/20 ring-2",
+        isOver && "ring-primary ring-2 ring-inset"
       )}
     >
       <div className="mb-4 flex flex-shrink-0 items-center justify-between">

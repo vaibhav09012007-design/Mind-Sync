@@ -17,8 +17,8 @@ export default function FocusPage() {
   return (
     <div className="flex h-full gap-6 p-4 md:p-8">
       {/* Main Timer Area */}
-      <div className="flex flex-1 items-center justify-center">
-        <div className="w-full max-w-2xl">
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden rounded-3xl border bg-card">
+        <div className="relative z-10 w-full max-w-2xl p-6">
           <FocusTimer />
         </div>
       </div>

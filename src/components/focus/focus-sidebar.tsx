@@ -5,7 +5,7 @@ import { useStore } from "@/store/useStore";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { format, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
-import { Target, Flame, Clock, TrendingUp, CheckCircle2 } from "lucide-react";
+import { Target, Flame, Clock, TrendingUp, CheckCircle2, LucideIcon } from "lucide-react";
 
 interface FocusGoal {
   id: string;
@@ -13,7 +13,7 @@ interface FocusGoal {
   current: number;
   target: number;
   unit: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
 }
 
 export function FocusSidebar() {
@@ -123,7 +123,7 @@ export function FocusSidebar() {
   return (
     <div className="space-y-4">
       {/* Focus Goals */}
-      <Card className="border-border bg-card/50">
+      <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Flame className="h-4 w-4 text-orange-500" />
@@ -157,7 +157,7 @@ export function FocusSidebar() {
       </Card>
 
       {/* Today's Stats */}
-      <Card className="border-border bg-card/50">
+      <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <TrendingUp className="h-4 w-4 text-blue-500" />
@@ -167,17 +167,17 @@ export function FocusSidebar() {
         <CardContent>
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-white">{todayStats.sessions}</div>
+              <div className="text-2xl font-bold">{todayStats.sessions}</div>
               <div className="text-muted-foreground text-xs">Sessions</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-white">
+              <div className="text-2xl font-bold">
                 {Math.round(todayStats.focusMinutes / 60)}h
               </div>
               <div className="text-muted-foreground text-xs">Focus Time</div>
             </div>
             <div>
-              <div className="text-2xl font-bold text-white">{todayStats.tasksCompleted}</div>
+              <div className="text-2xl font-bold">{todayStats.tasksCompleted}</div>
               <div className="text-muted-foreground text-xs">Tasks Done</div>
             </div>
           </div>
@@ -185,7 +185,7 @@ export function FocusSidebar() {
       </Card>
 
       {/* Session History */}
-      <Card className="border-border bg-card/50">
+      <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <Clock className="h-4 w-4 text-purple-500" />
@@ -198,11 +198,11 @@ export function FocusSidebar() {
               {sessionHistory.map((session) => (
                 <div
                   key={session.id}
-                  className="bg-muted/30 flex items-center gap-3 rounded-lg p-2"
+                  className="bg-muted/50 flex items-center gap-3 rounded-lg p-2"
                 >
                   <div className="h-2 w-2 rounded-full bg-green-500" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-white">{session.title}</p>
+                    <p className="truncate text-sm font-medium">{session.title}</p>
                     <p className="text-muted-foreground text-xs">
                       {session.duration} min • {format(new Date(session.completedAt), "h:mm a")}
                     </p>

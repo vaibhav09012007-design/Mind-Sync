@@ -71,7 +71,7 @@ export function SwipeableTask({
       <div
         {...swipeHandlers}
         className={cn(
-          "relative z-10 bg-[var(--surface)] transition-transform",
+          "relative z-10 bg-card transition-transform",
           isAnimating && "duration-200 ease-out"
         )}
         style={{

@@ -25,7 +25,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur-lg md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background md:hidden"
       role="navigation"
       aria-label="Mobile navigation"
     >
@@ -42,8 +42,8 @@ export function MobileBottomNav() {
                 "flex flex-col items-center gap-1 rounded-lg px-3 py-2 transition-colors",
                 "min-w-[64px] touch-manipulation",
                 isActive
-                  ? "text-[var(--primary)]"
-                  : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground"
               )}
               aria-current={isActive ? "page" : undefined}
             >
@@ -62,7 +62,7 @@ export function MobileBottomNav() {
       </div>
 
       {/* Safe area padding for devices with home indicators */}
-      <div className="h-safe-area-inset-bottom bg-[var(--surface)]" />
+      <div className="h-safe-area-inset-bottom" />
     </nav>
   );
 }

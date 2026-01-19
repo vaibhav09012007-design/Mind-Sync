@@ -36,24 +36,9 @@ export function StatCard({
 
   const getTrendColor = () => {
     if (!trend) return "";
-    if (trend.value > 0) return "text-success";
-    if (trend.value < 0) return "text-danger";
+    if (trend.value > 0) return "text-green-600";
+    if (trend.value < 0) return "text-red-600";
     return "text-muted-foreground";
-  };
-
-  const getVariantStyles = () => {
-    switch (variant) {
-      case "primary":
-        return "border-primary/20 hover:border-primary/40";
-      case "success":
-        return "border-success/20 hover:border-success/40";
-      case "warning":
-        return "border-warning/20 hover:border-warning/40";
-      case "danger":
-        return "border-danger/20 hover:border-danger/40";
-      default:
-        return "";
-    }
   };
 
   const getIconBgStyles = () => {
@@ -61,11 +46,11 @@ export function StatCard({
       case "primary":
         return "bg-primary/10 text-primary";
       case "success":
-        return "bg-success/10 text-success";
+        return "bg-green-600/10 text-green-600";
       case "warning":
-        return "bg-warning/10 text-warning";
+        return "bg-yellow-600/10 text-yellow-600";
       case "danger":
-        return "bg-danger/10 text-danger";
+        return "bg-red-600/10 text-red-600";
       default:
         return "bg-muted text-muted-foreground";
     }
@@ -76,24 +61,10 @@ export function StatCard({
   return (
     <Card
       className={cn(
-        "card-hover card-interactive relative overflow-hidden p-5",
-        getVariantStyles(),
+        "relative overflow-hidden p-5",
         className
       )}
     >
-      {/* Background gradient accent */}
-      {variant !== "default" && (
-        <div
-          className={cn(
-            "absolute inset-0 opacity-5",
-            variant === "primary" && "from-primary bg-gradient-to-br to-transparent",
-            variant === "success" && "from-success bg-gradient-to-br to-transparent",
-            variant === "warning" && "from-warning bg-gradient-to-br to-transparent",
-            variant === "danger" && "from-danger bg-gradient-to-br to-transparent"
-          )}
-        />
-      )}
-
       <div className="relative flex items-start justify-between gap-4">
         <div className="flex-1 space-y-2">
           {/* Title */}
@@ -121,32 +92,13 @@ export function StatCard({
         {Icon && (
           <div
             className={cn(
-              "icon-bounce flex h-10 w-10 items-center justify-center rounded-lg",
+              "flex h-10 w-10 items-center justify-center rounded-lg",
               getIconBgStyles()
             )}
           >
             <Icon className="h-5 w-5" />
           </div>
         )}
-      </div>
-
-      {/* Mini sparkline placeholder area */}
-      <div className="absolute right-0 bottom-0 left-0 h-8 opacity-20">
-        <svg className="h-full w-full" viewBox="0 0 100 30" preserveAspectRatio="none">
-          <path
-            d="M0,25 Q10,20 20,22 T40,15 T60,18 T80,10 T100,15"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            className={cn(
-              variant === "primary" && "stroke-primary",
-              variant === "success" && "stroke-success",
-              variant === "warning" && "stroke-warning",
-              variant === "danger" && "stroke-danger",
-              variant === "default" && "stroke-muted-foreground"
-            )}
-          />
-        </svg>
       </div>
     </Card>
   );

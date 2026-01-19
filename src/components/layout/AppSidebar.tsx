@@ -30,11 +30,11 @@ export function AppSidebar() {
   const { user, isLoaded } = useUser();
 
   return (
-    <aside className="sidebar border-border bg-card flex h-full w-full flex-col border-r">
+    <aside className="border-r bg-background flex h-full w-full flex-col">
       {/* Logo */}
-      <div className="border-border flex items-center gap-3 border-b p-4">
-        <div className="gradient-primary shadow-primary/20 flex h-10 w-10 items-center justify-center rounded-xl shadow-lg">
-          <span className="text-lg font-bold text-white">M</span>
+      <div className="border-b p-4 flex items-center gap-3">
+        <div className="bg-primary text-primary-foreground flex h-10 w-10 items-center justify-center rounded-xl">
+          <span className="text-lg font-bold">M</span>
         </div>
         <div>
           <h1 className="text-foreground font-semibold tracking-tight">Mind-Sync</h1>
@@ -52,7 +52,7 @@ export function AppSidebar() {
           <input
             type="text"
             placeholder="Quick Search (Cmd+K)"
-            className="bg-secondary/50 border-border focus:ring-primary placeholder:text-muted-foreground hover:bg-secondary w-full cursor-pointer rounded-lg border py-2 pl-9 text-sm transition-colors focus:ring-1 focus:outline-none"
+            className="bg-muted/50 border-input focus:ring-primary placeholder:text-muted-foreground hover:bg-muted w-full cursor-pointer rounded-lg border py-2 pl-9 text-sm transition-colors focus:ring-1 focus:outline-none"
             readOnly
             onClick={() => {
               const down = new KeyboardEvent("keydown", {
@@ -76,15 +76,15 @@ export function AppSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`sidebar-item group relative mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
+              className={`group relative mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
                 isActive
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               }`}
             >
               <Icon
                 size={18}
-                className={`icon-bounce transition-all duration-200 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground"}`}
+                className={`transition-all duration-200 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-accent-foreground"}`}
               />
               <span className="text-sm font-medium">{item.label}</span>
               {isActive && (
@@ -95,11 +95,6 @@ export function AppSidebar() {
                     initial={false}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
-                  {/* Active glow effect */}
-                  <div
-                    className="bg-primary/5 animate-pulse-glow absolute inset-0 rounded-lg"
-                    style={{ animationDuration: "3s" }}
-                  />
                 </>
               )}
             </Link>
@@ -108,10 +103,10 @@ export function AppSidebar() {
       </nav>
 
       {/* Bottom Section */}
-      <div className="border-border mt-auto space-y-2 border-t p-4">
+      <div className="border-t space-y-2 p-4">
         <Link
           href="/settings"
-          className="sidebar-item text-muted-foreground hover:bg-secondary hover:text-foreground flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
+          className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
         >
           <Settings size={18} />
           <span className="text-sm font-medium">Settings</span>
@@ -127,7 +122,7 @@ export function AppSidebar() {
         </Link>
 
         {/* User Profile */}
-        <div className="bg-secondary/50 border-border flex items-center gap-3 rounded-lg border p-3">
+        <div className="bg-muted/50 border-border flex items-center gap-3 rounded-lg border p-3">
           <div className="flex-shrink-0">
             <UserButton
               appearance={{

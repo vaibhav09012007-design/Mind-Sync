@@ -170,7 +170,7 @@ export function ProductivityDashboard() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="from-primary bg-gradient-to-r to-purple-600 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+          <h1 className="text-3xl font-bold tracking-tight">
             Analytics & Insights
           </h1>
           <p className="text-muted-foreground">Visualize your productivity journey.</p>

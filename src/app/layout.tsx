@@ -1,5 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
@@ -15,15 +15,18 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#a855f7",
+};
+
 export const metadata: Metadata = {
   title: "MindSync | AI-Powered Productivity Workspace",
   description:
     "Bridge the gap between planning and execution with intelligent meeting notes and smart calendar integration.",
   manifest: "/manifest.json",
-  themeColor: "#a855f7",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "MindSync",
   },
   icons: {

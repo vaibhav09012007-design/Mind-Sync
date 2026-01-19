@@ -1,34 +1,34 @@
 import { GridEvent } from "./TimeGrid";
 
-// Activity type colors - glassmorphism style
+// Activity type colors - minimal style
 export const EVENT_STYLES = {
   work: {
-    bg: "bg-blue-500/15 backdrop-blur-sm",
-    border: "border-blue-500",
+    bg: "bg-blue-100 dark:bg-blue-900/20",
+    border: "border-blue-200 dark:border-blue-800",
     text: "text-blue-700 dark:text-blue-300",
     label: "Deep Work",
   },
   meeting: {
-    bg: "bg-purple-500/15 backdrop-blur-sm",
-    border: "border-purple-500",
+    bg: "bg-purple-100 dark:bg-purple-900/20",
+    border: "border-purple-200 dark:border-purple-800",
     text: "text-purple-700 dark:text-purple-300",
     label: "Meeting",
   },
   personal: {
-    bg: "bg-emerald-500/15 backdrop-blur-sm",
-    border: "border-emerald-500",
+    bg: "bg-emerald-100 dark:bg-emerald-900/20",
+    border: "border-emerald-200 dark:border-emerald-800",
     text: "text-emerald-700 dark:text-emerald-300",
     label: "Personal",
   },
   break: {
-    bg: "bg-amber-500/15 backdrop-blur-sm",
-    border: "border-amber-500",
+    bg: "bg-amber-100 dark:bg-amber-900/20",
+    border: "border-amber-200 dark:border-amber-800",
     text: "text-amber-700 dark:text-amber-300",
     label: "Break",
   },
   shallow: {
-    bg: "bg-slate-400/15 backdrop-blur-sm",
-    border: "border-slate-400",
+    bg: "bg-slate-100 dark:bg-slate-800/50",
+    border: "border-slate-200 dark:border-slate-700",
     text: "text-slate-600 dark:text-slate-400",
     label: "Shallow Work",
   },

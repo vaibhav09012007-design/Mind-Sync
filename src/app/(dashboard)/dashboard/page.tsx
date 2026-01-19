@@ -167,6 +167,7 @@ export default function DashboardPage() {
         subtext: "this week",
         icon: Clock,
         color: "success",
+        shape: "octahedron",
       },
       {
         label: "Tasks Completed",
@@ -176,6 +177,7 @@ export default function DashboardPage() {
         subtext: `${pendingTasks} pending`,
         icon: CheckCircle2,
         color: "primary",
+        shape: "box",
       },
       {
         label: "Current Streak",
@@ -184,6 +186,7 @@ export default function DashboardPage() {
         icon: Target,
         color: "warning",
         badge: streak >= 3 ? "🔥" : undefined,
+        shape: "torus",
       },
       {
         label: "Meeting Time Saved",
@@ -192,6 +195,7 @@ export default function DashboardPage() {
         badge: "Async",
         icon: Calendar,
         color: "info",
+        shape: "sphere",
       },
     ];
   }, [tasks, events, streak]);
@@ -239,47 +243,51 @@ export default function DashboardPage() {
   const greeting = getGreeting();
 
   return (
-    <div className="min-h-screen bg-transparent">
+    <div className="min-h-screen bg-background">
       <Header title="Dashboard" subtitle={`${greeting}, ${user?.firstName || "Traveler"}`} />
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
         {/* Stats Cards - Now 4 columns */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
-            <motion.div key={stat.label} variants={item} className="card p-5">
+            <motion.div key={stat.label} variants={item} className="relative overflow-hidden p-5 rounded-xl border bg-card text-card-foreground shadow-sm">
               <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-[var(--text-muted)]">{stat.label}</p>
+                <div className="relative z-10">
+                  <p className="text-sm text-muted-foreground">{stat.label}</p>
                   <div className="mt-1 flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">{stat.value}</span>
+                    <span className="text-3xl font-bold text-foreground">{stat.value}</span>
                     {stat.unit && (
-                      <span className="text-lg text-[var(--text-secondary)]">{stat.unit}</span>
+                      <span className="text-lg text-muted-foreground">{stat.unit}</span>
                     )}
                   </div>
                   {stat.change && (
                     <div className="mt-2 flex items-center gap-1">
                       {stat.trend === "up" ? (
-                        <TrendingUp size={14} className="text-[var(--success)]" />
+                        <TrendingUp size={14} className="text-green-600" />
                       ) : (
-                        <TrendingDown size={14} className="text-[var(--danger)]" />
+                        <TrendingDown size={14} className="text-red-600" />
                       )}
                       <span
-                        className={`text-sm ${stat.trend === "up" ? "text-[var(--success)]" : "text-[var(--danger)]"}`}
+                        className={`text-sm ${stat.trend === "up" ? "text-green-600" : "text-red-600"}`}
                       >
                         {stat.change}
                       </span>
                       {stat.subtext && (
-                        <span className="text-xs text-[var(--text-muted)]">{stat.subtext}</span>
+                        <span className="text-xs text-muted-foreground">{stat.subtext}</span>
                       )}
                     </div>
                   )}
                   {stat.badge && (
-                    <span className="mt-2 inline-block rounded-full bg-[var(--success-muted)] px-2 py-1 text-xs text-[var(--success)]">
+                    <span className="mt-2 inline-block rounded-full bg-green-100 dark:bg-green-900/30 px-2 py-1 text-xs text-green-700 dark:text-green-400">
                       {stat.badge}
                     </span>
                   )}
                 </div>
-                <div className={`rounded-lg p-3 bg-[var(--${stat.color}-muted)]`}>
-                  <stat.icon size={24} className={`text-[var(--${stat.color})]`} />
+
+                {/* 3D Icon or Fallback 2D Icon */}
+                <div className="h-16 w-16 relative flex items-center justify-center">
+                   <div className={`p-4 rounded-full bg-muted`}>
+                    <stat.icon size={32} className={`text-foreground`} />
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -288,24 +296,24 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Quick Actions */}
-          <motion.div variants={item} className="card p-5">
-            <h2 className="mb-4 text-lg font-semibold text-white">Quick Actions</h2>
+          <motion.div variants={item} className="p-5 rounded-xl border bg-card text-card-foreground shadow-sm">
+            <h2 className="mb-4 text-lg font-semibold text-foreground">Quick Actions</h2>
             <div className="space-y-3">
               {quickActions.map((action) => (
                 <Link
                   key={action.label}
                   href={action.href}
-                  className="group flex items-center gap-3 rounded-lg bg-[var(--surface-elevated)] p-3 transition-colors hover:bg-[var(--surface-hover)]"
+                  className="group flex items-center gap-3 rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
                 >
-                  <div className={`rounded-lg p-2 bg-[var(--${action.color}-muted)]`}>
-                    <action.icon size={18} className={`text-[var(--${action.color})]`} />
+                  <div className={`rounded-lg p-2 bg-background shadow-sm`}>
+                    <action.icon size={18} className={`text-foreground`} />
                   </div>
-                  <span className="flex-1 text-sm text-[var(--text-secondary)] transition-colors group-hover:text-white">
+                  <span className="flex-1 text-sm text-muted-foreground transition-colors group-hover:text-foreground">
                     {action.label}
                   </span>
                   <ArrowRight
                     size={16}
-                    className="text-[var(--text-muted)] transition-colors group-hover:text-white"
+                    className="text-muted-foreground transition-colors group-hover:text-foreground"
                   />
                 </Link>
               ))}
@@ -313,21 +321,21 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Today's Tasks */}
-          <motion.div variants={item} className="card p-5">
+          <motion.div variants={item} className="p-5 rounded-xl border bg-card text-card-foreground shadow-sm">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h2 className="text-lg font-semibold text-white">Pending Tasks</h2>
+                <h2 className="text-lg font-semibold text-foreground">Pending Tasks</h2>
                 <CreateTaskDialog>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 rounded-full hover:bg-white/10"
+                    className="h-6 w-6 rounded-full hover:bg-muted"
                   >
-                    <Plus size={14} className="text-white" />
+                    <Plus size={14} className="text-foreground" />
                   </Button>
                 </CreateTaskDialog>
               </div>
-              <Link href="/kanban" className="text-sm text-[var(--primary)] hover:underline">
+              <Link href="/kanban" className="text-sm text-primary hover:underline">
                 View all
               </Link>
             </div>
@@ -336,39 +344,39 @@ export default function DashboardPage() {
                 recentTasks.map((task) => (
                   <div
                     key={task.id}
-                    className="flex items-center gap-3 rounded-lg bg-[var(--surface-elevated)] p-3 transition-colors hover:bg-[var(--surface-hover)]"
+                    className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 transition-colors hover:bg-muted"
                   >
                     {/* Checkmark button */}
                     <button
                       onClick={() => toggleTask(task.id)}
-                      className="flex-shrink-0 rounded-full focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
+                      className="flex-shrink-0 rounded-full focus:ring-2 focus:ring-primary focus:outline-none"
                       title="Mark as complete"
                     >
                       {task.completed ? (
-                        <CheckCircle2 size={20} className="text-[var(--success)]" />
+                        <CheckCircle2 size={20} className="text-green-600" />
                       ) : (
                         <Circle
                           size={20}
-                          className="text-[var(--text-muted)] hover:text-[var(--primary)]"
+                          className="text-muted-foreground hover:text-primary"
                         />
                       )}
                     </button>
-                    <div className="badge badge-medium text-xs uppercase">
+                    <div className="badge badge-medium text-xs uppercase text-muted-foreground">
                       {task.priority || "P2"}
                     </div>
-                    <span className="flex-1 truncate text-sm font-medium text-white">
+                    <span className="flex-1 truncate text-sm font-medium text-foreground">
                       {task.title}
                     </span>
-                    <span className="text-xs text-[var(--text-muted)]">
+                    <span className="text-xs text-muted-foreground">
                       {task.dueDate ? format(new Date(task.dueDate), "MMM d") : "No due"}
                     </span>
                     {/* Edit button */}
                     <button
                       onClick={() => setEditingTask(task)}
-                      className="flex-shrink-0 rounded p-1 hover:bg-white/10 focus:ring-2 focus:ring-[var(--primary)] focus:outline-none"
+                      className="flex-shrink-0 rounded p-1 hover:bg-muted focus:ring-2 focus:ring-primary focus:outline-none"
                       title="Edit task"
                     >
-                      <Edit3 size={14} className="text-[var(--text-muted)] hover:text-white" />
+                      <Edit3 size={14} className="text-muted-foreground hover:text-foreground" />
                     </button>
                   </div>
                 ))
@@ -398,29 +406,29 @@ export default function DashboardPage() {
           </motion.div>
 
           {/* Recent Activity */}
-          <motion.div variants={item} className="card p-5">
+          <motion.div variants={item} className="p-5 rounded-xl border bg-card text-card-foreground shadow-sm">
             <div className="mb-4 flex items-center gap-2">
-              <Activity size={18} className="text-[var(--primary)]" />
-              <h2 className="text-lg font-semibold text-white">Recent Activity</h2>
+              <Activity size={18} className="text-primary" />
+              <h2 className="text-lg font-semibold text-foreground">Recent Activity</h2>
             </div>
             <div className="space-y-3">
               {recentActivity.length > 0 ? (
                 recentActivity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="flex items-start gap-3 rounded-lg bg-[var(--surface-elevated)] p-3"
+                    className="flex items-start gap-3 rounded-lg bg-muted/50 p-3"
                   >
-                    <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[var(--success)]" />
+                    <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-green-500" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm text-white">{activity.text}</p>
-                      <p className="text-xs text-[var(--text-muted)]">
+                      <p className="truncate text-sm text-foreground">{activity.text}</p>
+                      <p className="text-xs text-muted-foreground">
                         {activity.date} at {activity.time}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="py-8 text-center text-[var(--text-muted)]">
+                <div className="py-8 text-center text-muted-foreground">
                   <p className="text-sm">No recent activity</p>
                   <p className="mt-1 text-xs">Complete tasks to see your progress here</p>
                 </div>
@@ -432,30 +440,19 @@ export default function DashboardPage() {
         {/* Zen Mode Promo */}
         <motion.div
           variants={item}
-          className="card group relative overflow-hidden p-6"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(20, 40, 30, 0.9) 0%, rgba(10, 30, 20, 0.95) 100%)",
-          }}
+          className="relative overflow-hidden p-6 rounded-xl border bg-card text-card-foreground shadow-sm"
         >
-          <div
-            className="absolute inset-0 opacity-30 transition-opacity group-hover:opacity-40"
-            style={{
-              backgroundImage:
-                'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%2322c55e" fill-opacity="0.1"%3E%3Cpath d="M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-            }}
-          />
           <div className="relative z-10">
-            <span className="flex items-center gap-2 text-xs font-semibold tracking-wider text-[var(--success)]">
+            <span className="flex items-center gap-2 text-xs font-semibold tracking-wider text-green-500">
               <Sparkles size={12} /> DEEP WORK ZONE
             </span>
-            <h3 className="mt-2 text-2xl font-bold text-white">Enter Zen Mode</h3>
-            <p className="mt-2 max-w-md text-[var(--text-secondary)]">
+            <h3 className="mt-2 text-2xl font-bold text-foreground">Enter Zen Mode</h3>
+            <p className="mt-2 max-w-md text-muted-foreground">
               Block distractions and enhance your focus with curated soundscapes designed for deep
               work.
             </p>
             <div className="mt-4 flex items-center gap-3">
-              <Link href="/focus" className="btn btn-success ml-auto flex items-center gap-2">
+              <Link href="/focus" className="inline-flex items-center justify-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700 ml-auto">
                 <Play size={18} />
                 Start Focus Session
               </Link>

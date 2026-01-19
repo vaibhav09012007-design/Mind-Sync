@@ -27,26 +27,22 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "animate-fadeIn flex flex-col items-center justify-center p-8 text-center",
+        "flex flex-col items-center justify-center p-8 text-center",
         variant === "illustrated" && "py-16",
         className
       )}
     >
-      {/* Animated Icon Container */}
+      {/* Icon Container */}
       <div className={cn("relative mb-6", variant === "illustrated" && "mb-8")}>
-        {/* Glow background */}
-        <div className="bg-primary/10 animate-pulse-glow absolute inset-0 rounded-full blur-2xl" />
 
         {/* Icon wrapper */}
         <div
           className={cn(
             "relative flex items-center justify-center rounded-2xl",
-            "from-surface-elevated to-surface bg-gradient-to-br",
-            "border-border/50 border",
+            "bg-muted",
             variant === "default" && "h-16 w-16",
             variant === "minimal" && "h-12 w-12",
             variant === "illustrated" && "h-24 w-24",
-            "animate-float"
           )}
         >
           <Icon
@@ -58,21 +54,6 @@ export function EmptyState({
             )}
           />
         </div>
-
-        {/* Decorative dots */}
-        {variant === "illustrated" && (
-          <>
-            <div className="bg-primary/30 absolute -top-2 -right-2 h-3 w-3 animate-pulse rounded-full" />
-            <div
-              className="bg-primary/20 absolute -bottom-1 -left-3 h-2 w-2 animate-pulse rounded-full"
-              style={{ animationDelay: "0.5s" }}
-            />
-            <div
-              className="bg-primary/40 absolute top-1/2 -right-4 h-1.5 w-1.5 animate-pulse rounded-full"
-              style={{ animationDelay: "1s" }}
-            />
-          </>
-        )}
       </div>
 
       {/* Content */}
@@ -92,7 +73,7 @@ export function EmptyState({
       {actionLabel && onAction && (
         <Button
           onClick={onAction}
-          className="btn-press mt-6"
+          className="mt-6"
           size={variant === "illustrated" ? "lg" : "default"}
         >
           {actionLabel}

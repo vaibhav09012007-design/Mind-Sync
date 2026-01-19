@@ -35,10 +35,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <AppSidebar />
       </nav>
 
-      <div className="bg-background flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         {/* Mobile Header (Hidden on Desktop) */}
         <header
-          className="border-border bg-card/50 flex h-14 flex-shrink-0 items-center justify-between border-b px-4 backdrop-blur-sm md:hidden"
+          className="border-border bg-background flex h-14 flex-shrink-0 items-center justify-between border-b px-4 md:hidden"
           role="banner"
         >
           <div className="flex items-center gap-4">
