@@ -611,5 +611,54 @@ Standardized type hierarchy using Tailwind utility classes:
 ---
 
 ## 5. Component Enhancements
+
+### 1. Premium Buttons
+**Priority**: High
+**Difficulty**: Easy
+**Files Affected**: `src/components/ui/button.tsx`
+
+**New Variants**:
+- `gradient`: Primary call-to-action with purple-pink-blue gradient and shine effect.
+- `gradient-outline`: Subtle gradient border for secondary actions.
+- `glow`: Primary color with colored shadow for emphasis.
+
+**Usage**:
+```tsx
+<Button variant="gradient">Get Started</Button>
+<Button variant="gradient-outline">Learn More</Button>
+```
+
+### 2. Glass Cards
+**Priority**: Medium
+**Difficulty**: Easy
+**Files Affected**: `src/components/ui/card.tsx`
+
+**Features**:
+- `GlassCard` component wrapper for instant glassmorphism
+- `hover` prop for interaction effects (`lift`, `glow`, `scale`)
+- Backdrop blur and semi-transparent backgrounds
+
+**Usage**:
+```tsx
+<GlassCard hover="lift">
+  <CardHeader><CardTitle>Project Alpha</CardTitle></CardHeader>
+  <CardContent>...</CardContent>
+</GlassCard>
+```
+
+### 3. Form Inputs
+**Priority**: Low
+**Difficulty**: Easy
+**Files Affected**: `src/components/ui/input.tsx`, `textarea.tsx`, `checkbox.tsx`, `select.tsx`
+
+**Enhancements**:
+- Unified focus ring using `brand-500` color
+- Subtle hover border transitions
+- Premium checked state for checkboxes
+- Consistent border radius and padding
+
+---
+
+## 6. Micro-interactions & Animations
 (Coming soon...)
 

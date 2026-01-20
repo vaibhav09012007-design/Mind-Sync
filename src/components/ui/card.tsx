@@ -37,6 +37,20 @@ function Card({ className, variant = "default", hover = "lift", ...props }: Card
   );
 }
 
+/**
+ * A specialized card component that applies glassmorphism effects automatically
+ */
+function GlassCard({ className, hover = "lift", ...props }: Omit<CardProps, "variant">) {
+  return (
+    <Card
+      variant="glass"
+      hover={hover}
+      className={cn("bg-white/10 dark:bg-black/20 backdrop-blur-md border-white/20 dark:border-white/10", className)}
+      {...props}
+    />
+  );
+}
+
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -94,4 +108,4 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
-export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent };
+export { Card, GlassCard, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent };
