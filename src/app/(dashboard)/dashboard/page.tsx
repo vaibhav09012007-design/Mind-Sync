@@ -334,14 +334,14 @@ export default function DashboardPage() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-6 w-6 rounded-full hover:bg-brand-500/10 hover:text-brand-500"
+                      className="h-6 w-6 rounded-full hover:bg-primary/10 hover:text-primary"
                       aria-label="Create new task"
                     >
                       <Plus size={14} />
                     </Button>
                   </CreateTaskDialog>
                 </div>
-                <Link href="/kanban" className="text-xs font-medium text-brand-500 hover:text-brand-400 transition-colors">
+                <Link href="/kanban" className="text-xs font-medium text-primary hover:text-brand-400 transition-colors">
                   View all
                 </Link>
               </div>
@@ -363,7 +363,7 @@ export default function DashboardPage() {
                         ) : (
                           <Circle
                             size={20}
-                            className="text-muted-foreground group-hover:text-brand-500 transition-colors"
+                            className="text-muted-foreground group-hover:text-primary transition-colors"
                           />
                         )}
                       </button>
@@ -395,7 +395,7 @@ export default function DashboardPage() {
                     <p className="text-xs mt-1 opacity-70">Enjoy your free time</p>
                     <div className="mt-4">
                       <CreateTaskDialog>
-                        <Button variant="outline" size="sm" className="gap-2 border-dashed border-white/20 hover:border-brand-500 hover:text-brand-500 hover:bg-brand-500/5">
+                        <Button variant="outline" size="sm" className="gap-2 border-dashed border-white/20 hover:border-brand-500 hover:text-primary hover:bg-brand-500/5">
                           <Plus size={14} />
                           Add task
                         </Button>
@@ -420,7 +420,7 @@ export default function DashboardPage() {
           <motion.div variants={item}>
             <GlassCard className="p-5 h-full">
               <div className="mb-4 flex items-center gap-2">
-                <Activity size={18} className="text-brand-500" />
+                <Activity size={18} className="text-primary" />
                 <h2 className="text-lg font-semibold tracking-tight text-foreground">Recent Activity</h2>
               </div>
               <div className="space-y-4">

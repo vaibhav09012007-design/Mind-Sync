@@ -28,7 +28,7 @@ export function Logo({
 
   const LogoIcon = () => (
     <div className={cn(
-      "relative rounded-xl bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 flex items-center justify-center text-white shadow-glow",
+      "relative rounded-xl bg-primary flex items-center justify-center text-black shadow-glow",
       sizeClasses[size].icon,
       animated && "animate-pulse-glow"
     )}>

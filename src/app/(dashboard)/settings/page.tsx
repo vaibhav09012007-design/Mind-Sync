@@ -52,8 +52,8 @@ export default function SettingsPage() {
           {/* Profile Section */}
           <GlassCard className="p-0 overflow-hidden">
             <div className="p-6 pb-4 flex items-center gap-3 border-b border-border/50">
-              <div className="p-2 bg-purple-500/10 rounded-lg">
-                <User className="w-5 h-5 text-purple-500" />
+              <div className="p-2 bg-primary/10 rounded-lg">
+                <User className="w-5 h-5 text-primary" />
               </div>
               <h2 className="text-lg font-semibold">Profile</h2>
             </div>
@@ -78,7 +78,7 @@ export default function SettingsPage() {
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  className="mt-2 hover:bg-purple-500/10 hover:text-purple-500 border-purple-500/20"
+                  className="mt-2 hover:bg-primary/10 hover:text-primary border-purple-500/20"
                   onClick={() => openUserProfile()}
                 >
                     Edit Profile
@@ -182,7 +182,7 @@ export default function SettingsPage() {
                   <div className="font-medium">Export All Data</div>
                   <div className="text-sm text-muted-foreground">Download all your tasks, events, and notes as JSON</div>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleExportAllData} className="gap-2 hover:bg-purple-500/10 hover:border-purple-500/50">
+                <Button variant="outline" size="sm" onClick={handleExportAllData} className="gap-2 hover:bg-primary/10 hover:border-purple-500/50">
                   <Download className="h-4 w-4" />
                   Export
                 </Button>

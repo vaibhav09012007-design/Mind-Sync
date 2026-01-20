@@ -54,25 +54,25 @@
   :root {
     /* POLISHED BLACK GOLD THEME (Default) */
     --background: 0 0% 0%; /* Pure Black */
-    --foreground: 45 93% 47%; /* Gold Text */
+    --foreground: 0 0% 95%; /* Polished White Text */
     
     --card: 0 0% 3%; /* Slightly lighter black for cards */
-    --card-foreground: 45 93% 47%;
+    --card-foreground: 0 0% 95%;
     
     --popover: 0 0% 3%;
-    --popover-foreground: 45 93% 47%;
+    --popover-foreground: 0 0% 95%;
     
     --primary: 45 93% 47%; /* Gold 500 */
     --primary-foreground: 0 0% 0%; /* Black text on Gold */
     
     --secondary: 0 0% 8%; /* Dark Grey */
-    --secondary-foreground: 45 93% 47%;
+    --secondary-foreground: 0 0% 95%;
     
     --muted: 0 0% 8%;
-    --muted-foreground: 45 40% 40%; /* Dim Gold */
+    --muted-foreground: 0 0% 65%; /* Neutral Gray for subtitles */
     
     --accent: 0 0% 10%;
-    --accent-foreground: 45 93% 47%;
+    --accent-foreground: 45 93% 47%; /* Gold Accent Text */
     
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
@@ -83,7 +83,7 @@
     
     --radius: 0.5rem;
 
-    /* Semantic Colors - Mapped to Gold/Black */
+    /* Semantic Colors - Dark */
     --color-success-bg: 0 0% 5%;
     --color-success-text: 142 70% 50%; /* Green */
     --color-warning-bg: 0 0% 5%;
@@ -97,17 +97,17 @@
   .dark {
     /* Ensure dark mode matches root */
     --background: 0 0% 0%;
-    --foreground: 45 93% 47%;
+    --foreground: 0 0% 95%;
     --card: 0 0% 3%;
-    --card-foreground: 45 93% 47%;
+    --card-foreground: 0 0% 95%;
     --popover: 0 0% 3%;
-    --popover-foreground: 45 93% 47%;
+    --popover-foreground: 0 0% 95%;
     --primary: 45 93% 47%;
     --primary-foreground: 0 0% 0%;
     --secondary: 0 0% 8%;
-    --secondary-foreground: 45 93% 47%;
+    --secondary-foreground: 0 0% 95%;
     --muted: 0 0% 8%;
-    --muted-foreground: 45 40% 40%;
+    --muted-foreground: 0 0% 65%;
     --accent: 0 0% 10%;
     --accent-foreground: 45 93% 47%;
     --destructive: 0 62.8% 30.6%;

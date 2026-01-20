@@ -167,14 +167,8 @@ export function ProductivityDashboard() {
 
   return (
     <div className="animate-in fade-in space-y-6 duration-500">
-      {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Analytics & Insights
-          </h1>
-          <p className="text-muted-foreground">Visualize your productivity journey.</p>
-        </div>
+      {/* Header Controls Only */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">
         <div className="flex items-center gap-2">
           <DateRangeFilter value={dateRangeOption} onChange={handleDateRangeChange} />
           <ExportStats data={filteredActivityData} />

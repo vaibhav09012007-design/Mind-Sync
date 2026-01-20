@@ -33,7 +33,7 @@ export function NotesSidebar({ currentNoteId, onSelectNote, onCreateNote }: Note
       <div className="space-y-4 p-4">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-2xl font-bold gradient-text w-fit">
-            <StickyNote className="h-6 w-6 text-purple-500" />
+            <StickyNote className="h-6 w-6 text-primary" />
             Notes
           </h2>
           <Button onClick={onCreateNote} size="icon" variant="default" className="h-8 w-8">
