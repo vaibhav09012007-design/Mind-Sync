@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { UserButton, useUser } from "@clerk/nextjs";
+import { Logo } from "@/components/ui/Logo";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -30,29 +32,24 @@ export function AppSidebar() {
   const { user, isLoaded } = useUser();
 
   return (
-    <aside className="border-r bg-background flex h-full w-full flex-col">
+    <aside className="border-r border-white/10 bg-background/60 backdrop-blur-xl h-full w-full flex flex-col transition-all duration-300">
       {/* Logo */}
-      <div className="border-b p-4 flex items-center gap-3">
-        <div className="bg-primary text-primary-foreground flex h-10 w-10 items-center justify-center rounded-xl">
-          <span className="text-lg font-bold">M</span>
-        </div>
-        <div>
-          <h1 className="text-foreground font-semibold tracking-tight">Mind-Sync</h1>
-          <p className="text-muted-foreground text-xs">Productivity Hub</p>
-        </div>
+      <div className="border-b border-white/10 p-4 flex items-center justify-between">
+        <Logo size="sm" />
+        <ThemeToggle />
       </div>
 
       {/* Quick Search */}
       <div className="px-3 py-3">
-        <div className="relative">
+        <div className="relative group">
           <Search
             size={14}
-            className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2"
+            className="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2 group-hover:text-primary transition-colors"
           />
           <input
             type="text"
             placeholder="Quick Search (Cmd+K)"
-            className="bg-muted/50 border-input focus:ring-primary placeholder:text-muted-foreground hover:bg-muted w-full cursor-pointer rounded-lg border py-2 pl-9 text-sm transition-colors focus:ring-1 focus:outline-none"
+            className="bg-white/5 border-white/10 focus:border-brand-500/50 focus:ring-brand-500/20 placeholder:text-muted-foreground hover:bg-white/10 w-full cursor-pointer rounded-lg border py-2 pl-9 text-sm transition-all focus:ring-2 focus:outline-none"
             readOnly
             onClick={() => {
               const down = new KeyboardEvent("keydown", {
@@ -67,7 +64,7 @@ export function AppSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="custom-scrollbar flex-1 overflow-y-auto px-2 py-2">
+      <nav className="custom-scrollbar flex-1 overflow-y-auto px-2 py-2 space-y-1">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -76,26 +73,29 @@ export function AppSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`group relative mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
+              className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
                 isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  ? "bg-brand-500/10 text-brand-500 font-medium"
+                  : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
               }`}
             >
               <Icon
                 size={18}
-                className={`transition-all duration-200 ${isActive ? "text-primary" : "text-muted-foreground group-hover:text-accent-foreground"}`}
+                className={`transition-all duration-200 ${
+                  isActive 
+                    ? "text-brand-500 drop-shadow-sm" 
+                    : "text-muted-foreground group-hover:text-foreground"
+                }`}
               />
-              <span className="text-sm font-medium">{item.label}</span>
+              <span className="text-sm">{item.label}</span>
+              
               {isActive && (
-                <>
-                  <motion.div
-                    layoutId="activeIndicator"
-                    className="bg-primary absolute left-0 h-5 w-1 rounded-r-full"
-                    initial={false}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  />
-                </>
+                <motion.div
+                  layoutId="activeIndicator"
+                  className="absolute left-0 h-6 w-1 rounded-r-full bg-brand-500 shadow-[0_0_10px_2px_rgba(139,92,246,0.3)]"
+                  initial={false}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
               )}
             </Link>
           );
@@ -103,10 +103,10 @@ export function AppSidebar() {
       </nav>
 
       {/* Bottom Section */}
-      <div className="border-t space-y-2 p-4">
+      <div className="border-t border-white/10 space-y-2 p-4 bg-background/20 backdrop-blur-sm">
         <Link
           href="/settings"
-          className="text-muted-foreground hover:bg-accent hover:text-accent-foreground flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
+          className="text-muted-foreground hover:bg-white/5 hover:text-foreground flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
         >
           <Settings size={18} />
           <span className="text-sm font-medium">Settings</span>
@@ -115,19 +115,22 @@ export function AppSidebar() {
         {/* Meeting Mode / AI CTA */}
         <Link
           href="/meeting"
-          className="bg-primary/10 border-primary/20 hover:bg-primary/20 group mb-2 flex items-center gap-2 rounded-lg border p-3 transition-colors"
+          className="relative overflow-hidden group mb-2 flex items-center gap-2 rounded-lg p-[1px]"
         >
-          <Sparkles size={16} className="text-primary transition-transform group-hover:scale-110" />
-          <span className="text-primary text-xs font-semibold">Meeting Mode</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 opacity-20 group-hover:opacity-40 transition-opacity" />
+          <div className="relative bg-background/80 backdrop-blur-md flex items-center gap-2 w-full p-2.5 rounded-[7px] border border-white/10 group-hover:bg-background/60 transition-colors">
+            <Sparkles size={16} className="text-brand-500 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+            <span className="text-foreground text-xs font-semibold">Meeting Mode</span>
+          </div>
         </Link>
 
         {/* User Profile */}
-        <div className="bg-muted/50 border-border flex items-center gap-3 rounded-lg border p-3">
+        <div className="bg-white/5 border-white/10 flex items-center gap-3 rounded-lg border p-3 hover:bg-white/10 transition-colors cursor-pointer">
           <div className="flex-shrink-0">
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: "w-8 h-8 ring-2 ring-primary/20",
+                  avatarBox: "w-8 h-8 ring-2 ring-brand-500/20",
                 },
               }}
             />
@@ -144,8 +147,8 @@ export function AppSidebar() {
               </>
             ) : (
               <div className="space-y-1">
-                <div className="bg-muted/50 h-3 w-20 animate-pulse rounded" />
-                <div className="bg-muted/50 h-2 w-16 animate-pulse rounded" />
+                <div className="bg-white/10 h-3 w-20 animate-pulse rounded" />
+                <div className="bg-white/10 h-2 w-16 animate-pulse rounded" />
               </div>
             )}
           </div>

@@ -14,7 +14,11 @@ import { MobileBottomNav } from "@/components/mobile/MobileBottomNav";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-background relative">
+      {/* Background Gradient Mesh */}
+      <div className="absolute inset-0 bg-gradient-mesh opacity-20 dark:opacity-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 opacity-50" />
+
       {/* Accessibility: Skip to main content link */}
       <SkipLink />
 
@@ -31,11 +35,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <CommandMenu />
 
       {/* Desktop Sidebar */}
-      <nav className="hidden w-64 flex-shrink-0 md:block" aria-label="Main navigation">
+      <nav className="hidden w-64 flex-shrink-0 md:block relative z-20" aria-label="Main navigation">
         <AppSidebar />
       </nav>
 
-      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative z-10">
         {/* Mobile Header (Hidden on Desktop) */}
         <header
           className="border-border bg-background flex h-14 flex-shrink-0 items-center justify-between border-b px-4 md:hidden"
