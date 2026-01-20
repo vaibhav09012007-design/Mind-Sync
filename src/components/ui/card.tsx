@@ -2,13 +2,34 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function Card({ className, ...props }: React.ComponentProps<"div">) {
+export interface CardProps extends React.ComponentProps<"div"> {
+  variant?: "default" | "glass" | "gradient-border" | "elevated";
+  hover?: "none" | "lift" | "glow" | "scale";
+}
+
+function Card({ className, variant = "default", hover = "lift", ...props }: CardProps) {
+  const variantStyles = {
+    default: "bg-card border",
+    glass: "glass-card border-0",
+    "gradient-border": "gradient-border border-0",
+    elevated: "bg-card shadow-elevated border-0",
+  };
+
+  const hoverStyles = {
+    none: "",
+    lift: "hover-lift",
+    glow: "hover-glow",
+    scale: "hover:scale-[1.02] transition-transform duration-300",
+  };
+
   return (
     <div
       data-slot="card"
       className={cn(
-        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
-        "card-hover transition-all duration-200",
+        "text-card-foreground flex flex-col gap-6 rounded-xl py-6 shadow-sm",
+        "transition-all duration-300",
+        variantStyles[variant],
+        hoverStyles[hover],
         className
       )}
       {...props}

@@ -4,10 +4,29 @@ import { cn } from "@/lib/utils";
 
 interface SkeletonProps {
   className?: string;
+  variant?: "default" | "shimmer" | "pulse";
 }
 
-export function Skeleton({ className }: SkeletonProps) {
-  return <div className={cn("skeleton-shimmer rounded-md", className)} />;
+export function Skeleton({ className, variant = "shimmer" }: SkeletonProps) {
+  const variantStyles = {
+    default: "bg-muted animate-pulse",
+    shimmer: "skeleton-shimmer",
+    pulse: "bg-muted/50 animate-pulse",
+  };
+
+  return (
+    <div
+      className={cn(
+        "rounded-md relative overflow-hidden",
+        variantStyles[variant],
+        className
+      )}
+    >
+      {variant === "shimmer" && (
+        <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
+      )}
+    </div>
+  );
 }
 
 // Card skeleton
