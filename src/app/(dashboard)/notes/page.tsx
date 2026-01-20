@@ -19,7 +19,7 @@ export default function NotesIndexPage() {
           </div>
         </div>
         
-        <h2 className="mb-3 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400">
+        <h2 className="mb-3 text-3xl font-bold gradient-text">
           Select a note to view
         </h2>
         

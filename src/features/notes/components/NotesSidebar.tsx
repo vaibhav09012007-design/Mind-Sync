@@ -29,11 +29,11 @@ export function NotesSidebar({ currentNoteId, onSelectNote, onCreateNote }: Note
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="bg-muted/10 flex h-full w-80 flex-col border-r">
+    <div className="bg-background/40 backdrop-blur-md flex h-full w-80 flex-col border-r border-white/10">
       <div className="space-y-4 p-4">
         <div className="flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-xl font-semibold">
-            <StickyNote className="h-5 w-5" />
+          <h2 className="flex items-center gap-2 text-2xl font-bold gradient-text w-fit">
+            <StickyNote className="h-6 w-6 text-purple-500" />
             Notes
           </h2>
           <Button onClick={onCreateNote} size="icon" variant="default" className="h-8 w-8">

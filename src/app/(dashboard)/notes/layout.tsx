@@ -24,7 +24,7 @@ export default function NotesLayout({ children }: { children: React.ReactNode })
   if (!hydrated) return null;
 
   return (
-    <div className="bg-background flex h-full overflow-hidden">
+    <div className="flex h-full overflow-hidden">
       <NotesSidebar
         currentNoteId={currentNoteId}
         onSelectNote={(noteId) => router.push(`/notes/${noteId}`)}

@@ -200,12 +200,12 @@ export default function CalendarPage() {
       {/* Header Controls */}
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center gap-4">
-          <h1 className="w-48 truncate text-2xl font-semibold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight gradient-text w-fit truncate">
             {view === "agenda"
               ? "Agenda"
               : format(currentDate, view === "day" ? "MMMM d, yyyy" : "MMMM yyyy")}
             {view === "week" && (
-              <span className="text-muted-foreground ml-2 hidden text-sm font-normal lg:inline">
+              <span className="text-muted-foreground ml-2 hidden text-lg font-normal lg:inline">
                 Week of {format(startOfWeek(currentDate), "MMM d")}
               </span>
             )}
@@ -333,7 +333,7 @@ export default function CalendarPage() {
           <div className="flex h-full flex-col overflow-x-auto">
             <div className="flex h-full min-w-[600px] flex-col">
               {/* Month Header */}
-              <div className="bg-muted/40 grid grid-cols-7 border-b py-2 text-center">
+              <div className="bg-black/5 dark:bg-white/5 grid grid-cols-7 border-b border-black/5 dark:border-white/10 py-3 text-center">
                 {DAYS.map((day) => (
                   <div
                     key={day}
@@ -355,9 +355,9 @@ export default function CalendarPage() {
                     <div
                       key={day.toISOString()}
                       className={cn(
-                        "hover:bg-muted/5 group relative flex min-h-[80px] cursor-pointer flex-col gap-1 p-2 transition-colors",
-                        !isCurrentMonth && "bg-muted/5 text-muted-foreground/50",
-                        isDayToday && "bg-primary/5"
+                        "hover:bg-black/5 dark:hover:bg-white/5 group relative flex min-h-[100px] cursor-pointer flex-col gap-1 p-2 transition-all border-b border-r border-black/5 dark:border-white/5",
+                        !isCurrentMonth && "bg-black/5 dark:bg-white/5 text-muted-foreground/30",
+                        isDayToday && "bg-purple-500/10 shadow-[inset_0_0_20px_rgba(168,85,247,0.1)]"
                       )}
                       onClick={() => handleDateClick(day)}
                     >
