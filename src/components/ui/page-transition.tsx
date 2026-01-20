@@ -146,3 +146,135 @@ export function FadeIn({ children, className, delay = 0, direction = "up" }: Fad
 }
 
 export { AnimatePresence };
+
+// Hover animation wrapper
+interface HoverScaleProps {
+  children: React.ReactNode;
+  className?: string;
+  scale?: number;
+}
+
+export function HoverScale({ children, className, scale = 1.02 }: HoverScaleProps) {
+  return (
+    <motion.div
+      whileHover={{ scale }}
+      whileTap={{ scale: 0.98 }}
+      transition={{ duration: 0.2 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Hover lift animation
+interface HoverLiftProps {
+  children: React.ReactNode;
+  className?: string;
+  y?: number;
+}
+
+export function HoverLift({ children, className, y = -4 }: HoverLiftProps) {
+  return (
+    <motion.div
+      whileHover={{ y, boxShadow: "0 12px 24px -8px rgba(139, 92, 246, 0.25)" }}
+      transition={{ duration: 0.3 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Pulse animation for notifications/indicators
+interface PulseProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function Pulse({ children, className }: PulseProps) {
+  return (
+    <motion.div
+      animate={{ scale: [1, 1.05, 1] }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Scroll reveal animation
+interface ScrollRevealProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function ScrollReveal({ children, className }: ScrollRevealProps) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// Counter animation for stats
+interface AnimatedCounterProps {
+  value: number;
+  className?: string;
+  duration?: number;
+}
+
+export function AnimatedCounter({ value, className, duration = 2 }: AnimatedCounterProps) {
+  return (
+    <motion.span
+      className={className}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <motion.span
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        {value.toLocaleString()}
+      </motion.span>
+    </motion.span>
+  );
+}
+
+// Gradient border animation
+interface GradientBorderAnimatedProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export function GradientBorderAnimated({ children, className }: GradientBorderAnimatedProps) {
+  return (
+    <motion.div
+      className={cn("relative rounded-xl p-[1px] overflow-hidden", className)}
+      style={{
+        background: "linear-gradient(135deg, hsl(262 83% 58%), hsl(330 81% 60%), hsl(217 91% 60%))",
+        backgroundSize: "200% 200%",
+      }}
+      animate={{
+        backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+    >
+      <div className="bg-background rounded-xl h-full w-full">
+        {children}
+      </div>
+    </motion.div>
+  );
+}
