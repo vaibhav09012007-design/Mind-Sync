@@ -54,6 +54,7 @@ import { AgendaView } from "@/features/calendar/components/AgendaView";
 import { QuickAddPopover } from "@/features/calendar/components/QuickAddPopover";
 import { EVENT_STYLES } from "@/features/calendar/components/calendar-utils";
 import { CalendarSyncStatus } from "@/components/calendar/calendar-sync-status";
+import { GlassCard } from "@/components/ui/card";
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -327,7 +328,7 @@ export default function CalendarPage() {
       />
 
       {/* View Rendering */}
-      <div className="bg-card flex-1 overflow-hidden rounded-lg border shadow-sm">
+      <GlassCard hover="none" className="flex-1 overflow-hidden shadow-sm p-0 flex flex-col">
         {view === "month" && (
           <div className="flex h-full flex-col overflow-x-auto">
             <div className="flex h-full min-w-[600px] flex-col">
@@ -423,7 +424,7 @@ export default function CalendarPage() {
         )}
 
         {view === "agenda" && <AgendaView />}
-      </div>
+      </GlassCard>
     </div>
   );
 }
