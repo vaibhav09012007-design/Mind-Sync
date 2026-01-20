@@ -335,6 +335,7 @@ export default function DashboardPage() {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6 rounded-full hover:bg-brand-500/10 hover:text-brand-500"
+                      aria-label="Create new task"
                     >
                       <Plus size={14} />
                     </Button>

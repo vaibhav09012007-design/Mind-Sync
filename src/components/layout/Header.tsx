@@ -13,7 +13,7 @@ export function Header({ title, subtitle, children }: HeaderProps) {
   return (
     <header className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
+        <h1 className="text-3xl font-bold tracking-tight gradient-text w-fit">{title}</h1>
         {subtitle && <p className="text-lg text-muted-foreground mt-1">{subtitle}</p>}
       </div>
 
