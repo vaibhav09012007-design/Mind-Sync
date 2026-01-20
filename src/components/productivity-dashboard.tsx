@@ -223,7 +223,7 @@ export function ProductivityDashboard() {
         </div>
 
         {/* Right: Sidebar Widgets */}
-        <div className="space-y-6 lg:col-span-3">
+        <div className="flex flex-col gap-6 lg:col-span-3 h-full">
           <ProductivityScore
             data={filteredActivityData}
             previousPeriodData={previousPeriodData}
@@ -231,7 +231,7 @@ export function ProductivityDashboard() {
             totalTasks={totalCompletedTasks}
             goalsProgress={goalsProgress}
           />
-          <GoalsWidget initialGoals={goals} userId={userId} />
+          <GoalsWidget initialGoals={goals} userId={userId} className="flex-1" />
         </div>
       </div>
     </div>

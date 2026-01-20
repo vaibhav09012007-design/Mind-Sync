@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { cn } from "@/lib/utils";
+
+// ... (existing imports)
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -40,9 +42,10 @@ interface Goal {
 interface GoalsWidgetProps {
   initialGoals: Goal[];
   userId: string;
+  className?: string;
 }
 
-export function GoalsWidget({ initialGoals, userId }: GoalsWidgetProps) {
+export function GoalsWidget({ initialGoals, userId, className }: GoalsWidgetProps) {
   const [goals, setGoals] = useState(initialGoals);
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -94,7 +97,7 @@ export function GoalsWidget({ initialGoals, userId }: GoalsWidgetProps) {
   };
 
   return (
-    <Card className="h-full min-h-[400px]">
+    <Card className={cn("h-full min-h-[400px]", className)}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>My Goals</CardTitle>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
