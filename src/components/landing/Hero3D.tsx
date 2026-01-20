@@ -19,12 +19,12 @@ function AnimatedSphere() {
     <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
       <Sphere ref={meshRef} args={[1, 64, 64]} scale={2.5}>
         <MeshDistortMaterial
-          color="#8B5CF6"
+          color="#EAB308"
           attach="material"
           distort={0.4}
           speed={2}
           roughness={0.2}
-          metalness={0.8}
+          metalness={0.9}
         />
       </Sphere>
     </Float>
@@ -35,9 +35,9 @@ function Scene() {
   return (
     <>
       <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 5]} intensity={1} />
-      <pointLight position={[-10, -10, -5]} color="#3B82F6" intensity={0.5} />
-      <pointLight position={[10, -10, 5]} color="#EC4899" intensity={0.3} />
+      <directionalLight position={[10, 10, 5]} intensity={1} color="#FDE047" />
+      <pointLight position={[-10, -10, -5]} color="#D97706" intensity={0.5} />
+      <pointLight position={[10, -10, 5]} color="#FFFFFF" intensity={0.3} />
       <AnimatedSphere />
     </>
   );

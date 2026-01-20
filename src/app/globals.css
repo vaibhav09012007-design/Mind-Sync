@@ -174,11 +174,13 @@
 
 /* 5. Glass Morphism -> Polished Black Glass */
 .glass {
-  @apply bg-black/80 backdrop-blur-md border border-primary/20 shadow-glow;
+  @apply bg-black/80 backdrop-blur-md border border-primary/20;
+  box-shadow: 0 0 15px hsl(var(--primary) / 0.2);
 }
 
 .glass-card {
-  @apply bg-zinc-900/50 backdrop-blur-xl border border-primary/20 shadow-glow;
+  @apply bg-zinc-900/50 backdrop-blur-xl border border-primary/20;
+  box-shadow: 0 0 15px hsl(var(--primary) / 0.2);
 }
 
 /* 6. Premium Gold Shadows */

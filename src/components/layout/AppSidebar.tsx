@@ -49,7 +49,7 @@ export function AppSidebar() {
           <input
             type="text"
             placeholder="Quick Search (Cmd+K)"
-            className="bg-white/5 border-white/10 focus:border-brand-500/50 focus:ring-brand-500/20 placeholder:text-muted-foreground hover:bg-white/10 w-full cursor-pointer rounded-lg border py-2 pl-9 text-sm transition-all focus:ring-2 focus:outline-none"
+            className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 placeholder:text-muted-foreground hover:bg-white/10 w-full cursor-pointer rounded-lg border py-2 pl-9 text-sm transition-all focus:ring-2 focus:outline-none"
             readOnly
             onClick={() => {
               const down = new KeyboardEvent("keydown", {
@@ -75,7 +75,7 @@ export function AppSidebar() {
               href={item.href}
               className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
                 isActive
-                  ? "bg-brand-500/10 text-brand-500 font-medium"
+                  ? "bg-primary/10 text-primary font-medium"
                   : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
               }`}
             >
@@ -83,7 +83,7 @@ export function AppSidebar() {
                 size={18}
                 className={`transition-all duration-200 ${
                   isActive 
-                    ? "text-brand-500 drop-shadow-sm" 
+                    ? "text-primary drop-shadow-sm" 
                     : "text-muted-foreground group-hover:text-foreground"
                 }`}
               />
@@ -92,7 +92,7 @@ export function AppSidebar() {
               {isActive && (
                 <motion.div
                   layoutId="activeIndicator"
-                  className="absolute left-0 h-6 w-1 rounded-r-full bg-brand-500 shadow-[0_0_10px_2px_rgba(139,92,246,0.3)]"
+                  className="absolute left-0 h-6 w-1 rounded-r-full bg-primary shadow-[0_0_10px_2px_rgba(255,215,0,0.3)]"
                   initial={false}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
@@ -117,9 +117,9 @@ export function AppSidebar() {
           href="/meeting"
           className="relative overflow-hidden group mb-2 flex items-center gap-2 rounded-lg p-[1px]"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 opacity-20 group-hover:opacity-40 transition-opacity" />
+          <div className="absolute inset-0 bg-primary/20 group-hover:opacity-40 transition-opacity" />
           <div className="relative bg-background/80 backdrop-blur-md flex items-center gap-2 w-full p-2.5 rounded-[7px] border border-white/10 group-hover:bg-background/60 transition-colors">
-            <Sparkles size={16} className="text-brand-500 transition-transform group-hover:scale-110 group-hover:rotate-12" />
+            <Sparkles size={16} className="text-primary transition-transform group-hover:scale-110 group-hover:rotate-12" />
             <span className="text-foreground text-xs font-semibold">Meeting Mode</span>
           </div>
         </Link>
@@ -130,7 +130,7 @@ export function AppSidebar() {
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: "w-8 h-8 ring-2 ring-brand-500/20",
+                  avatarBox: "w-8 h-8 ring-2 ring-primary/20",
                 },
               }}
             />
