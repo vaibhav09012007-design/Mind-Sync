@@ -35,58 +35,93 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  /* Gold Palette */
+  --color-gold-50: hsl(48, 100%, 96%);
+  --color-gold-100: hsl(48, 100%, 88%);
+  --color-gold-200: hsl(48, 100%, 75%);
+  --color-gold-300: hsl(48, 100%, 60%);
+  --color-gold-400: hsl(45, 93%, 53%);
+  --color-gold-500: hsl(45, 93%, 47%);
+  --color-gold-600: hsl(42, 93%, 40%);
+  --color-gold-700: hsl(38, 92%, 32%);
+  --color-gold-800: hsl(35, 85%, 26%);
+  --color-gold-900: hsl(32, 80%, 20%);
+  --color-gold-950: hsl(30, 85%, 12%);
 }
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    /* POLISHED BLACK GOLD THEME (Default) */
+    --background: 0 0% 0%; /* Pure Black */
+    --foreground: 45 93% 47%; /* Gold Text */
+    
+    --card: 0 0% 3%; /* Slightly lighter black for cards */
+    --card-foreground: 45 93% 47%;
+    
+    --popover: 0 0% 3%;
+    --popover-foreground: 45 93% 47%;
+    
+    --primary: 45 93% 47%; /* Gold 500 */
+    --primary-foreground: 0 0% 0%; /* Black text on Gold */
+    
+    --secondary: 0 0% 8%; /* Dark Grey */
+    --secondary-foreground: 45 93% 47%;
+    
+    --muted: 0 0% 8%;
+    --muted-foreground: 45 40% 40%; /* Dim Gold */
+    
+    --accent: 0 0% 10%;
+    --accent-foreground: 45 93% 47%;
+    
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 10% 3.9%;
+    
+    --border: 45 93% 47%; /* Gold Borders */
+    --input: 0 0% 10%;
+    --ring: 45 93% 47%; /* Gold Ring */
+    
     --radius: 0.5rem;
+
+    /* Semantic Colors - Mapped to Gold/Black */
+    --color-success-bg: 0 0% 5%;
+    --color-success-text: 142 70% 50%; /* Green */
+    --color-warning-bg: 0 0% 5%;
+    --color-warning-text: 38 92% 50%; /* Orange */
+    --color-error-bg: 0 0% 5%;
+    --color-error-text: 0 84% 60%; /* Red */
+    --color-info-bg: 0 0% 5%;
+    --color-info-text: 199 89% 50%; /* Blue */
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
+    /* Ensure dark mode matches root */
+    --background: 0 0% 0%;
+    --foreground: 45 93% 47%;
+    --card: 0 0% 3%;
+    --card-foreground: 45 93% 47%;
+    --popover: 0 0% 3%;
+    --popover-foreground: 45 93% 47%;
+    --primary: 45 93% 47%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 45 93% 47%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 45 40% 40%;
+    --accent: 0 0% 10%;
+    --accent-foreground: 45 93% 47%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --border: 45 93% 47%;
+    --input: 0 0% 10%;
+    --ring: 45 93% 47%;
   }
 }
 
 @layer base {
   * {
     @apply border-border;
+    border-color: hsl(var(--border) / 0.2); /* Subtle Gold Borders */
   }
   body {
     @apply bg-background text-foreground;
@@ -94,456 +129,135 @@
 }
 
 /* ============================================
-   PREMIUM UI IMPROVEMENTS - Mind-Sync
+   POLISHED BLACK GOLD THEME OVERRIDES
    ============================================ */
 
-/* === 1. Premium Gradient Color Palette === */
+/* Redefine variables to remove gradients and use Gold */
 :root {
-  /* Brand Colors - Mind-Sync Identity */
-  --brand-purple-50: 265 100% 97%;
-  --brand-purple-100: 265 100% 94%;
-  --brand-purple-200: 265 100% 89%;
-  --brand-purple-300: 265 100% 82%;
-  --brand-purple-400: 265 98% 72%;
-  --brand-purple-500: 265 83% 58%; /* Main Brand Color */
-  --brand-purple-600: 265 74% 48%;
-  --brand-purple-700: 265 74% 39%;
-  --brand-purple-800: 265 71% 32%;
-  --brand-purple-900: 265 65% 26%;
-  --brand-purple-950: 265 74% 16%;
-
-  /* Primary gradient colors */
-  --gradient-purple: var(--brand-purple-500);
-  --gradient-pink: 330 81% 60%;
-  --gradient-blue: 217 91% 60%;
-  --gradient-teal: 173 80% 40%;
+  --brand-gold-500: 45 93% 47%;
   
-  /* Semantic Colors */
-  --color-success-bg: 142 70% 95%;
-  --color-success-text: 142 76% 36%;
-  --color-warning-bg: 38 92% 95%;
-  --color-warning-text: 38 92% 40%;
-  --color-error-bg: 0 84% 95%;
-  --color-error-text: 0 84% 60%;
-  --color-info-bg: 199 89% 95%;
-  --color-info-text: 199 89% 48%;
+  /* Gradients mapped to Solid Gold */
+  --gradient-gold: 45 93% 47%;
+  --gradient-amber: 45 93% 47%;
+  --gradient-bronze: 45 93% 47%;
+  --gradient-black: 0 0% 0%;
+  
+  --gradient-purple: 45 93% 47%;
+  --gradient-pink: 45 93% 47%;
+  --gradient-blue: 45 93% 47%;
+  --gradient-teal: 45 93% 47%;
 
-  /* Glow colors */
-  --glow-purple: 262 83% 58%;
-  --glow-blue: 217 91% 60%;
-
-  /* Success/Warning/Info contextual colors */
-  --success: 142 76% 36%;
-  --success-foreground: 0 0% 100%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 0 0% 0%;
-  --info: 199 89% 48%;
-  --info-foreground: 0 0% 100%;
+  --glow-gold: 45 93% 47%;
+  --glow-purple: 45 93% 47%;
 }
 
-.dark {
-  /* Brand Colors - Dark Mode Adjustments */
-  --brand-purple-500: 265 83% 65%; /* Slightly lighter for dark mode */
-
-  /* Semantic Colors - Dark Mode */
-  --color-success-bg: 142 76% 15%;
-  --color-success-text: 142 70% 85%;
-  --color-warning-bg: 38 92% 15%;
-  --color-warning-text: 38 92% 85%;
-  --color-error-bg: 0 84% 15%;
-  --color-error-text: 0 84% 85%;
-  --color-info-bg: 199 89% 15%;
-  --color-info-text: 199 89% 85%;
-
-  --gradient-purple: 262 83% 65%;
-  --gradient-pink: 330 81% 65%;
-  --gradient-blue: 217 91% 65%;
-  --gradient-teal: 173 80% 50%;
-
-  --glow-purple: 262 83% 65%;
-  --glow-blue: 217 91% 65%;
-
-  --success: 142 76% 46%;
-  --warning: 38 92% 60%;
-  --info: 199 89% 58%;
-}
-
-/* === 2. Gradient Text Utilities === */
-.gradient-text {
-  @apply bg-clip-text text-transparent;
-  background-image: linear-gradient(135deg, hsl(var(--gradient-purple)), hsl(var(--gradient-pink)), hsl(var(--gradient-blue)));
-}
-
+/* 2. Gradient Text -> Solid Polished Gold */
+.gradient-text,
 .gradient-text-animated {
-  @apply bg-clip-text text-transparent;
-  background-image: linear-gradient(135deg, hsl(var(--gradient-purple)), hsl(var(--gradient-pink)), hsl(var(--gradient-blue)));
-  background-size: 200% 200%;
-  animation: gradient-shift 3s ease infinite;
+  background: none;
+  -webkit-text-fill-color: initial;
+  @apply text-primary drop-shadow-md;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); /* Subtle Gold Glow */
 }
 
-/* === 3. Premium Animations === */
-@keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+/* 3. Disable Background Mesh */
+.bg-gradient-mesh {
+  background: none;
+  @apply bg-background;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+/* 4. Disable other gradients */
+.bg-gradient-primary,
+.bg-gradient-accent {
+  background: hsl(var(--primary));
 }
 
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px hsl(var(--glow-purple) / 0.3); }
-  50% { box-shadow: 0 0 40px hsl(var(--glow-purple) / 0.6); }
-}
-
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-/* === 4. Animation Utility Classes === */
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite;
-}
-
-.animate-fade-in-up {
-  animation: fade-in-up 0.5s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scale-in 0.3s ease-out forwards;
-}
-
-/* Staggered animation delays */
-.delay-100 { animation-delay: 100ms; }
-.delay-200 { animation-delay: 200ms; }
-.delay-300 { animation-delay: 300ms; }
-.delay-400 { animation-delay: 400ms; }
-.delay-500 { animation-delay: 500ms; }
-
-/* === 5. Glass Morphism Utilities === */
+/* 5. Glass Morphism -> Polished Black Glass */
 .glass {
-  @apply bg-white/10 backdrop-blur-md border border-white/20;
+  @apply bg-black/80 backdrop-blur-md border border-primary/20 shadow-glow;
 }
 
 .glass-card {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-xl;
+  @apply bg-zinc-900/50 backdrop-blur-xl border border-primary/20 shadow-glow;
 }
 
-.dark .glass {
-  @apply bg-black/20 border-white/10;
-}
-
-.dark .glass-card {
-  @apply bg-black/30 border-white/5;
-}
-
-/* === 6. Premium Shadows === */
+/* 6. Premium Gold Shadows */
 .shadow-glow {
-  box-shadow: 0 0 20px hsl(var(--glow-purple) / 0.3);
+  box-shadow: 0 0 15px hsl(var(--primary) / 0.2);
 }
 
 .shadow-glow-lg {
-  box-shadow: 0 0 40px hsl(var(--glow-purple) / 0.4);
+  box-shadow: 0 0 30px hsl(var(--primary) / 0.3);
 }
 
 .shadow-elevated {
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.1),
-    0 2px 4px -2px rgb(0 0 0 / 0.1),
-    0 0 0 1px rgb(0 0 0 / 0.05);
+  box-shadow: 0 4px 20px hsl(0 0% 0% / 0.5);
 }
 
-.dark .shadow-elevated {
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.3),
-    0 2px 4px -2px rgb(0 0 0 / 0.2),
-    0 0 0 1px rgb(255 255 255 / 0.05);
-}
-
-/* === 7. Gradient Backgrounds === */
-.bg-gradient-primary {
-  background: linear-gradient(135deg, hsl(var(--gradient-purple)), hsl(var(--gradient-blue)));
-}
-
-.bg-gradient-accent {
-  background: linear-gradient(135deg, hsl(var(--gradient-pink)), hsl(var(--gradient-purple)));
-}
-
-.bg-gradient-mesh {
-  background:
-    radial-gradient(at 40% 20%, hsl(var(--gradient-purple) / 0.3) 0px, transparent 50%),
-    radial-gradient(at 80% 0%, hsl(var(--gradient-blue) / 0.2) 0px, transparent 50%),
-    radial-gradient(at 0% 50%, hsl(var(--gradient-teal) / 0.2) 0px, transparent 50%),
-    radial-gradient(at 80% 50%, hsl(var(--gradient-pink) / 0.15) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsl(var(--gradient-blue) / 0.2) 0px, transparent 50%);
-}
-
-/* === 8. Interactive States === */
-.hover-lift {
-  @apply transition-all duration-300;
-}
-
+/* 7. Interactive States */
 .hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px -8px hsl(var(--glow-purple) / 0.25);
-}
-
-.hover-glow {
-  @apply transition-shadow duration-300;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px -10px hsl(var(--primary) / 0.3);
 }
 
 .hover-glow:hover {
-  box-shadow: 0 0 30px hsl(var(--glow-purple) / 0.4);
+  box-shadow: 0 0 25px hsl(var(--primary) / 0.4);
 }
 
-/* === 9. Gradient Borders === */
+/* 8. Gradient Borders -> Solid Gold Border */
 .gradient-border {
-  position: relative;
   background: hsl(var(--card));
+  border: 1px solid hsl(var(--primary) / 0.5);
   border-radius: var(--radius);
 }
+.gradient-border::before { display: none; }
 
-.gradient-border::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background: linear-gradient(135deg, hsl(var(--gradient-purple)), hsl(var(--gradient-blue)));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-}
-
-/* === 10. Focus States === */
-.focus-ring {
-  @apply outline-none;
-}
-
+/* 9. Focus States */
 .focus-ring:focus-visible {
   @apply ring-2 ring-offset-2;
-  --tw-ring-color: hsl(var(--gradient-purple));
+  --tw-ring-color: hsl(var(--primary));
   --tw-ring-offset-color: hsl(var(--background));
 }
 
-/* === 11. Smooth Scroll === */
-html {
-  scroll-behavior: smooth;
-}
+/* 10. Scrollbar - Gold Thumb */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: hsl(0 0% 5%); }
+::-webkit-scrollbar-thumb { background: hsl(var(--primary) / 0.5); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary)); }
 
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
+::selection { background: hsl(var(--primary) / 0.3); color: white; }
 
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
+/* Utilities */
+html { scroll-behavior: smooth; }
+.skeleton-shimmer { @apply bg-muted/50; }
 
-/* === 12. Skeleton Shimmer === */
-.skeleton-shimmer {
-  @apply bg-muted/50 relative overflow-hidden;
-}
+.text-balance { text-wrap: balance; }
+.text-pretty { text-wrap: pretty; }
 
-.skeleton-shimmer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    hsl(var(--foreground) / 0.05),
-    transparent
-  );
-  animation: shimmer 1.5s infinite;
-}
+/* Typography */
+h1, .h1 { @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-primary; }
+h2, .h2 { @apply scroll-m-20 border-b border-primary/20 pb-2 text-3xl font-semibold tracking-tight first:mt-0 text-primary; }
+h3, .h3 { @apply scroll-m-20 text-2xl font-semibold tracking-tight text-primary; }
+h4, .h4 { @apply scroll-m-20 text-xl font-semibold tracking-tight text-foreground; }
+h5, .h5 { @apply scroll-m-20 text-lg font-semibold tracking-tight text-foreground; }
+h6, .h6 { @apply scroll-m-20 text-base font-semibold tracking-tight text-foreground; }
 
-/* === 13. Typography Enhancements === */
-.text-balance {
-  text-wrap: balance;
-}
+.p { @apply leading-7 [&:not(:first-child)]:mt-6 text-muted-foreground; }
+.lead { @apply text-xl text-muted-foreground; }
+.muted { @apply text-sm text-muted-foreground; }
 
-.text-pretty {
-  text-wrap: pretty;
-}
+code { @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold text-primary; }
+pre { @apply mb-4 mt-6 overflow-x-auto rounded-lg border border-primary/20 bg-black py-4; }
 
-/* Heading Typography Scale */
-h1, .h1 {
-  @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl;
-}
-
-h2, .h2 {
-  @apply scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0;
-}
-
-h3, .h3 {
-  @apply scroll-m-20 text-2xl font-semibold tracking-tight;
-}
-
-h4, .h4 {
-  @apply scroll-m-20 text-xl font-semibold tracking-tight;
-}
-
-h5, .h5 {
-  @apply scroll-m-20 text-lg font-semibold tracking-tight;
-}
-
-h6, .h6 {
-  @apply scroll-m-20 text-base font-semibold tracking-tight;
-}
-
-/* Body Typography Scale */
-.p {
-  @apply leading-7 [&:not(:first-child)]:mt-6;
-}
-
-.lead {
-  @apply text-xl text-muted-foreground;
-}
-
-.large {
-  @apply text-lg font-semibold;
-}
-
-.small {
-  @apply text-sm font-medium leading-none;
-}
-
-.muted {
-  @apply text-sm text-muted-foreground;
-}
-
-/* Code Styles */
-code {
-  @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold;
-}
-
-pre {
-  @apply mb-4 mt-6 overflow-x-auto rounded-lg border bg-black py-4;
-}
-
-pre code {
-  @apply relative rounded-none border-none bg-transparent p-0 text-white font-normal;
-}
-
-/* Prose utilities for rich text */
 .prose-custom {
-  @apply prose prose-zinc dark:prose-invert max-w-none;
-  @apply prose-headings:scroll-m-20 prose-headings:tracking-tight;
-  @apply prose-h1:text-4xl prose-h1:font-extrabold;
-  @apply prose-p:leading-7;
-  @apply prose-blockquote:border-l-2 prose-blockquote:pl-6 prose-blockquote:italic;
-  @apply prose-ul:my-6 prose-ul:ml-6 prose-ul:list-disc;
+  @apply prose prose-invert max-w-none;
+  @apply prose-headings:text-primary;
+  @apply prose-p:text-muted-foreground;
+  @apply prose-strong:text-primary;
 }
 
-/* === 14. Scrollbar Styling === */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
-}
-
-/* === 15. Selection Styling === */
-::selection {
-  background: hsl(var(--gradient-purple) / 0.3);
-  color: inherit;
-}
-
-/* === 16. Card Hover Effect (legacy support) === */
-.card-hover {
-  @apply transition-all duration-300;
-}
-
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px -4px hsl(var(--foreground) / 0.1);
-}
-
-/* === 17. Additional Gradient Animations (from UI Plan) === */
-@keyframes gradient-x {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
-.animate-gradient-x {
-  background-size: 200% 200%;
-  animation: gradient-x 3s ease infinite;
-}
-
-/* Blob animation for organic shapes */
-@keyframes blob {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(20px, -30px) scale(1.1);
-  }
-  50% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  75% {
-    transform: translate(30px, 10px) scale(1.05);
-  }
-}
-
-.animate-blob {
-  animation: blob 10s ease-in-out infinite;
-}
-
-/* Spin slow for decorative elements */
-@keyframes spin-slow {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.animate-spin-slow {
-  animation: spin-slow 20s linear infinite;
-}
+/* Animations */
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+@keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
+@keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 10px hsl(var(--primary) / 0.2); } 50% { box-shadow: 0 0 20px hsl(var(--primary) / 0.5); } }

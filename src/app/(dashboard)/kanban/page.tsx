@@ -51,7 +51,7 @@ export default function KanbanPage() {
               </DropdownMenuContent>
             </DropdownMenu>
             <CreateTaskDialog>
-              <Button variant="gradient" size="sm" className="gap-2 shadow-lg shadow-purple-500/20">
+              <Button variant="gradient" size="sm" className="gap-2 shadow-lg shadow-primary/20">
                 <Plus size={16} />
                 Add Task
               </Button>

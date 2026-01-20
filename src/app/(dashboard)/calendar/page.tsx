@@ -357,7 +357,7 @@ export default function CalendarPage() {
                       className={cn(
                         "hover:bg-black/5 dark:hover:bg-white/5 group relative flex min-h-[100px] cursor-pointer flex-col gap-1 p-2 transition-all border-b border-r border-black/5 dark:border-white/5",
                         !isCurrentMonth && "bg-black/5 dark:bg-white/5 text-muted-foreground/30",
-                        isDayToday && "bg-purple-500/10 shadow-[inset_0_0_20px_rgba(168,85,247,0.1)]"
+                        isDayToday && "bg-primary/10 shadow-[inset_0_0_20px_rgba(255,215,0,0.15)]"
                       )}
                       onClick={() => handleDateClick(day)}
                     >

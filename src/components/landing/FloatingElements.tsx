@@ -29,7 +29,7 @@ export function FloatingElements() {
       {elements.map((el) => (
         <motion.div
           key={el.id}
-          className="absolute rounded-full bg-gradient-to-br from-purple-500/5 to-blue-500/5 backdrop-blur-[1px]"
+          className="absolute rounded-full bg-primary/5 backdrop-blur-[1px]"
           style={{
             width: el.size,
             height: el.size,

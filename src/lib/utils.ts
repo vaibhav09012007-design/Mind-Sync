@@ -6,21 +6,21 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Brand color palette definition for programmatic usage
+ * Brand color palette definition for programmatic usage - Black Gold Theme
  */
 export const brandColors = {
-  purple: {
-    50: 'hsl(265, 100%, 97%)',
-    100: 'hsl(265, 100%, 94%)',
-    200: 'hsl(265, 100%, 89%)',
-    300: 'hsl(265, 100%, 82%)',
-    400: 'hsl(265, 98%, 72%)',
-    500: 'hsl(265, 83%, 58%)', // Main
-    600: 'hsl(265, 74%, 48%)',
-    700: 'hsl(265, 74%, 39%)',
-    800: 'hsl(265, 71%, 32%)',
-    900: 'hsl(265, 65%, 26%)',
-    950: 'hsl(265, 74%, 16%)',
+  gold: {
+    50: 'hsl(48, 100%, 96%)',
+    100: 'hsl(48, 100%, 88%)',
+    200: 'hsl(48, 100%, 75%)',
+    300: 'hsl(48, 100%, 60%)',
+    400: 'hsl(45, 93%, 53%)',
+    500: 'hsl(45, 93%, 47%)', // Main Gold
+    600: 'hsl(42, 93%, 40%)',
+    700: 'hsl(38, 92%, 32%)',
+    800: 'hsl(35, 85%, 26%)',
+    900: 'hsl(32, 80%, 20%)',
+    950: 'hsl(30, 85%, 12%)',
   },
   semantic: {
     success: { bg: 'hsl(142, 70%, 95%)', text: 'hsl(142, 76%, 36%)' },

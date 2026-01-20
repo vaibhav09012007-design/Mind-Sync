@@ -9,8 +9,8 @@ import { ArrowRight } from 'lucide-react';
 export function CTASection() {
   return (
     <section className="py-24 px-4 relative overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-blue-500/10" />
+      {/* Background - Solid Black */}
+      <div className="absolute inset-0 bg-background" />
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}

@@ -7,17 +7,9 @@ import { Button } from '@/components/ui/button';
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      {/* Background gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-pink-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
-
-      {/* Mesh gradient background */}
-      <div className="absolute inset-0 bg-gradient-mesh opacity-50" />
-
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
+      {/* Background - Solid Black with subtle noise if desired, but sticking to pure polished black */}
+      
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -29,7 +21,7 @@ export function HeroSection() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 via-pink-600 to-blue-600 text-white shadow-glow mb-8"
+          className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-primary text-black shadow-glow mb-8"
         >
           <span className="text-4xl font-bold">M</span>
         </motion.div>

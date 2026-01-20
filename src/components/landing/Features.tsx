@@ -95,11 +95,11 @@ export function Features() {
               whileHover={{ y: -8, scale: 1.02 }}
               className="group relative p-6 rounded-2xl bg-card/50 backdrop-blur-sm border border-border/50 hover:border-primary/50 transition-all duration-300 hover:shadow-elevated"
             >
-              {/* Icon with gradient background */}
+              {/* Icon with solid gold style */}
               <div
-                className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${feature.gradient} shadow-lg mb-4`}
+                className="inline-flex p-3 rounded-xl bg-primary/10 border border-primary/20 shadow-glow mb-4"
               >
-                <feature.icon className="w-6 h-6 text-white" />
+                <feature.icon className="w-6 h-6 text-primary" />
               </div>
 
               <h3 className="text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
@@ -108,9 +108,6 @@ export function Features() {
               <p className="text-muted-foreground text-sm leading-relaxed">
                 {feature.description}
               </p>
-
-              {/* Hover gradient border effect */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
             </motion.div>
           ))}
         </motion.div>

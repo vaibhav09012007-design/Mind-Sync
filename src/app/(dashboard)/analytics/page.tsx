@@ -15,7 +15,7 @@ export default function AnalyticsPage() {
     <div className="h-full overflow-auto p-6">
       <GlassCard className="min-h-full p-6" hover="none">
         <div className="flex flex-col gap-1 mb-8">
-            <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 bg-clip-text text-transparent w-fit">
+            <h1 className="text-3xl font-bold tracking-tight gradient-text w-fit">
               Analytics
             </h1>
             <p className="text-muted-foreground text-lg">Track your productivity trends and focus metrics.</p>

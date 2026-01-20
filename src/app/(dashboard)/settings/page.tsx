@@ -42,7 +42,7 @@ export default function SettingsPage() {
     <div className="h-full overflow-y-auto pr-2 custom-scrollbar">
       <div className="max-w-4xl space-y-8 pb-10 mx-auto">
         <div className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 bg-clip-text text-transparent w-fit">
+          <h1 className="text-3xl font-bold tracking-tight gradient-text w-fit">
             Settings
           </h1>
           <p className="text-muted-foreground text-lg">Manage your profile and preferences.</p>

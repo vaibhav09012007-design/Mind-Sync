@@ -8,16 +8,15 @@ export default function NotesIndexPage() {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center p-6 text-center animate-fade-in-up">
       <GlassCard className="flex flex-col items-center justify-center p-12 max-w-lg w-full border-dashed border-2">
-        <div className="relative mb-8">
-          <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full animate-pulse-glow" />
-          <div className="relative bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 p-6 rounded-full border border-white/20 shadow-inner">
-            <StickyNote className="h-12 w-12 text-purple-600 dark:text-purple-400" />
+          <div className="relative mb-8">
+            <div className="relative bg-zinc-900 p-6 rounded-full border border-primary/20 shadow-glow">
+              <StickyNote className="h-12 w-12 text-primary" />
+            </div>
+            {/* Decorative elements */}
+            <div className="absolute -top-2 -right-2 bg-primary rounded-full p-1.5 shadow-lg animate-float" style={{ animationDelay: '1s' }}>
+              <PenLine className="h-4 w-4 text-black" />
+            </div>
           </div>
-          {/* Decorative elements */}
-          <div className="absolute -top-2 -right-2 bg-yellow-400/80 rounded-full p-1.5 shadow-lg animate-float" style={{ animationDelay: '1s' }}>
-            <PenLine className="h-4 w-4 text-white" />
-          </div>
-        </div>
         
         <h2 className="mb-3 text-3xl font-bold gradient-text">
           Select a note to view

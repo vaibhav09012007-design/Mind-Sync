@@ -457,10 +457,10 @@ export default function DashboardPage() {
 
         {/* Zen Mode Promo */}
         <motion.div variants={item}>
-          <GlassCard hover="scale" className="relative overflow-hidden p-8 border-none">
+          <GlassCard hover="scale" className="relative overflow-hidden p-8 border border-primary/20">
             {/* Background Effects */}
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-cyan-500/10 pointer-events-none" />
-            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/20 blur-3xl" />
+            <div className="absolute inset-0 bg-primary/5 pointer-events-none" />
+            <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
             
             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div>

@@ -25,11 +25,11 @@ export const GradientButton = forwardRef<HTMLButtonElement, GradientButtonProps>
         whileTap={{ scale: 0.98 }}
         className={cn(
           'relative rounded-full font-medium overflow-hidden',
-          'bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600',
-          'text-white shadow-lg shadow-purple-500/25',
-          'hover:shadow-xl hover:shadow-purple-500/40',
+          'bg-primary',
+          'text-black shadow-lg shadow-primary/20',
+          'hover:shadow-xl hover:shadow-primary/40',
           'transition-shadow duration-300',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
           sizeClasses[size],
           className
         )}
@@ -37,7 +37,7 @@ export const GradientButton = forwardRef<HTMLButtonElement, GradientButtonProps>
       >
         {/* Animated shine effect */}
         <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-black/10 to-transparent"
           initial={{ x: '-100%' }}
           animate={{ x: '100%' }}
           transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
