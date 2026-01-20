@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter), "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono), "JetBrains Mono", monospace;
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -402,9 +402,73 @@ html {
   text-wrap: pretty;
 }
 
-/* Improved heading styles */
-h1, h2, h3, h4, h5, h6 {
-  @apply tracking-tight;
+/* Heading Typography Scale */
+h1, .h1 {
+  @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl;
+}
+
+h2, .h2 {
+  @apply scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0;
+}
+
+h3, .h3 {
+  @apply scroll-m-20 text-2xl font-semibold tracking-tight;
+}
+
+h4, .h4 {
+  @apply scroll-m-20 text-xl font-semibold tracking-tight;
+}
+
+h5, .h5 {
+  @apply scroll-m-20 text-lg font-semibold tracking-tight;
+}
+
+h6, .h6 {
+  @apply scroll-m-20 text-base font-semibold tracking-tight;
+}
+
+/* Body Typography Scale */
+.p {
+  @apply leading-7 [&:not(:first-child)]:mt-6;
+}
+
+.lead {
+  @apply text-xl text-muted-foreground;
+}
+
+.large {
+  @apply text-lg font-semibold;
+}
+
+.small {
+  @apply text-sm font-medium leading-none;
+}
+
+.muted {
+  @apply text-sm text-muted-foreground;
+}
+
+/* Code Styles */
+code {
+  @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold;
+}
+
+pre {
+  @apply mb-4 mt-6 overflow-x-auto rounded-lg border bg-black py-4;
+}
+
+pre code {
+  @apply relative rounded-none border-none bg-transparent p-0 text-white font-normal;
+}
+
+/* Prose utilities for rich text */
+.prose-custom {
+  @apply prose prose-zinc dark:prose-invert max-w-none;
+  @apply prose-headings:scroll-m-20 prose-headings:tracking-tight;
+  @apply prose-h1:text-4xl prose-h1:font-extrabold;
+  @apply prose-p:leading-7;
+  @apply prose-blockquote:border-l-2 prose-blockquote:pl-6 prose-blockquote:italic;
+  @apply prose-ul:my-6 prose-ul:ml-6 prose-ul:list-disc;
 }
 
 /* === 14. Scrollbar Styling === */

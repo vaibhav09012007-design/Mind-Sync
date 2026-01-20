@@ -570,4 +570,46 @@ export function AnimatedStats() {
 ---
 
 ## 4. Typography Upgrades
+
+### 1. Font Family System
+**Priority**: High
+**Difficulty**: Easy
+**Files Affected**: `src/app/layout.tsx`, `src/app/globals.css`
+
+**Fonts Selected**:
+- **Sans Serif**: `Inter` (Variable Weight) - For UI, headings, and body text. Chosen for legibility and modern aesthetic.
+- **Monospace**: `JetBrains Mono` - For code blocks and data display. chosen for developer-friendly readability.
+
+### 2. Typography Scale
+**Priority**: High
+**Difficulty**: Easy
+**Files Affected**: `src/app/globals.css`
+
+Standardized type hierarchy using Tailwind utility classes:
+
+| Element | Size (Desktop) | Weight | Tracking | Description |
+|---------|----------------|--------|----------|-------------|
+| `h1` | `text-4xl` / `text-5xl` | Extrabold (800) | Tight | Main page titles |
+| `h2` | `text-3xl` | Semibold (600) | Tight | Section headings with border |
+| `h3` | `text-2xl` | Semibold (600) | Tight | Card titles, subsections |
+| `h4` | `text-xl` | Semibold (600) | Tight | Important labels |
+| `lead` | `text-xl` | Regular (400) | Normal | Introduction text (muted) |
+| `p` | `text-base` | Regular (400) | Normal | Standard body text |
+| `small` | `text-sm` | Medium (500) | Normal | Captions, metadata |
+
+### 3. Prose Styling
+**Priority**: Medium
+**Difficulty**: Easy
+**Files Affected**: `src/app/globals.css`
+
+**Features**:
+- `.prose-custom` class for rich text content (blogs, documentation)
+- Styled blockquotes with left border
+- Optimized line height (`leading-7`) for readability
+- Dark mode support via `dark:prose-invert`
+
+---
+
+## 5. Component Enhancements
 (Coming soon...)
+
