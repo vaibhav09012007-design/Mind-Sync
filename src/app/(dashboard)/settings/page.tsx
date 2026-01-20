@@ -143,18 +143,6 @@ export default function SettingsPage() {
             <div className="p-6 space-y-6">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <div className="font-medium">Dark Mode</div>
-                  <div className="text-sm text-muted-foreground">Reduce eye strain with a dark theme</div>
-                </div>
-                <Switch
-                  checked={theme === 'dark'}
-                  onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
-                  className="data-[state=checked]:bg-purple-600"
-                />
-              </div>
-              <Separator className="bg-border/50" />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
                   <div className="font-medium">Meeting Notifications</div>
                   <div className="text-sm text-muted-foreground">Get alerted 5 minutes before meetings start</div>
                 </div>

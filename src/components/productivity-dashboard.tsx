@@ -27,7 +27,6 @@ import { ProductivityScore } from "@/components/analytics/productivity-score";
 import { StatCardWithTrend } from "@/components/analytics/stat-card-with-trend";
 import { CoachWidget } from "@/components/analytics/coach-widget";
 import { GoalsWidget } from "@/components/analytics/goals-widget";
-import { CategoryBreakdown } from "@/components/analytics/category-breakdown";
 import { ExportStats } from "@/components/analytics/export-stats";
 import { getGoals } from "@/actions/goals";
 
@@ -233,7 +232,6 @@ export function ProductivityDashboard() {
             goalsProgress={goalsProgress}
           />
           <GoalsWidget initialGoals={goals} userId={userId} />
-          <CategoryBreakdown data={breakdownData} />
         </div>
       </div>
     </div>

@@ -16,7 +16,6 @@ import {
 import { motion } from "framer-motion";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Logo } from "@/components/ui/Logo";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -36,7 +35,6 @@ export function AppSidebar() {
       {/* Logo */}
       <div className="border-b border-white/10 p-4 flex items-center justify-between">
         <Logo size="sm" />
-        <ThemeToggle />
       </div>
 
       {/* Quick Search */}

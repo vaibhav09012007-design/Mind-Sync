@@ -94,7 +94,7 @@ export function GoalsWidget({ initialGoals, userId }: GoalsWidgetProps) {
   };
 
   return (
-    <Card className="h-full">
+    <Card className="h-full min-h-[400px]">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle>My Goals</CardTitle>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
