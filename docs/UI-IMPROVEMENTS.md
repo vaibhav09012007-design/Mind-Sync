@@ -313,6 +313,128 @@ interface ProgressProps {
 
 ---
 
+## 10. Tabs Component
+
+**File**: `src/components/ui/tabs.tsx`
+**Status**: ✅ Implemented
+
+### New Props
+```tsx
+interface TabsListProps {
+  variant?: "default" | "pills" | "underline";
+}
+
+interface TabsTriggerProps {
+  variant?: "default" | "pills" | "underline";
+}
+```
+
+### Variants
+| Variant | Style |
+|---------|-------|
+| `default` | Standard muted background |
+| `pills` | Floating pill buttons with gradient active state |
+| `underline` | Clean underlined tabs with animated border |
+
+### Usage
+```tsx
+<Tabs defaultValue="account">
+  <TabsList variant="pills">
+    <TabsTrigger value="account" variant="pills">Account</TabsTrigger>
+    <TabsTrigger value="password" variant="pills">Password</TabsTrigger>
+  </TabsList>
+  <TabsContent value="account">...</TabsContent>
+</Tabs>
+```
+
+---
+
+## 11. Switch Component
+
+**File**: `src/components/ui/switch.tsx`
+**Status**: ✅ Implemented
+
+### Enhancements
+- Gradient variant added
+- Larger thumb size (size-5 vs size-4)
+- Smoother transitions
+- Shadow effects on thumb
+
+### Usage
+```tsx
+<Switch variant="gradient" />
+```
+
+---
+
+## 12. Select Component
+
+**File**: `src/components/ui/select.tsx`
+**Status**: ✅ Implemented
+
+### Enhancements
+- Glass morphism dropdown menu
+- Purple focus rings and borders
+- Animated chevron icon (rotates on open)
+- Rounded-lg corners
+- Backdrop blur effect
+
+---
+
+## 13. Popover Component
+
+**File**: `src/components/ui/popover.tsx`
+**Status**: ✅ Implemented
+
+### Enhancements
+- Glass effect background (`bg-popover/95` + `backdrop-blur-sm`)
+- Rounded-xl borders
+- Enhanced shadow
+- Softer borders
+
+---
+
+## 14. Page Transitions
+
+**File**: `src/components/ui/page-transition.tsx`
+**Status**: ✅ Implemented
+
+### New Components Added
+| Component | Purpose |
+|-----------|---------|
+| `HoverScale` | Scales element on hover |
+| `HoverLift` | Lifts element with shadow on hover |
+| `Pulse` | Continuous pulse animation |
+| `ScrollReveal` | Fades in content on scroll |
+| `AnimatedCounter` | Counts numbers up from zero |
+| `GradientBorderAnimated` | Rotating gradient border effect |
+
+### Usage
+```tsx
+<PageTransition>
+  <ScrollReveal>
+    <HoverLift>
+      <Card>Animated Content</Card>
+    </HoverLift>
+  </ScrollReveal>
+</PageTransition>
+```
+
+---
+
+## 15. Separator Component
+
+**File**: `src/components/ui/separator.tsx`
+**Status**: ✅ Implemented
+
+### Enhancements
+- Added `variant="gradient"` for fading gradient lines
+```tsx
+<Separator variant="gradient" />
+```
+
+---
+
 ## Quick Reference
 
 ### Premium Gradient Text
