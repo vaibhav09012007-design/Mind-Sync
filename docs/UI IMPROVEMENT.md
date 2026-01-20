@@ -519,3 +519,55 @@ export function AnimatedStats() {
 
 ---
 
+## 3. Color Palette & Branding
+
+### 1. Brand Color System
+**Priority**: High
+**Difficulty**: Easy
+**Files Affected**: `src/app/globals.css`, `src/lib/utils.ts`
+
+**Overview**: A refined color system based on a primary purple hue that scales from light to dark. This system supports both light and dark modes with specific semantic roles.
+
+#### Brand Scale (Purple)
+| Token | Hex/HSL | Usage |
+|-------|---------|-------|
+| `brand-50` | `hsl(265, 100%, 97%)` | Backgrounds, subtlest tints |
+| `brand-100` | `hsl(265, 100%, 94%)` | Hover states, interactive backgrounds |
+| `brand-500` | `hsl(265, 83%, 58%)` | **Primary Brand Color**, Buttons, Links |
+| `brand-900` | `hsl(265, 65%, 26%)` | Text headings (light mode), Deep backgrounds |
+
+#### Semantic Colors
+- **Success**: Emerald Green `hsl(142, 76%, 36%)`
+- **Warning**: Amber Orange `hsl(38, 92%, 50%)`
+- **Error**: Rose Red `hsl(0, 84%, 60%)`
+- **Info**: Sky Blue `hsl(199, 89%, 48%)`
+
+#### Gradients
+- **Primary Gradient**: Purple -> Pink -> Blue (135deg)
+- **Glow Gradient**: Soft purple/blue diffusion for shadows
+
+### 2. Logo Component
+**Priority**: Medium
+**Difficulty**: Easy
+**Files Affected**: `src/components/ui/Logo.tsx`
+
+**Features**:
+- Responsive sizing (`sm`, `md`, `lg`, `xl`)
+- Animated icon option
+- Gradient fill with glossy overlay
+- Consistent typography
+
+### 3. Theme Toggle
+**Priority**: Low
+**Difficulty**: Easy
+**Files Affected**: `src/components/ui/ThemeToggle.tsx`
+
+**Features**:
+- Animated transition between Sun/Moon icons
+- Dropdown for Light/Dark/System preference
+- Glass-morphism dropdown menu
+
+---
+
+## 4. Typography Upgrades
+(Coming soon...)

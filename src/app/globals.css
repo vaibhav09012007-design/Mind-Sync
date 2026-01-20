@@ -98,11 +98,34 @@
 
 /* === 1. Premium Gradient Color Palette === */
 :root {
+  /* Brand Colors - Mind-Sync Identity */
+  --brand-purple-50: 265 100% 97%;
+  --brand-purple-100: 265 100% 94%;
+  --brand-purple-200: 265 100% 89%;
+  --brand-purple-300: 265 100% 82%;
+  --brand-purple-400: 265 98% 72%;
+  --brand-purple-500: 265 83% 58%; /* Main Brand Color */
+  --brand-purple-600: 265 74% 48%;
+  --brand-purple-700: 265 74% 39%;
+  --brand-purple-800: 265 71% 32%;
+  --brand-purple-900: 265 65% 26%;
+  --brand-purple-950: 265 74% 16%;
+
   /* Primary gradient colors */
-  --gradient-purple: 262 83% 58%;
+  --gradient-purple: var(--brand-purple-500);
   --gradient-pink: 330 81% 60%;
   --gradient-blue: 217 91% 60%;
   --gradient-teal: 173 80% 40%;
+  
+  /* Semantic Colors */
+  --color-success-bg: 142 70% 95%;
+  --color-success-text: 142 76% 36%;
+  --color-warning-bg: 38 92% 95%;
+  --color-warning-text: 38 92% 40%;
+  --color-error-bg: 0 84% 95%;
+  --color-error-text: 0 84% 60%;
+  --color-info-bg: 199 89% 95%;
+  --color-info-text: 199 89% 48%;
 
   /* Glow colors */
   --glow-purple: 262 83% 58%;
@@ -118,6 +141,19 @@
 }
 
 .dark {
+  /* Brand Colors - Dark Mode Adjustments */
+  --brand-purple-500: 265 83% 65%; /* Slightly lighter for dark mode */
+
+  /* Semantic Colors - Dark Mode */
+  --color-success-bg: 142 76% 15%;
+  --color-success-text: 142 70% 85%;
+  --color-warning-bg: 38 92% 15%;
+  --color-warning-text: 38 92% 85%;
+  --color-error-bg: 0 84% 15%;
+  --color-error-text: 0 84% 85%;
+  --color-info-bg: 199 89% 15%;
+  --color-info-text: 199 89% 85%;
+
   --gradient-purple: 262 83% 65%;
   --gradient-pink: 330 81% 65%;
   --gradient-blue: 217 91% 65%;
