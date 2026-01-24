@@ -30,7 +30,16 @@ export * from './toggle';
 export * from './stat-card';
 export * from './scroll-area';
 export * from './alert';
-export * from './skeletons';
+export {
+  TaskSkeleton,
+  EventSkeleton,
+  TimeGridSkeleton,
+  NoteCardSkeleton,
+  NotesListSkeleton,
+  DailyProgressSkeleton,
+  DashboardSkeleton,
+  TaskListSkeleton as AdvancedTaskListSkeleton,
+} from './skeletons';
 
 // Re-export Radix UI components with custom styling
 export {
