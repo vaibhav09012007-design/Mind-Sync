@@ -15,6 +15,13 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   if (isProtectedRoute(req)) {
+    // Prevent redirect loop if secret key is missing
+    if (!process.env.CLERK_SECRET_KEY) {
+      return new Response(
+        "Configuration Error: CLERK_SECRET_KEY is missing from environment variables. Please add it to your Vercel project settings.",
+        { status: 500, headers: { "Content-Type": "text/plain" } }
+      );
+    }
     await auth.protect();
   }
 });
