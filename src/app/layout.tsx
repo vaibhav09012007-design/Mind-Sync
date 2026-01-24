@@ -46,6 +46,26 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  if (!publishableKey) {
+    return (
+      <html lang="en">
+        <body>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", fontFamily: "system-ui, sans-serif" }}>
+            <div style={{ textAlign: "center", padding: "2rem" }}>
+              <h1 style={{ color: "#e11d48", fontSize: "1.5rem", fontWeight: "bold", marginBottom: "1rem" }}>Configuration Error</h1>
+              <p style={{ color: "#4b5563", marginBottom: "0.5rem" }}>
+                Missing <code>NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY</code> environment variable.
+              </p>
+              <p style={{ color: "#6b7280", fontSize: "0.875rem" }}>
+                Please add it to your project settings.
+              </p>
+            </div>
+          </div>
+        </body>
+      </html>
+    );
+  }
+
   return (
     <ClerkProvider publishableKey={publishableKey}>
       <html lang="en" suppressHydrationWarning>
