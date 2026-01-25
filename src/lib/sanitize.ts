@@ -35,9 +35,24 @@ export function stripHtml(str: string): string {
 
 /**
  * Sanitize a string for use in SQL-like contexts (basic)
- * Note: Always use parameterized queries - this is a last resort
+ * 
+ * @deprecated DO NOT USE THIS FUNCTION FOR SQL QUERIES!
+ * This function provides minimal protection and is NOT a substitute for
+ * parameterized queries. Always use Drizzle ORM's query builder which
+ * automatically handles parameterization.
+ * 
+ * This function exists only for legacy compatibility and should be removed.
+ * If you find yourself wanting to use this, you're likely doing something wrong.
+ * 
+ * Safe approach: Use Drizzle's eq(), and(), or() functions instead of string concatenation.
+ * 
+ * @see https://orm.drizzle.team/docs/operators
  */
 export function sanitizeSqlString(str: string): string {
+  console.warn(
+    "[SECURITY WARNING] sanitizeSqlString is deprecated and provides minimal protection. " +
+    "Use parameterized queries (Drizzle ORM) instead. Called with input length: " + str?.length
+  );
   if (!str) return "";
   return str.replace(/['";\\]/g, "");
 }
