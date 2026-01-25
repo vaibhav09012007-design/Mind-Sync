@@ -35,7 +35,7 @@ import {
   parseTasksFromCSV,
   parseTasksFromJSON,
 } from "@/lib/task-utils";
-import { bulkImportTasks } from "@/app/actions";
+import { bulkImportTasks } from "@/actions/tasks";
 
 interface ImportExportDialogProps {
   open: boolean;

@@ -1,20 +1,18 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
-import {
-  createTask,
-  toggleTaskStatus,
-  deleteTask,
-  createEvent,
-  updateEvent as serverUpdateEvent,
-  deleteEvent,
-  createNote,
-  updateNote as serverUpdateNote,
-  deleteNote as serverDeleteNote,
-  syncSubtask,
-  deleteSubtask,
-  cloneTaskToDb,
-} from "@/app/actions";
+import { createTask } from "@/actions/tasks";
+import { toggleTaskStatus } from "@/actions/tasks";
+import { deleteTask } from "@/actions/tasks";
+import { createEvent } from "@/actions/events";
+import { updateEvent as serverUpdateEvent } from "@/actions/events";
+import { deleteEvent } from "@/actions/events";
+import { createNote } from "@/actions/notes";
+import { updateNote as serverUpdateNote } from "@/actions/notes";
+import { deleteNote as serverDeleteNote } from "@/actions/notes";
+import { syncSubtask } from "@/actions/tasks";
+import { deleteSubtask } from "@/actions/tasks";
+import { cloneTaskToDb } from "@/actions/tasks";
 import { toast } from "sonner";
 
 // --- Types ---

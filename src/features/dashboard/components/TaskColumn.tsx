@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { deleteCompletedTasks } from "@/app/actions";
+import { deleteCompletedTasks } from "@/actions/tasks";
 import { toast } from "sonner";
 
 interface TaskColumnProps {

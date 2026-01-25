@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { useStore } from "@/store/useStore";
-import { getTasks, getEvents, getNotes } from "@/app/actions";
+import { getTasks } from "@/actions/tasks";
+import { getEvents } from "@/actions/events";
+import { getNotes } from "@/actions/notes";
 import { useAuth } from "@clerk/nextjs";
 
 interface SyncProviderProps {
