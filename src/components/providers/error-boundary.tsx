@@ -3,6 +3,7 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { reportError } from "@/lib/error-reporting";
 
 interface Props {
   children: ReactNode;
@@ -30,7 +31,12 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Error Boundary caught an error:", error, errorInfo);
-    // TODO: Send to Sentry when integrated
+    
+    // Report to monitoring service
+    reportError(error, {
+      componentStack: errorInfo.componentStack,
+      action: "component_render",
+    });
   }
 
   handleRetry = () => {
