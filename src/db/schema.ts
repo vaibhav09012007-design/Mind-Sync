@@ -143,3 +143,17 @@ export const goals = pgTable("goals", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// Rate limiting table for distributed rate limiting (works across serverless instances)
+export const rateLimits = pgTable("rate_limits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  key: text("key").notNull().unique(), // Format: "userId:action"
+  count: integer("count").default(0).notNull(),
+  windowStart: timestamp("window_start").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_rate_limits_key").on(table.key),
+  index("idx_rate_limits_expires").on(table.expiresAt),
+]);
