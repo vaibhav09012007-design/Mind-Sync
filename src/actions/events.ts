@@ -18,6 +18,7 @@ import {
 import { createEventSchema, updateEventSchema } from "@/lib/validation";
 import { GoogleCalendarService } from "@/lib/google-calendar";
 import { requireAuth, ensureUserExists } from "./shared";
+import { reportError } from "@/lib/error-reporting";
 
 // --- Events ---
 

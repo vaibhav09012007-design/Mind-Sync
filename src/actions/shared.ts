@@ -65,14 +65,14 @@ export async function syncUser(): Promise<ActionResult<string | null>> {
             // Unique violation - user was created by another request
             console.log("[syncUser] User already exists (race condition handled):", user.id);
           } else {
-            reportError(insertError as Error, { 
+            reportError(insertError as unknown as Error, { 
               action: "sync_user_insert", 
               extra: { userId: user.id, pgErrorCode: pgError.code } 
             });
             throw insertError;
           }
         } else {
-          reportError(insertError as Error, { 
+          reportError(insertError as unknown as Error, { 
             action: "sync_user_insert", 
             extra: { userId: user.id } 
           });

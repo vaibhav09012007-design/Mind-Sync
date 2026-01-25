@@ -34,7 +34,7 @@ export class ErrorBoundary extends Component<Props, State> {
     
     // Report to monitoring service
     reportError(error, {
-      componentStack: errorInfo.componentStack,
+      componentStack: errorInfo.componentStack || undefined,
       action: "component_render",
     });
   }
