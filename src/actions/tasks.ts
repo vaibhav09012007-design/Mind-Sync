@@ -14,7 +14,7 @@ import {
   createSuccessResult,
   createErrorResult,
 } from "@/lib/errors";
-import { createTaskSchema } from "@/lib/validation";
+import { createTaskSchema, updateTaskSchema } from "@/lib/validation";
 import { requireAuth, ensureUserExists } from "./shared";
 
 // --- Tasks ---
@@ -56,6 +56,70 @@ export async function createTask(data: {
     });
 
     revalidatePath("/dashboard");
+    revalidatePath("/kanban");
+    return createSuccessResult(undefined);
+  } catch (error) {
+    return createErrorResult(error);
+  }
+}
+
+export async function updateTask(data: {
+  id: string;
+  title?: string;
+  description?: string;
+  dueDate?: string | null;
+  priority?: "P0" | "P1" | "P2" | "P3";
+  status?: "Todo" | "InProgress" | "Done";
+  estimatedMinutes?: number;
+  tags?: string[];
+  columnId?: string;
+}): Promise<ActionResult<void>> {
+  try {
+    const { userId } = await requireAuth();
+
+    // Validate input
+    const validated = updateTaskSchema.safeParse(data);
+    if (!validated.success) {
+      const errors = validated.error.flatten().fieldErrors;
+      throw new ValidationError(errors as Record<string, string[]>);
+    }
+
+    await ensureUserExists(userId);
+
+    // Prepare update object
+    const updates: Partial<typeof tasks.$inferInsert> = {};
+    if (data.title !== undefined) updates.title = data.title;
+    if (data.description !== undefined) updates.description = data.description;
+    if (data.dueDate !== undefined) updates.dueDate = data.dueDate ? new Date(data.dueDate) : null;
+    if (data.priority !== undefined) updates.priority = data.priority;
+    if (data.estimatedMinutes !== undefined) updates.estimatedMinutes = data.estimatedMinutes;
+    if (data.tags !== undefined) updates.tags = data.tags;
+
+    // Handle status update (direct or via columnId)
+    if (data.status !== undefined) {
+      updates.status = data.status;
+    } else if (data.columnId !== undefined) {
+      // Map columnId to status
+      if (data.columnId === "Todo") updates.status = "Todo";
+      else if (data.columnId === "InProgress") updates.status = "InProgress";
+      else if (data.columnId === "Done") updates.status = "Done";
+      // Other columns like "Backlog" mapping to Todo or ignored depending on requirements
+      // For now, we only map known statuses
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return createSuccessResult(undefined);
+    }
+
+    updates.updatedAt = new Date();
+
+    await db
+      .update(tasks)
+      .set(updates)
+      .where(and(eq(tasks.id, data.id), eq(tasks.userId, userId)));
+
+    revalidatePath("/dashboard");
+    revalidatePath("/kanban");
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -94,6 +158,7 @@ export async function toggleTaskStatus(
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 
     revalidatePath("/dashboard");
+    revalidatePath("/kanban");
     return createSuccessResult(undefined);
   } catch (error) {
     console.error("[toggleTaskStatus] Error:", error);
@@ -112,6 +177,7 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
     await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 
     revalidatePath("/dashboard");
+    revalidatePath("/kanban");
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -125,6 +191,7 @@ export async function deleteCompletedTasks(): Promise<ActionResult<void>> {
     await db.delete(tasks).where(and(eq(tasks.status, "Done"), eq(tasks.userId, userId)));
 
     revalidatePath("/dashboard");
+    revalidatePath("/kanban");
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -184,6 +251,7 @@ export async function deleteSubtask(id: string): Promise<ActionResult<void>> {
     await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 
     revalidatePath("/dashboard");
+    revalidatePath("/kanban");
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);

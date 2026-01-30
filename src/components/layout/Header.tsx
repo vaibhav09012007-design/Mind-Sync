@@ -2,6 +2,7 @@
 
 import { Bell, Search, User } from "lucide-react";
 import { UserButton } from "@clerk/nextjs";
+import { NotificationBell } from "@/components/layout/notification-bell";
 
 interface HeaderProps {
   title: string;
@@ -21,6 +22,7 @@ export function Header({ title, subtitle, children }: HeaderProps) {
         {children}
 
         <div className="flex items-center gap-2">
+          <NotificationBell />
           {/* Placeholders for header actions if needed, though Sidebar has Search/User now. 
                We kept this flexible for page-specific actions.
            */}

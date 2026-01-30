@@ -80,6 +80,7 @@ export function FocusTimer() {
     setActiveTimerTask,
     resetTimer,
     tasks,
+    addNotification,
   } = useStore();
 
   const [zenMode, setZenMode] = useState(false);
@@ -161,11 +162,18 @@ export function FocusTimer() {
 
         setTimerMode(nextMode);
 
-        showNotification(
-          "Focus session complete!",
-          nextMode === "longBreak" ? "Time for a long break!" : "Take a short break."
-        );
-        toast.success("Focus session complete!");
+        const title = "Focus session complete!";
+        const message = nextMode === "longBreak" ? "Time for a long break!" : "Take a short break.";
+
+        showNotification(title, message);
+        toast.success(title);
+
+        // Add to in-app notifications
+        addNotification({
+          title,
+          message,
+          type: "success",
+        });
 
         if (timerSettings.autoStartBreaks) {
           setTimerRunning(true);
@@ -378,6 +386,9 @@ export function FocusTimer() {
 
           {/* Timer Circle */}
           <div
+            data-testid="timer-display"
+            data-status={isTimerRunning ? "running" : "paused"}
+            data-mode={timerMode}
             className={cn(
               "relative mx-auto transition-all",
               zenMode ? "h-96 w-96 scale-110" : "h-56 w-56"
@@ -426,7 +437,7 @@ export function FocusTimer() {
                   {formatTime(timeLeft)}
                 </motion.span>
               </AnimatePresence>
-              <span className="text-muted-foreground mt-2 text-sm font-medium">
+              <span data-testid="session-count" className="text-muted-foreground mt-2 text-sm font-medium">
                 Session {completedSessions + 1} / {timerSettings.sessionsBeforeLongBreak}
               </span>
             </div>

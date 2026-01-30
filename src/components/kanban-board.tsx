@@ -398,6 +398,9 @@ export function KanbanBoard() {
 
     if (!over) return;
 
+    // Safety check for tasks array
+    if (!Array.isArray(tasks)) return;
+
     const activeTask = tasks.find((t) => t.id === active.id);
     if (!activeTask) return;
 
@@ -420,6 +423,7 @@ export function KanbanBoard() {
     if (targetColumnId && targetColumnId !== activeTask.columnId) {
       updateTask(activeTask.id, { columnId: targetColumnId });
 
+      // Handle completion status change based on column
       if (targetColumnId === "Done" && !activeTask.completed) {
         toggleTask(activeTask.id);
       } else if (targetColumnId !== "Done" && activeTask.completed) {

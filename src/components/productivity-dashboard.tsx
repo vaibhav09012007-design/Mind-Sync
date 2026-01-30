@@ -28,6 +28,7 @@ import { StatCardWithTrend } from "@/components/analytics/stat-card-with-trend";
 import { CoachWidget } from "@/components/analytics/coach-widget";
 import { GoalsWidget } from "@/components/analytics/goals-widget";
 import { ExportStats } from "@/components/analytics/export-stats";
+import { useAuth } from "@clerk/nextjs";
 import { getGoals } from "@/actions/goals";
 
 interface Goal {
@@ -41,12 +42,11 @@ interface Goal {
 
 export function ProductivityDashboard() {
   const { tasks } = useStore();
+  const { userId } = useAuth();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [dateRangeOption, setDateRangeOption] = useState<DateRangeOption>("30d");
   const [dateRange, setDateRange] = useState<DateRange>(getDateRangeFromOption("30d"));
-
-  const userId = "user_2rOp5...";
 
   useEffect(() => {
     async function loadGoals() {

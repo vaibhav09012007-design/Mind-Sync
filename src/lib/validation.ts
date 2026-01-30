@@ -17,8 +17,16 @@ export const toggleTaskSchema = z.object({
   completed: z.boolean(),
 });
 
-export const deleteTaskSchema = z.object({
+export const updateTaskSchema = z.object({
   id: z.string().uuid(),
+  title: z.string().min(1).max(500).optional(),
+  description: z.string().optional(),
+  dueDate: z.string().datetime().nullable().optional(),
+  priority: z.enum(["P0", "P1", "P2", "P3"]).optional(),
+  status: z.enum(["Todo", "InProgress", "Done"]).optional(),
+  estimatedMinutes: z.number().optional(),
+  tags: z.array(z.string()).optional(),
+  columnId: z.string().optional(),
 });
 
 // --- Event Schemas ---
@@ -72,6 +80,7 @@ export const summarizeMeetingSchema = z.object({
 // --- Type exports ---
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
 export type ToggleTaskInput = z.infer<typeof toggleTaskSchema>;
 export type CreateEventInput = z.infer<typeof createEventSchema>;
 export type UpdateEventInput = z.infer<typeof updateEventSchema>;

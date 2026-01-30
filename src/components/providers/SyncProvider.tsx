@@ -36,6 +36,7 @@ export function SyncProvider({ children }: SyncProviderProps) {
               id: t.id,
               title: t.title,
               completed: t.status === "Done",
+              columnId: t.status === "Done" ? "Done" : t.status === "InProgress" ? "InProgress" : "Todo",
               dueDate: t.dueDate ? t.dueDate.toISOString() : new Date().toISOString(),
               priority: (t.priority as "P0" | "P1" | "P2" | "P3") || "P2",
               tags: t.tags || [],

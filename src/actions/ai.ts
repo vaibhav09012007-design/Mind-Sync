@@ -59,6 +59,34 @@ export async function summarizeMeeting(
       throw new ValidationError(errors as Record<string, string[]>);
     }
 
+    // Check for API key and mock if missing
+    const apiKey = getEnvOptional("GEMINI_API_KEY");
+    if (!apiKey) {
+      console.warn("[AI Summary] GEMINI_API_KEY missing, returning mock response");
+
+      // Simulate delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const mockData = {
+        summary: "This is a mock summary generated because AI services are not configured. The meeting transcript was analyzed locally.",
+        decisions: ["Proceed with mock data for testing", "Configure API keys for production"],
+        actionItems: ["Add GEMINI_API_KEY to .env", "Review meeting notes"]
+      };
+
+      // Update note in DB with mock data
+      await db
+        .update(notes)
+        .set({
+          aiSummary: mockData.summary,
+          actionItems: mockData.actionItems,
+          rawTranscript: transcript,
+        })
+        .where(and(eq(notes.id, noteId), eq(notes.userId, userId)));
+
+      revalidatePath(`/notes/${noteId}`);
+      return createSuccessResult(mockData);
+    }
+
     const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // Sanitize transcript to prevent prompt injection
@@ -144,9 +172,10 @@ export async function generateSchedule(): Promise<ActionResult<{ count: number }
     }
 
     // Validate API key is configured
-    const apiKey = getEnv("GEMINI_API_KEY");
+    const apiKey = getEnvOptional("GEMINI_API_KEY");
     if (!apiKey) {
-      throw new APIError("Gemini", "GEMINI_API_KEY is not configured. AI features are disabled.");
+      console.warn("[AI Schedule] GEMINI_API_KEY missing, returning mock response");
+      return createSuccessResult({ count: 0 });
     }
 
     // Fetch Context

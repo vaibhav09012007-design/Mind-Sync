@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { v4 as uuidv4 } from "uuid";
 import { createTask } from "@/actions/tasks";
-import { toggleTaskStatus } from "@/actions/tasks";
+import { toggleTaskStatus, updateTask as serverUpdateTask } from "@/actions/tasks";
 import { deleteTask } from "@/actions/tasks";
 import { createEvent } from "@/actions/events";
 import { updateEvent as serverUpdateEvent } from "@/actions/events";
@@ -82,6 +82,16 @@ export interface Note {
   };
 }
 
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string; // ISO Date String
+  read: boolean;
+  type: "info" | "success" | "warning" | "error";
+  link?: string;
+}
+
 // --- Kanban Types ---
 
 export interface Column {
@@ -142,6 +152,7 @@ interface AppState {
   tasks: Task[];
   events: CalendarEvent[];
   notes: Note[];
+  notifications: Notification[];
   columns: Column[];
   viewSettings: ViewSettings;
   selectedDate: string;
@@ -165,6 +176,12 @@ interface AppState {
   setGoogleAccessToken: (token: string) => void;
   setSelectedDate: (date: Date) => void;
   setViewSettings: (settings: Partial<ViewSettings>) => void;
+
+  // Notification Actions
+  addNotification: (notification: Omit<Notification, "id" | "timestamp" | "read">) => void;
+  markNotificationAsRead: (id: string) => void;
+  markAllNotificationsAsRead: () => void;
+  clearNotifications: () => void;
 
   // Bulk set (for hydration from server)
   setTasks: (tasks: Task[]) => void;
@@ -281,6 +298,7 @@ export const useStore = create<AppState>()(
       tasks: [],
       events: [],
       notes: [],
+      notifications: [],
       columns: DEFAULT_COLUMNS,
       viewSettings: DEFAULT_VIEW_SETTINGS,
       selectedDate: new Date().toISOString(),
@@ -304,6 +322,34 @@ export const useStore = create<AppState>()(
       setSelectedDate: (date) => set({ selectedDate: date.toISOString() }),
       setViewSettings: (settings) =>
         set((state) => ({ viewSettings: { ...state.viewSettings, ...settings } })),
+
+      // --- Notification Actions ---
+      addNotification: (notification) =>
+        set((state) => ({
+          notifications: [
+            {
+              ...notification,
+              id: uuidv4(),
+              timestamp: new Date().toISOString(),
+              read: false,
+            },
+            ...state.notifications,
+          ],
+        })),
+
+      markNotificationAsRead: (id) =>
+        set((state) => ({
+          notifications: state.notifications.map((n) =>
+            n.id === id ? { ...n, read: true } : n
+          ),
+        })),
+
+      markAllNotificationsAsRead: () =>
+        set((state) => ({
+          notifications: state.notifications.map((n) => ({ ...n, read: true })),
+        })),
+
+      clearNotifications: () => set({ notifications: [] }),
 
       setTasks: (tasks) => set({ tasks }),
       setEvents: (events) => set({ events }),
@@ -607,7 +653,7 @@ export const useStore = create<AppState>()(
         }
       },
 
-      updateTask: (id, updates) => {
+      updateTask: async (id, updates) => {
         const task = get().tasks.find((t) => t.id === id);
         if (!task) return;
 
@@ -617,7 +663,43 @@ export const useStore = create<AppState>()(
           tasks: state.tasks.map((t) => (t.id === id ? updatedTask : t)),
         }));
 
-        // Optimistic only for now unless specific fields need server sync that aren't covered by other methods
+        get().pushHistory({
+          type: "task",
+          action: "update",
+          before: task,
+          after: updatedTask,
+        });
+
+        // Sync to server
+        try {
+          // Map Store Task fields to Server Update Input
+          const serverUpdates: any = {
+            id,
+            ...updates,
+          };
+
+          // Handle specific field transformations if needed
+          if (updates.dueDate) {
+            // Ensure it's passed as string or null
+            serverUpdates.dueDate = updates.dueDate;
+          }
+
+          const result = await serverUpdateTask(serverUpdates);
+          if (!result.success) {
+            // Rollback
+            set((state) => ({
+              tasks: state.tasks.map((t) => (t.id === id ? task : t)),
+            }));
+            toast.error(result.error || "Failed to update task");
+          }
+        } catch (error) {
+          console.error("Failed to update task", error);
+          // Rollback
+            set((state) => ({
+              tasks: state.tasks.map((t) => (t.id === id ? task : t)),
+            }));
+            toast.error("Failed to update task");
+        }
       },
 
       updateTaskPriority: (id, priority) => {
@@ -982,6 +1064,7 @@ export const useStore = create<AppState>()(
         tasks: state.tasks,
         events: state.events,
         notes: state.notes,
+        notifications: state.notifications,
         columns: state.columns,
         viewSettings: state.viewSettings,
         selectedDate: state.selectedDate,
