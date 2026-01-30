@@ -231,7 +231,7 @@ export function ProductivityDashboard() {
             totalTasks={totalCompletedTasks}
             goalsProgress={goalsProgress}
           />
-          <GoalsWidget initialGoals={goals} userId={userId} className="flex-1" />
+          {userId && <GoalsWidget initialGoals={goals} userId={userId} className="flex-1" />}
         </div>
       </div>
     </div>

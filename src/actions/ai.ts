@@ -21,7 +21,7 @@ import {
 import { summarizeMeetingSchema } from "@/lib/validation";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { requireAuth, ensureUserExists } from "./shared";
-import { getEnv } from "@/lib/env";
+import { getEnv, getEnvOptional } from "@/lib/env";
 import { reportError, reportWarning } from "@/lib/error-reporting";
 
 // Lazy initialization to avoid crashes if API key is missing
