@@ -1,0 +1,16 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000/\"C:/Users/Vaibhav/Workspace/Mind-Sync\"",
+  "executionArgs": {
+    "projectName": "Mind-Sync",
+    "projectPath": "C:/Users/Vaibhav/Workspace/Mind-Sync",
+    "testIds": [],
+    "additionalInstruction": "Focus on critical user flows: authentication, task management, calendar, notes, meeting mode.",
+    "envs": {
+      "API_KEY": "sk-user-pWwa-f89qsfASU1M9esqlrLKdyawe3vADmc40GcG6qLe-jPkw0y_QgGvRGNBuCE_G2mggMiCFW4XYA9HYP1FraoakKAKQpZ23l2Rvvg6ttpoBEMpOHm5Dj7NgBmTIhQteiY"
+    }
+  },
+  "proxy": "http://43274797-542a-4345-811c-69a34fbfd2d2:kQCDwBq8rVSeok5avsAoSXOZ1PSp8Rdm@tun.testsprite.com:8080"
+}

@@ -1,0 +1,102 @@
+{
+  "tech_stack": [
+    "TypeScript",
+    "Next.js",
+    "React",
+    "PostgreSQL",
+    "Drizzle ORM",
+    "Tailwind CSS",
+    "Radix UI",
+    "Zustand",
+    "Clerk",
+    "Google Gemini AI",
+    "Three.js",
+    "Vitest",
+    "Playwright"
+  ],
+  "features": [
+    {
+      "name": "Authentication",
+      "description": "User authentication and management using Clerk",
+      "files": [
+        "src/app/(auth)/sign-in/[[...sign-in]]/page.tsx",
+        "src/app/(auth)/sign-up/[[...sign-up]]/page.tsx",
+        "src/actions/shared.ts"
+      ]
+    },
+    {
+      "name": "Task Management",
+      "description": "Create, edit, delete tasks with subtasks, priorities, and recurrence",
+      "files": [
+        "src/db/schema.ts",
+        "src/actions/tasks.ts",
+        "src/components/tasks/create-task-dialog.tsx",
+        "src/components/tasks/VirtualTaskList.tsx",
+        "src/features/tasks/components/TaskList.tsx"
+      ]
+    },
+    {
+      "name": "Kanban Board",
+      "description": "Drag and drop kanban board for task management",
+      "files": [
+        "src/app/(dashboard)/kanban/page.tsx",
+        "src/components/kanban-board.tsx",
+        "src/components/kanban/swimlane-board.tsx"
+      ]
+    },
+    {
+      "name": "Calendar Integration",
+      "description": "Calendar view with Google Calendar sync and time blocking",
+      "files": [
+        "src/app/(dashboard)/calendar/page.tsx",
+        "src/actions/events.ts",
+        "src/lib/google-calendar.ts",
+        "src/features/calendar/components/WeekView.tsx"
+      ]
+    },
+    {
+      "name": "Notes System",
+      "description": "Rich text notes with AI summaries",
+      "files": [
+        "src/app/(dashboard)/notes/page.tsx",
+        "src/actions/notes.ts",
+        "src/features/notes/components/Editor.tsx"
+      ]
+    },
+    {
+      "name": "Analytics Dashboard",
+      "description": "Productivity insights, charts, and goals tracking",
+      "files": [
+        "src/app/(dashboard)/analytics/page.tsx",
+        "src/components/analytics/activity-heatmap.tsx",
+        "src/components/analytics/weekly-chart.tsx",
+        "src/actions/goals.ts"
+      ]
+    },
+    {
+      "name": "Focus Mode",
+      "description": "Pomodoro timer and focus tools",
+      "files": [
+        "src/app/(dashboard)/focus/page.tsx",
+        "src/components/focus-timer.tsx"
+      ]
+    },
+    {
+      "name": "Meeting Mode",
+      "description": "Meeting tools with transcription and audio visualization",
+      "files": [
+        "src/app/(dashboard)/meeting/page.tsx",
+        "src/features/meeting-mode/components/AudioVisualizer.tsx",
+        "src/app/api/deepgram/route.ts"
+      ]
+    },
+    {
+      "name": "AI Features",
+      "description": "Smart suggestions, natural language processing, and summaries",
+      "files": [
+        "src/features/ai/advanced-ai.ts",
+        "src/actions/ai.ts"
+      ]
+    }
+  ]
+}

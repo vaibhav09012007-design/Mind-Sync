@@ -1,0 +1,524 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Sign-Up with Valid Details",
+    "description": "Verify that a new user can sign up successfully using valid credentials via Clerk authentication system.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the sign-up page."
+      },
+      {
+        "type": "action",
+        "description": "Enter valid email and password."
+      },
+      {
+        "type": "action",
+        "description": "Submit the sign-up form."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm that the user account is created and user is redirected to the main dashboard."
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Sign-In with Correct Credentials",
+    "description": "Verify that an existing user can sign in successfully using correct credentials via Clerk authentication system.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the sign-in page."
+      },
+      {
+        "type": "action",
+        "description": "Input registered email and password."
+      },
+      {
+        "type": "action",
+        "description": "Submit the sign-in form."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify successful user authentication and redirection to the main dashboard."
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Session Management and Auto Logout",
+    "description": "Ensure user session persists correctly and auto logs out after inactivity or logout request.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Log in as a valid user."
+      },
+      {
+        "type": "action",
+        "description": "Remain idle until session timeout period."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm that the user is automatically logged out after timeout."
+      },
+      {
+        "type": "action",
+        "description": "Log in again and manually trigger logout."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the session is terminated and user is redirected to the sign-in page."
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Create New Task with Basic Details",
+    "description": "Verify that user can create a task with title, description, priority, and due date.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to task creation interface."
+      },
+      {
+        "type": "action",
+        "description": "Enter valid task title, description, priority level, and due date."
+      },
+      {
+        "type": "action",
+        "description": "Submit the new task."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm that the task appears in the task list and kanban board with correct details."
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Edit Existing Task and Update Details",
+    "description": "Verify that user can edit a task's title, priority, completion status, and recurrence settings.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select an existing task from the task list or kanban board."
+      },
+      {
+        "type": "action",
+        "description": "Modify title, priority, toggle completion, and update recurrence pattern."
+      },
+      {
+        "type": "action",
+        "description": "Save changes."
+      },
+      {
+        "type": "assertion",
+        "description": "Validate that all updated task attributes reflect correctly and recurrence behavior triggers as expected."
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Delete Task and Verify Removal",
+    "description": "Ensure the user can delete a task and that it is removed from all views including Kanban and calendar.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select a task for deletion."
+      },
+      {
+        "type": "action",
+        "description": "Perform the delete action and confirm any prompts."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the task does not appear in the task list, kanban board, or calendar."
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Create and Manage Subtasks Under a Parent Task",
+    "description": "Check that subtasks can be added, edited, and marked complete independently but associated with their parent task.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open an existing parent task."
+      },
+      {
+        "type": "action",
+        "description": "Add multiple subtasks with distinct titles."
+      },
+      {
+        "type": "action",
+        "description": "Edit a subtask’s details."
+      },
+      {
+        "type": "action",
+        "description": "Mark subtasks complete or incomplete."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify subtasks changes persist and parent task task reflects subtask completion status accordingly."
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Drag and Drop Task in Kanban Board",
+    "description": "Verify drag-and-drop functionality for tasks across kanban columns for status changes without lag or errors.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to Kanban board."
+      },
+      {
+        "type": "action",
+        "description": "Drag a task card from one status column to another."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm the task's status updates correctly and the UI reflects the movement instantly."
+      },
+      {
+        "type": "action",
+        "description": "Perform rapid drag-and-drop of multiple tasks."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure no UI lag, errors, or task data inconsistency appear."
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Create Calendar Event and Sync to Google Calendar",
+    "description": "Test creation of a calendar event and verify it synchronizes correctly with Google Calendar, including time blocking.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Open calendar view and create a new event with title, time, and description."
+      },
+      {
+        "type": "action",
+        "description": "Enable Google Calendar synchronization."
+      },
+      {
+        "type": "assertion",
+        "description": "Validate that the event appears correctly in both Mind-Sync calendar and the linked Google Calendar."
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Drag and Drop Event to Reschedule in Calendar",
+    "description": "Ensure that dragging an event to a new time slot updates the event timing correctly and syncs with Google Calendar.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Select an existing calendar event."
+      },
+      {
+        "type": "action",
+        "description": "Drag the event to a different time block or day."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm event's new time is saved, reflected in the UI, and synchronized with Google Calendar."
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Handle Google Calendar Sync Conflict Gracefully",
+    "description": "Test how calendar synchronization deals with conflicts when an event is updated in both Mind-Sync and Google Calendar concurrently.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Modify an event's details in Mind-Sync calendar."
+      },
+      {
+        "type": "action",
+        "description": "Simultaneously modify the same event in Google Calendar."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the app detects conflict and prompts user with resolution options without data loss."
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Create and Edit Rich-Text Note",
+    "description": "Verify that users can create new notes, format text richly (bold, italic, lists), and save the note correctly.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to Notes and create a new note."
+      },
+      {
+        "type": "action",
+        "description": "Use rich-text editor to add various formats (headings, bold text, bullet points)."
+      },
+      {
+        "type": "action",
+        "description": "Save the note."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure note is saved with rich-text formatting intact and persists on reload."
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Generate AI Summary from Note Content",
+    "description": "Test ability to generate AI-driven summaries from notes with minimal latency and meaningful content.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create or select a long note with various points."
+      },
+      {
+        "type": "action",
+        "description": "Trigger AI summary generation."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the summary appears quickly, accurately representing the main points of the note."
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Activate Focus Mode and Use Pomodoro Timer",
+    "description": "Confirm that Focus Mode timer starts, counts down correctly, and emits expected notifications or alerts at session end.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to Focus Mode screen."
+      },
+      {
+        "type": "action",
+        "description": "Start the Pomodoro timer."
+      },
+      {
+        "type": "assertion",
+        "description": "Check that timer counts down from preset duration correctly without interruption."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm notification or alert appears when timer completes."
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Play and Control Ambient Soundscapes During Focus Mode",
+    "description": "Verify that ambient soundscapes play continuously during Focus Mode and can be paused or switched without disrupting timer.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start Focus Mode with Pomodoro timer."
+      },
+      {
+        "type": "action",
+        "description": "Play ambient soundscape."
+      },
+      {
+        "type": "action",
+        "description": "Switch between different soundscapes and pause/play the audio."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm soundscape changes take effect immediately and the timer continues without disruption."
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "View Analytics Dashboard and Verify Data Accuracy",
+    "description": "Check that productivity insights (heatmaps, weekly charts) load properly and reflect correct data from user activities.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to Analytics Dashboard."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify heatmaps and charts display data consistent with tasks completed, focus sessions, and calendar events."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm that dashboard loads efficiently on desktop and mobile devices."
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Meeting Mode: Real-Time Transcription Accuracy and UI Feedback",
+    "description": "Ensure that meeting transcription updates in real-time with minimal latency and user interface reflects transcription status clearly.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start Meeting Mode."
+      },
+      {
+        "type": "action",
+        "description": "Speak or provide audio input for transcription."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify transcript is displayed in near real-time and matches spoken words accurately."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm UI shows transcription progress or status (e.g., loading indicator)."
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Meeting Mode: Generate AI Meeting Minutes and Action Items",
+    "description": "Validate that AI generates concise meeting summaries and actionable items from the transcription accurately.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Conduct a meeting session with multiple topics spoken."
+      },
+      {
+        "type": "action",
+        "description": "Trigger AI to generate minutes and action items."
+      },
+      {
+        "type": "assertion",
+        "description": "Ensure the minutes and action items are contextually correct and relevant to the discussions captured."
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Meeting Mode: Audio Visualizer Functionality",
+    "description": "Check that the audio visualizer responds dynamically to audio input during meetings and renders correctly without crashes.",
+    "category": "functional",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Start meeting mode with audio input."
+      },
+      {
+        "type": "assertion",
+        "description": "Confirm audio visualizer animates responsively to audio levels."
+      },
+      {
+        "type": "action",
+        "description": "Stop audio input."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that visualizer stops or reflects silence state gracefully."
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "AI Smart Suggestions for Scheduling Optimization",
+    "description": "Verify that the AI suggests optimal scheduling times for tasks based on calendar availability and priorities.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create a task without a scheduled time."
+      },
+      {
+        "type": "action",
+        "description": "Request AI scheduling suggestions."
+      },
+      {
+        "type": "assertion",
+        "description": "Validate that suggestions are reasonable, conflicts are avoided, and priorities are considered."
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Data Persistence and Recovery After Unexpected Reload",
+    "description": "Ensure that all tasks, notes, calendar events, and focus mode states persist correctly after browser reload or crash.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Create or edit tasks, notes, and calendar events."
+      },
+      {
+        "type": "action",
+        "description": "Start focus mode timer."
+      },
+      {
+        "type": "action",
+        "description": "Reload the browser unexpectedly."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify all data remains consistent and the focus timer state is restored or reset gracefully."
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Error Handling on Failed AI Summary Generation",
+    "description": "Test system behavior and user feedback when AI summary generation fails due to server error or timeout.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Simulate AI backend failure or timeout when requesting summary."
+      },
+      {
+        "type": "assertion",
+        "description": "Verify that the UI provides a clear error message and allows retrying the operation."
+      }
+    ]
+  }
+]
