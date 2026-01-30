@@ -2,7 +2,7 @@
   "status": "commited",
   "type": "frontend",
   "scope": "codebase",
-  "localEndpoint": "http://localhost:3000/\"C:/Users/Vaibhav/Workspace/Mind-Sync\"",
+  "localEndpoint": "http://localhost:3000",
   "executionArgs": {
     "projectName": "Mind-Sync",
     "projectPath": "C:/Users/Vaibhav/Workspace/Mind-Sync",
