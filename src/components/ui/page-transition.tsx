@@ -177,7 +177,7 @@ interface HoverLiftProps {
 export function HoverLift({ children, className, y = -4 }: HoverLiftProps) {
   return (
     <motion.div
-      whileHover={{ y, boxShadow: "0 12px 24px -8px rgba(139, 92, 246, 0.25)" }}
+      whileHover={{ y, boxShadow: "0 12px 24px -8px hsl(var(--primary) / 0.3)" }}
       transition={{ duration: 0.3 }}
       className={className}
     >
@@ -260,7 +260,7 @@ export function GradientBorderAnimated({ children, className }: GradientBorderAn
     <motion.div
       className={cn("relative rounded-xl p-[1px] overflow-hidden", className)}
       style={{
-        background: "linear-gradient(135deg, hsl(262 83% 58%), hsl(330 81% 60%), hsl(217 91% 60%))",
+        background: "linear-gradient(135deg, hsl(45 93% 47%), hsl(42 93% 40%), hsl(38 92% 32%))",
         backgroundSize: "200% 200%",
       }}
       animate={{
