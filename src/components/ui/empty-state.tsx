@@ -33,6 +33,8 @@ export function EmptyState({
         variant === "illustrated" && "py-16",
         className
       )}
+      role="status"
+      aria-live="polite"
     >
       {/* Icon Container */}
       <div className={cn("relative mb-6", variant === "illustrated" && "mb-8")}>
@@ -40,7 +42,7 @@ export function EmptyState({
           className={cn(
             "relative flex items-center justify-center rounded-2xl",
             "bg-muted",
-            variant === "glass" && "bg-purple-100 dark:bg-purple-900/20",
+            variant === "glass" && "bg-primary/10 dark:bg-primary/20",
             variant === "default" && "h-16 w-16",
             variant === "minimal" && "h-12 w-12",
             variant === "illustrated" && "h-24 w-24",
@@ -50,12 +52,13 @@ export function EmptyState({
           <Icon
             className={cn(
               "text-primary",
-              variant === "glass" && "text-purple-600 dark:text-purple-400",
+              variant === "glass" && "text-primary",
               variant === "default" && "h-8 w-8",
               variant === "minimal" && "h-6 w-6",
               variant === "illustrated" && "h-12 w-12",
               variant === "glass" && "h-10 w-10"
             )}
+            aria-hidden="true"
           />
         </div>
       </div>
