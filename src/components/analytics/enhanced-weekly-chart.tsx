@@ -120,8 +120,10 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
   const dataKey = viewMode === "tasks" ? "tasksCompleted" : "focusMinutes";
   const previousKey = viewMode === "tasks" ? "previousTasks" : "previousFocus";
   const unit = viewMode === "tasks" ? "tasks" : "min";
-  const color = viewMode === "tasks" ? "#8b5cf6" : "#22c55e";
-  const previousColor = "#666";
+  // Use CSS variables for colors (hsl values need to be wrapped or used directly if recharts supports it)
+  // Using hex approximations for safety in Recharts or HSL strings
+  const color = viewMode === "tasks" ? "hsl(45 93% 47%)" : "hsl(199 89% 50%)"; // Gold vs Blue
+  const previousColor = "hsl(var(--muted-foreground))";
 
   return (
     <Card>
@@ -130,7 +132,7 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
           <CardTitle>Weekly Activity</CardTitle>
           {comparison !== null && (
             <p
-              className={`mt-1 flex items-center gap-1 text-sm ${comparison >= 0 ? "text-green-500" : "text-red-500"}`}
+              className={`mt-1 flex items-center gap-1 text-sm ${comparison >= 0 ? "text-success" : "text-error"}`}
             >
               {comparison >= 0 ? (
                 <TrendingUp className="h-3 w-3" />
@@ -177,10 +179,23 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
         <ResponsiveContainer width="100%" height="100%">
           {chartType === "bar" ? (
             <BarChart data={formattedData} barGap={4}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
-              <XAxis dataKey="dayName" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.2)" />
+              <XAxis
+                dataKey="dayName"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "hsl(var(--muted-foreground))" }}
+              />
+              <YAxis
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                allowDecimals={false}
+                tick={{ fill: "hsl(var(--muted-foreground))" }}
+              />
               <Tooltip
+                cursor={{ fill: "hsl(var(--muted) / 0.4)" }}
                 content={
                   <CustomTooltip
                     viewMode={viewMode}
@@ -197,22 +212,42 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
                   fill={previousColor}
                   radius={[4, 4, 0, 0]}
                   opacity={0.3}
+                  animationDuration={1500}
+                  animationEasing="ease-out"
                 />
               )}
-              <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]}>
+              <Bar
+                dataKey={dataKey}
+                fill={color}
+                radius={[4, 4, 0, 0]}
+                animationDuration={1500}
+                animationEasing="ease-out"
+              >
                 {formattedData.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={(entry[dataKey as keyof typeof entry] as number) > 0 ? color : "#27272a"}
+                    fill={(entry[dataKey as keyof typeof entry] as number) > 0 ? color : "hsl(var(--muted))"}
                   />
                 ))}
               </Bar>
             </BarChart>
           ) : (
             <LineChart data={formattedData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" />
-              <XAxis dataKey="dayName" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.2)" />
+              <XAxis
+                dataKey="dayName"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: "hsl(var(--muted-foreground))" }}
+              />
+              <YAxis
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                allowDecimals={false}
+                tick={{ fill: "hsl(var(--muted-foreground))" }}
+              />
               <Tooltip
                 content={
                   <CustomTooltip
@@ -232,6 +267,8 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
                   strokeWidth={2}
                   strokeDasharray="5 5"
                   dot={false}
+                  animationDuration={2000}
+                  animationEasing="ease-in-out"
                 />
               )}
               <Line
@@ -240,7 +277,9 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
                 stroke={color}
                 strokeWidth={3}
                 dot={{ fill: color, strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6 }}
+                activeDot={{ r: 6, fill: color, stroke: "hsl(var(--background))", strokeWidth: 2 }}
+                animationDuration={2000}
+                animationEasing="ease-in-out"
               />
             </LineChart>
           )}
