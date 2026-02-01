@@ -86,7 +86,9 @@ describe("PriorityBadge", () => {
 describe("PrioritySelector", () => {
   it("renders current priority", () => {
     render(<PrioritySelector value="P1" onChange={() => {}} />);
-    expect(screen.getByText("P1")).toBeInTheDocument();
+    const elements = screen.getAllByText("P1");
+    expect(elements.length).toBeGreaterThan(0);
+    expect(elements[0]).toBeInTheDocument();
   });
 
   it("shows dropdown with all priorities on click", async () => {

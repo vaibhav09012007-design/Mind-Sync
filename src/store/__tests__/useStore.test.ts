@@ -10,6 +10,7 @@ vi.mock("@/actions/tasks", () => ({
   createTask: vi.fn().mockResolvedValue({ id: "test-id" }),
   updateTask: vi.fn().mockResolvedValue({}),
   deleteTask: vi.fn().mockResolvedValue({}),
+  toggleTaskStatus: vi.fn().mockResolvedValue({}),
 }));
 
 vi.mock("sonner", () => ({
