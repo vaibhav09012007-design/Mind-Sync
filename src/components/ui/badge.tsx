@@ -17,17 +17,20 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
-        // New premium variants
+        // Gold-themed gradient variants
         gradient:
-          "border-0 bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-sm",
+          "border-0 bg-gradient-to-r from-gold-600 to-gold-400 text-black shadow-sm",
         "gradient-subtle":
-          "border-0 bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-700 dark:text-purple-300",
+          "border-0 bg-gradient-to-r from-gold-500/20 to-gold-300/20 text-primary",
+        // Semantic state variants using CSS variables
         success:
-          "border-transparent bg-green-500/20 text-green-700 dark:text-green-400",
+          "border-transparent bg-success text-success",
         warning:
-          "border-transparent bg-yellow-500/20 text-yellow-700 dark:text-yellow-400",
+          "border-transparent bg-warning text-warning",
         info:
-          "border-transparent bg-blue-500/20 text-blue-700 dark:text-blue-400",
+          "border-transparent bg-info text-info",
+        error:
+          "border-transparent bg-error text-error",
         glow:
           "border-transparent bg-primary text-primary-foreground shadow-glow",
       },
