@@ -21,6 +21,10 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const viewport: Viewport = {
   themeColor: "#a855f7",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // Prevent zooming on inputs
 };
 
 export const metadata: Metadata = {
