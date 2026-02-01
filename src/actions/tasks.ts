@@ -7,22 +7,26 @@
 import { db } from "@/db";
 import { tasks } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   ValidationError,
   ActionResult,
   createSuccessResult,
   createErrorResult,
+  APIError,
 } from "@/lib/errors";
 import { createTaskSchema, updateTaskSchema } from "@/lib/validation";
 import { requireAuth, ensureUserExists } from "./shared";
+import { checkRateLimit } from "@/lib/rate-limiter";
+import { getCachedTasks, CACHE_TAGS } from "@/lib/data-fetchers";
 
 // --- Tasks ---
 
 export async function getTasks(): Promise<ActionResult<(typeof tasks.$inferSelect)[]>> {
   try {
     const { userId } = await requireAuth();
-    const result = await db.select().from(tasks).where(eq(tasks.userId, userId));
+    // Use cached fetcher
+    const result = await getCachedTasks(userId);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error);
@@ -36,6 +40,12 @@ export async function createTask(data: {
 }): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
+
+    // Rate Limit: 50 requests per minute
+    const rateLimit = await checkRateLimit(userId, "create-task", 50, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before creating more tasks.");
+    }
 
     // Validate input
     const validated = createTaskSchema.safeParse(data);
@@ -57,6 +67,9 @@ export async function createTask(data: {
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
+    revalidateTag(CACHE_TAGS.tasks(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -76,6 +89,12 @@ export async function updateTask(data: {
 }): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
+
+    // Rate Limit: 100 requests per minute
+    const rateLimit = await checkRateLimit(userId, "update-task", 100, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before updating tasks.");
+    }
 
     // Validate input
     const validated = updateTaskSchema.safeParse(data);
@@ -120,6 +139,9 @@ export async function updateTask(data: {
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
+    revalidateTag(CACHE_TAGS.tasks(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -132,6 +154,12 @@ export async function toggleTaskStatus(
 ): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
+
+    // Rate Limit: 100 requests per minute
+    const rateLimit = await checkRateLimit(userId, "toggle-task", 100, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before toggling tasks.");
+    }
 
     if (!id || typeof id !== "string") {
       throw new ValidationError({ id: ["Invalid task ID"] });
@@ -159,6 +187,9 @@ export async function toggleTaskStatus(
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
+    revalidateTag(CACHE_TAGS.tasks(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     console.error("[toggleTaskStatus] Error:", error);
@@ -170,6 +201,12 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
 
+    // Rate Limit: 100 requests per minute
+    const rateLimit = await checkRateLimit(userId, "delete-task", 100, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before deleting tasks.");
+    }
+
     if (!id || typeof id !== "string") {
       throw new ValidationError({ id: ["Invalid task ID"] });
     }
@@ -178,6 +215,9 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
+    revalidateTag(CACHE_TAGS.tasks(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -188,10 +228,19 @@ export async function deleteCompletedTasks(): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
 
+    // Rate Limit: 10 requests per minute
+    const rateLimit = await checkRateLimit(userId, "delete-completed-tasks", 10, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before deleting tasks.");
+    }
+
     await db.delete(tasks).where(and(eq(tasks.status, "Done"), eq(tasks.userId, userId)));
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
+    revalidateTag(CACHE_TAGS.tasks(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -208,6 +257,12 @@ export async function syncSubtask(data: {
 }): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
+
+    // Rate Limit: 100 requests per minute
+    const rateLimit = await checkRateLimit(userId, "sync-subtask", 100, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before syncing subtasks.");
+    }
 
     // Check if subtask exists
     const existing = await db
@@ -238,6 +293,8 @@ export async function syncSubtask(data: {
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
+    // revalidateTag(CACHE_TAGS.tasks(userId));
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -248,10 +305,18 @@ export async function deleteSubtask(id: string): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
 
+    // Rate Limit: 100 requests per minute
+    const rateLimit = await checkRateLimit(userId, "delete-subtask", 100, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before deleting subtasks.");
+    }
+
     await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
+    // revalidateTag(CACHE_TAGS.tasks(userId));
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -272,6 +337,12 @@ export async function cloneTaskToDb(data: {
 }): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
+
+    // Rate Limit: 20 requests per minute
+    const rateLimit = await checkRateLimit(userId, "clone-task", 20, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before cloning tasks.");
+    }
 
     await ensureUserExists(userId);
 
@@ -303,6 +374,9 @@ export async function cloneTaskToDb(data: {
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
+    revalidateTag(CACHE_TAGS.tasks(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -325,6 +399,12 @@ export async function bulkImportTasks(
   try {
     const { userId } = await requireAuth();
 
+    // Rate Limit: 5 requests per minute (heavy operation)
+    const rateLimit = await checkRateLimit(userId, "bulk-import-tasks", 5, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before importing tasks.");
+    }
+
     await ensureUserExists(userId);
 
     let imported = 0;
@@ -345,6 +425,9 @@ export async function bulkImportTasks(
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
+    revalidateTag(CACHE_TAGS.tasks(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult({ imported });
   } catch (error) {
     return createErrorResult(error);

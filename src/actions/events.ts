@@ -7,7 +7,7 @@
 import { db } from "@/db";
 import { events } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   ValidationError,
   APIError,
@@ -19,13 +19,16 @@ import { createEventSchema, updateEventSchema } from "@/lib/validation";
 import { GoogleCalendarService } from "@/lib/google-calendar";
 import { requireAuth, ensureUserExists } from "./shared";
 import { reportError } from "@/lib/error-reporting";
+import { checkRateLimit } from "@/lib/rate-limiter";
+import { getCachedEvents, CACHE_TAGS } from "@/lib/data-fetchers";
 
 // --- Events ---
 
 export async function getEvents(): Promise<ActionResult<(typeof events.$inferSelect)[]>> {
   try {
     const { userId } = await requireAuth();
-    const result = await db.select().from(events).where(eq(events.userId, userId));
+    // Use cached fetcher
+    const result = await getCachedEvents(userId);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error);
@@ -41,6 +44,12 @@ export async function createEvent(data: {
 }): Promise<ActionResult<void>> {
   try {
     const { userId, getToken } = await requireAuth();
+
+    // Rate Limit: 50 requests per minute
+    const rateLimit = await checkRateLimit(userId, "create-event", 50, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before creating more events.");
+    }
 
     const validated = createEventSchema.safeParse(data);
     if (!validated.success) {
@@ -78,6 +87,10 @@ export async function createEvent(data: {
     });
 
     revalidatePath("/calendar");
+    revalidatePath("/dashboard");
+    revalidateTag(CACHE_TAGS.events(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -87,6 +100,12 @@ export async function createEvent(data: {
 export async function deleteEvent(id: string): Promise<ActionResult<void>> {
   try {
     const { userId, getToken } = await requireAuth();
+
+    // Rate Limit: 100 requests per minute
+    const rateLimit = await checkRateLimit(userId, "delete-event", 100, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before deleting events.");
+    }
 
     if (!id || typeof id !== "string") {
       throw new ValidationError({ id: ["Invalid event ID"] });
@@ -115,6 +134,10 @@ export async function deleteEvent(id: string): Promise<ActionResult<void>> {
     await db.delete(events).where(and(eq(events.id, id), eq(events.userId, userId)));
 
     revalidatePath("/calendar");
+    revalidatePath("/dashboard");
+    revalidateTag(CACHE_TAGS.events(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -127,6 +150,12 @@ export async function updateEvent(
 ): Promise<ActionResult<void>> {
   try {
     const { userId, getToken } = await requireAuth();
+
+    // Rate Limit: 100 requests per minute
+    const rateLimit = await checkRateLimit(userId, "update-event", 100, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before updating events.");
+    }
 
     const validated = updateEventSchema.safeParse({ id, ...data });
     if (!validated.success) {
@@ -170,6 +199,9 @@ export async function updateEvent(
 
     revalidatePath("/calendar");
     revalidatePath("/dashboard");
+    revalidateTag(CACHE_TAGS.events(userId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -183,6 +215,12 @@ export async function syncGoogleCalendar(): Promise<
 > {
   try {
     const { userId, getToken } = await requireAuth();
+
+    // Rate Limit: 10 requests per minute (stricter for external API)
+    const rateLimit = await checkRateLimit(userId, "sync-calendar", 10, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before syncing again.");
+    }
 
     console.log("[Sync] Starting Google Calendar sync...");
 

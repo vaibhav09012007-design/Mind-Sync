@@ -7,21 +7,25 @@
 import { db } from "@/db";
 import { notes } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import {
   ValidationError,
   ActionResult,
   createSuccessResult,
   createErrorResult,
+  APIError,
 } from "@/lib/errors";
 import { requireAuth, ensureUserExists } from "./shared";
+import { checkRateLimit } from "@/lib/rate-limiter";
+import { getCachedNotes, CACHE_TAGS } from "@/lib/data-fetchers";
 
 // --- Notes ---
 
 export async function getNotes(): Promise<ActionResult<(typeof notes.$inferSelect)[]>> {
   try {
     const { userId } = await requireAuth();
-    const result = await db.select().from(notes).where(eq(notes.userId, userId));
+    // Use cached fetcher
+    const result = await getCachedNotes(userId);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error);
@@ -36,10 +40,16 @@ export async function createNote(data: {
   date: string;
   tags?: string[];
   type?: "meeting" | "personal";
-  metadata?: any;
+  metadata?: unknown;
 }): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
+
+    // Rate Limit: 60 requests per minute
+    const rateLimit = await checkRateLimit(userId, "create-note", 60, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before creating more notes.");
+    }
 
     // Use flexible validation or update schema in lib/validation
     // For now assuming data is valid as per store
@@ -59,6 +69,8 @@ export async function createNote(data: {
     });
 
     revalidatePath("/notes");
+    revalidateTag(CACHE_TAGS.notes(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -73,12 +85,18 @@ export async function updateNote(
     preview?: string;
     tags?: string[];
     type?: "meeting" | "personal";
-    metadata?: any;
+    metadata?: unknown;
     date?: string;
   }
 ): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
+
+    // Rate Limit: 100 requests per minute
+    const rateLimit = await checkRateLimit(userId, "update-note", 100, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before updating notes.");
+    }
 
     const updates: Record<string, unknown> = {};
     if (data.title) updates.title = data.title;
@@ -95,6 +113,8 @@ export async function updateNote(
       .where(and(eq(notes.id, id), eq(notes.userId, userId)));
 
     revalidatePath("/notes");
+    revalidateTag(CACHE_TAGS.notes(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
@@ -104,6 +124,12 @@ export async function updateNote(
 export async function deleteNote(id: string): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
+
+    // Rate Limit: 100 requests per minute
+    const rateLimit = await checkRateLimit(userId, "delete-note", 100, 60);
+    if (!rateLimit.allowed) {
+      throw new APIError("Too Many Requests", "Please wait before deleting notes.");
+    }
 
     if (!id || typeof id !== "string") {
       throw new ValidationError({ id: ["Invalid note ID"] });
@@ -124,6 +150,8 @@ export async function deleteNote(id: string): Promise<ActionResult<void>> {
     }
 
     revalidatePath("/notes");
+    revalidateTag(CACHE_TAGS.notes(userId), "default");
+
     return createSuccessResult(undefined);
   } catch (error) {
     return createErrorResult(error);
