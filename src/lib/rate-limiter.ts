@@ -42,19 +42,18 @@ export async function checkRateLimit(
       .where(eq(rateLimits.key, key))
       .limit(1);
 
-    let entry = existing[0];
+    const entry = existing[0];
 
     if (!entry) {
       // Create new entry
-      const [newEntry] = await db
+      await db
         .insert(rateLimits)
         .values({
           key,
           count: 1,
           windowStart: now,
           expiresAt,
-        })
-        .returning();
+        });
 
       return {
         allowed: true,
