@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { format, subDays, startOfWeek, endOfWeek, isWithinInterval, isSameDay } from "date-fns";
+import { Confetti } from "@/components/ui/confetti";
 
 // Helper for animations
 const container = {
@@ -95,6 +96,15 @@ export default function DashboardPage() {
   const { tasks, events, toggleTask } = useStore();
   const { user } = useUser();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const handleTaskToggle = (taskId: string) => {
+    const task = tasks.find((t) => t.id === taskId);
+    if (task && !task.completed) {
+      setShowConfetti(true);
+    }
+    toggleTask(taskId);
+  };
 
   // Calculate streak
   const streak = useMemo(() => calculateStreak(tasks), [tasks]);
@@ -246,6 +256,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-background">
+      {showConfetti && <Confetti onComplete={() => setShowConfetti(false)} />}
       <Header title="Dashboard" subtitle={`${greeting}, ${user?.firstName || "Traveler"}`} />
       <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
         {/* Stats Cards - Now 4 columns */}
@@ -354,7 +365,7 @@ export default function DashboardPage() {
                     >
                       {/* Checkmark button */}
                       <button
-                        onClick={() => toggleTask(task.id)}
+                        onClick={() => handleTaskToggle(task.id)}
                         className="flex-shrink-0 rounded-full focus:ring-2 focus:ring-brand-500 focus:outline-none transition-colors"
                         title="Mark as complete"
                       >
