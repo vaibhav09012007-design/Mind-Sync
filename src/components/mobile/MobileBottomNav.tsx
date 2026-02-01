@@ -9,15 +9,16 @@ import {
   Clock,
   FileText,
   BarChart3,
+  Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Home", icon: LayoutDashboard },
+  { href: "/habits", label: "Habits", icon: Target },
   { href: "/kanban", label: "Tasks", icon: CheckSquare },
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/focus", label: "Focus", icon: Clock },
-  { href: "/notes", label: "Notes", icon: FileText },
 ];
 
 export function MobileBottomNav() {

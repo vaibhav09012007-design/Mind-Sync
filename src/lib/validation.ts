@@ -77,6 +77,38 @@ export const summarizeMeetingSchema = z.object({
   transcript: z.string().min(10, "Transcript too short").max(50000, "Transcript too long"),
 });
 
+// --- Habit Schemas ---
+
+export const createHabitSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1, "Habit title is required").max(500),
+  description: z.string().optional(),
+  frequency: z.enum(["daily", "weekly", "custom"]).default("daily"),
+  targetDays: z.array(z.number().min(0).max(6)).optional(), // 0=Sunday
+  targetCount: z.number().min(1).default(1),
+  timeOfDay: z.enum(["morning", "afternoon", "evening", "anytime"]).default("anytime"),
+  reminderTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format").optional(),
+});
+
+export const updateHabitSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1).max(500).optional(),
+  description: z.string().optional(),
+  frequency: z.enum(["daily", "weekly", "custom"]).optional(),
+  targetDays: z.array(z.number()).optional(),
+  targetCount: z.number().optional(),
+  timeOfDay: z.enum(["morning", "afternoon", "evening", "anytime"]).optional(),
+  reminderTime: z.string().optional(),
+  isArchived: z.boolean().optional(),
+});
+
+export const logHabitSchema = z.object({
+  habitId: z.string().uuid(),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
+  notes: z.string().optional(),
+  completed: z.boolean(), // true to complete, false to undo
+});
+
 // --- Type exports ---
 
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
@@ -87,3 +119,6 @@ export type UpdateEventInput = z.infer<typeof updateEventSchema>;
 export type CreateNoteInput = z.infer<typeof createNoteSchema>;
 export type UpdateNoteInput = z.infer<typeof updateNoteSchema>;
 export type SummarizeMeetingInput = z.infer<typeof summarizeMeetingSchema>;
+export type CreateHabitInput = z.infer<typeof createHabitSchema>;
+export type UpdateHabitInput = z.infer<typeof updateHabitSchema>;
+export type LogHabitInput = z.infer<typeof logHabitSchema>;

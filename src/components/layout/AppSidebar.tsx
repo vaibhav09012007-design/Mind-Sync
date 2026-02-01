@@ -12,6 +12,7 @@ import {
   Settings,
   Sparkles,
   Search,
+  Target,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { UserButton, useUser } from "@clerk/nextjs";
@@ -19,6 +20,7 @@ import { Logo } from "@/components/ui/Logo";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/habits", label: "Habits", icon: Target },
   { href: "/calendar", label: "Calendar", icon: Calendar },
   { href: "/notes", label: "Notes", icon: FileText },
   { href: "/focus", label: "Focus", icon: Timer },

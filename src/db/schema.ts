@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, jsonb, pgEnum, integer, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, jsonb, pgEnum, integer, index, boolean, date } from "drizzle-orm/pg-core";
 
 export const statusEnum = pgEnum("status", ["Todo", "InProgress", "Done"]);
 export const priorityEnum = pgEnum("priority", ["P0", "P1", "P2", "P3"]);
@@ -6,6 +6,8 @@ export const attachmentTypeEnum = pgEnum("attachment_type", ["image", "file", "l
 export const goalMetricEnum = pgEnum("goal_metric", ["hours", "tasks", "streak"]);
 export const goalPeriodEnum = pgEnum("goal_period", ["weekly", "monthly"]);
 export const goalStatusEnum = pgEnum("goal_status", ["active", "completed", "failed"]);
+export const habitFrequencyEnum = pgEnum("habit_frequency", ["daily", "weekly", "custom"]);
+export const habitTimeOfDayEnum = pgEnum("habit_time_of_day", ["morning", "afternoon", "evening", "anytime"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk User ID
@@ -157,4 +159,42 @@ export const rateLimits = pgTable("rate_limits", {
 }, (table) => [
   index("idx_rate_limits_key").on(table.key),
   index("idx_rate_limits_expires").on(table.expiresAt),
+]);
+
+export const habits = pgTable("habits", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  frequency: habitFrequencyEnum("frequency").default("daily").notNull(),
+  targetDays: integer("target_days").array(), // 0=Sunday, 1=Monday, etc. for custom frequency
+  targetCount: integer("target_count").default(1), // For "X times a week"
+  timeOfDay: habitTimeOfDayEnum("time_of_day").default("anytime"),
+  reminderTime: text("reminder_time"), // "HH:MM" 24h format
+  currentStreak: integer("current_streak").default(0),
+  longestStreak: integer("longest_streak").default(0),
+  isArchived: boolean("is_archived").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_habits_user").on(table.userId),
+  index("idx_habits_user_archived").on(table.userId, table.isArchived),
+]);
+
+export const habitLogs = pgTable("habit_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  habitId: uuid("habit_id")
+    .references(() => habits.id, { onDelete: "cascade" })
+    .notNull(),
+  userId: text("user_id")
+    .references(() => users.id)
+    .notNull(),
+  completedAt: timestamp("completed_at").defaultNow().notNull(),
+  date: date("date").notNull(), // YYYY-MM-DD
+  notes: text("notes"),
+}, (table) => [
+  index("idx_habit_logs_habit").on(table.habitId),
+  index("idx_habit_logs_user_date").on(table.userId, table.date),
 ]);
