@@ -264,6 +264,33 @@ pre { @apply mb-4 mt-6 overflow-x-auto rounded-lg border border-primary/20 bg-bl
 @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
 @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 10px hsl(var(--primary) / 0.2); } 50% { box-shadow: 0 0 20px hsl(var(--primary) / 0.5); } }
 
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 /* ============================================
    SEMANTIC COLOR UTILITY CLASSES
    ============================================ */
