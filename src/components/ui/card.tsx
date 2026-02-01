@@ -9,10 +9,10 @@ export interface CardProps extends React.ComponentProps<"div"> {
 
 function Card({ className, variant = "default", hover = "lift", ...props }: CardProps) {
   const variantStyles = {
-    default: "bg-card border",
-    glass: "glass-card border-0",
+    default: "bg-card border-border border",
+    glass: "glass-gold",
     "gradient-border": "gradient-border border-0",
-    elevated: "bg-card shadow-elevated border-0",
+    elevated: "bg-card shadow-elevation-md border-border border",
   };
 
   const hoverStyles = {
@@ -45,7 +45,7 @@ function GlassCard({ className, hover = "lift", ...props }: Omit<CardProps, "var
     <Card
       variant="glass"
       hover={hover}
-      className={cn("bg-white/10 dark:bg-black/20 backdrop-blur-md border-white/20 dark:border-white/10", className)}
+      className={className}
       {...props}
     />
   );
