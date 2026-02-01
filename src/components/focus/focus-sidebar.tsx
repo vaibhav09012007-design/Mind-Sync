@@ -126,7 +126,7 @@ export function FocusSidebar() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Flame className="h-4 w-4 text-orange-500" />
+            <Flame className="h-4 w-4 text-warning" />
             Focus Goals
           </CardTitle>
         </CardHeader>
@@ -139,16 +139,16 @@ export function FocusSidebar() {
               <div key={goal.id} className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground flex items-center gap-2">
-                    <goal.icon className={`h-3.5 w-3.5 ${isComplete ? "text-green-500" : ""}`} />
+                    <goal.icon className={`h-3.5 w-3.5 ${isComplete ? "text-success" : ""}`} />
                     {goal.label}
                   </span>
-                  <span className={`font-medium ${isComplete ? "text-green-500" : ""}`}>
+                  <span className={`font-medium ${isComplete ? "text-success" : ""}`}>
                     {goal.current}/{goal.target} {goal.unit}
                   </span>
                 </div>
                 <Progress
                   value={progress}
-                  className={`h-2 ${isComplete ? "[&>div]:bg-green-500" : ""}`}
+                  className={`h-2 ${isComplete ? "[&>div]:bg-success-solid" : ""}`}
                 />
               </div>
             );
@@ -160,7 +160,7 @@ export function FocusSidebar() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <TrendingUp className="h-4 w-4 text-blue-500" />
+            <TrendingUp className="h-4 w-4 text-info" />
             Today's Progress
           </CardTitle>
         </CardHeader>
@@ -188,7 +188,7 @@ export function FocusSidebar() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Clock className="h-4 w-4 text-purple-500" />
+            <Clock className="h-4 w-4 text-primary" />
             Recent Sessions
           </CardTitle>
         </CardHeader>
@@ -200,7 +200,7 @@ export function FocusSidebar() {
                   key={session.id}
                   className="bg-muted/50 flex items-center gap-3 rounded-lg p-2"
                 >
-                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                  <div className="h-2 w-2 rounded-full bg-success-solid" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{session.title}</p>
                     <p className="text-muted-foreground text-xs">

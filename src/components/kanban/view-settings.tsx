@@ -70,16 +70,16 @@ export function ViewSettings() {
             // Generate a random color or select from a preset
             const colors = [
               {
-                color: "text-purple-600 dark:text-purple-400",
-                bgColor: "bg-purple-50 dark:bg-purple-900/20",
+                color: "text-primary",
+                bgColor: "bg-primary/10 border-primary/20",
               },
               {
-                color: "text-pink-600 dark:text-pink-400",
-                bgColor: "bg-pink-50 dark:bg-pink-900/20",
+                color: "text-success",
+                bgColor: "bg-success/10 border-success/20",
               },
               {
-                color: "text-indigo-600 dark:text-indigo-400",
-                bgColor: "bg-indigo-50 dark:bg-indigo-900/20",
+                color: "text-info",
+                bgColor: "bg-info/10 border-info/20",
               },
             ];
             const randomTheme = colors[Math.floor(Math.random() * colors.length)];
