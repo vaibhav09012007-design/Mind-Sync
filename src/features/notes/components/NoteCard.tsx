@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Note } from "@/store/useStore";
 
 export function NoteCard({ id, title, preview, date, tags, type, metadata }: Note) {
@@ -61,11 +62,12 @@ export function NoteCard({ id, title, preview, date, tags, type, metadata }: Not
 
           {metadata?.images && metadata.images.length > 0 && (
             <div className="bg-muted/20 relative mt-2 h-24 w-full overflow-hidden rounded-md border">
-              <img
+              <Image
                 src={metadata.images[0]}
                 alt="Note attachment"
-                className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                loading="lazy"
+                fill
+                className="object-cover transition-transform group-hover:scale-105"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
           )}

@@ -52,7 +52,7 @@ export function ProductivityDashboard() {
     async function loadGoals() {
       if (!userId) return;
       try {
-        const data = await getGoals(userId);
+        const data = await getGoals();
         setGoals(data as unknown as Goal[]);
       } catch (e) {
         console.error("Failed to load goals", e);

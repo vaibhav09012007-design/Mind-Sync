@@ -45,6 +45,7 @@ import {
   Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { format, isToday, isTomorrow, isPast } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -156,7 +157,13 @@ function SortableTaskCard({
       {/* Cover Image */}
       {viewSettings.showCoverImages && task.coverImage && !isCompact && (
         <div className="relative mb-3 h-32 w-full overflow-hidden rounded-md bg-slate-100 dark:bg-slate-900">
-          <img src={task.coverImage} alt={task.title} className="h-full w-full object-cover" />
+          <Image
+            src={task.coverImage}
+            alt={task.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
         </div>
       )}
 
