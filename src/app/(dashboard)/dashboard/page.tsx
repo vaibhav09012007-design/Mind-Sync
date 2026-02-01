@@ -265,12 +265,12 @@ export default function DashboardPage() {
                     {stat.change && (
                       <div className="mt-2 flex items-center gap-1.5">
                         {stat.trend === "up" ? (
-                          <TrendingUp size={14} className="text-emerald-500" />
+                          <TrendingUp size={14} className="text-success" />
                         ) : (
-                          <TrendingDown size={14} className="text-rose-500" />
+                          <TrendingDown size={14} className="text-error" />
                         )}
                         <span
-                          className={`text-sm font-medium ${stat.trend === "up" ? "text-emerald-500" : "text-rose-500"}`}
+                          className={`text-sm font-medium ${stat.trend === "up" ? "text-success" : "text-error"}`}
                         >
                           {stat.change}
                         </span>
@@ -359,7 +359,7 @@ export default function DashboardPage() {
                         title="Mark as complete"
                       >
                         {task.completed ? (
-                          <CheckCircle2 size={20} className="text-emerald-500" />
+                          <CheckCircle2 size={20} className="text-success" />
                         ) : (
                           <Circle
                             size={20}
@@ -388,8 +388,8 @@ export default function DashboardPage() {
                   ))
                 ) : (
                   <div className="text-muted-foreground py-8 text-center flex flex-col items-center">
-                    <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-3">
-                      <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+                    <div className="h-12 w-12 rounded-full bg-success flex items-center justify-center mb-3">
+                      <CheckCircle2 className="h-6 w-6 text-success" />
                     </div>
                     <p className="font-medium">All caught up!</p>
                     <p className="text-xs mt-1 opacity-70">Enjoy your free time</p>
@@ -435,7 +435,7 @@ export default function DashboardPage() {
                         <div className="absolute left-[5px] top-6 bottom-[-20px] w-[2px] bg-white/5" />
                       )}
                       
-                      <div className="mt-1 h-3 w-3 flex-shrink-0 rounded-full bg-emerald-500 ring-4 ring-background" />
+                      <div className="mt-1 h-3 w-3 flex-shrink-0 rounded-full bg-success-solid ring-4 ring-background" />
                       <div className="min-w-0 flex-1 pb-1">
                         <p className="truncate text-sm font-medium text-foreground">{activity.text}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">
@@ -464,7 +464,7 @@ export default function DashboardPage() {
             
             <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
               <div>
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold tracking-wider text-emerald-500 border border-emerald-500/20">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-success px-3 py-1 text-xs font-semibold tracking-wider text-success border border-success">
                   <Sparkles size={12} /> DEEP WORK ZONE
                 </span>
                 <h3 className="mt-3 text-2xl font-bold tracking-tight text-foreground">Enter Zen Mode</h3>
@@ -474,7 +474,7 @@ export default function DashboardPage() {
               </div>
               <div className="flex-shrink-0">
                 <Link href="/focus">
-                  <Button size="lg" className="gap-2 bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-500/20 rounded-xl px-8 h-12">
+                  <Button size="lg" className="gap-2 bg-success-solid hover:opacity-90 text-white shadow-lg shadow-gold-glow-sm rounded-xl px-8 h-12">
                     <Play size={18} fill="currentColor" />
                     Start Focus Session
                   </Button>

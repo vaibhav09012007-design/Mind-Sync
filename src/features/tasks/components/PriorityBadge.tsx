@@ -22,26 +22,26 @@ interface PriorityConfig {
 export const priorityConfig: Record<Priority, PriorityConfig> = {
   P0: {
     label: "P0",
-    color: "text-red-600 dark:text-red-400",
-    bgColor: "bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-800",
+    color: "text-error",
+    bgColor: "bg-error border-error",
     description: "Critical",
   },
   P1: {
     label: "P1",
-    color: "text-orange-600 dark:text-orange-400",
-    bgColor: "bg-orange-100 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800",
+    color: "text-warning",
+    bgColor: "bg-warning border-warning",
     description: "High",
   },
   P2: {
     label: "P2",
-    color: "text-blue-600 dark:text-blue-400",
-    bgColor: "bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800",
+    color: "text-info",
+    bgColor: "bg-info border-info",
     description: "Medium",
   },
   P3: {
     label: "P3",
-    color: "text-slate-600 dark:text-slate-400",
-    bgColor: "bg-slate-100 dark:bg-slate-800/30 border-slate-200 dark:border-slate-700",
+    color: "text-muted-foreground",
+    bgColor: "bg-muted/30 border-muted-foreground/20",
     description: "Low",
   },
 };

@@ -75,14 +75,14 @@ export function TaskListSkeleton({ count = 4 }: { count?: number }) {
 // Kanban column skeleton
 export function KanbanColumnSkeleton() {
   return (
-    <div className="flex max-w-[360px] min-w-[280px] flex-1 flex-col rounded-xl bg-slate-800/30 p-4">
+    <div className="flex max-w-[360px] min-w-[280px] flex-1 flex-col rounded-xl bg-card/30 p-4">
       <div className="mb-4 flex items-center justify-between">
         <Skeleton className="h-5 w-24" />
         <Skeleton className="h-5 w-8 rounded-full" />
       </div>
       <div className="space-y-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-lg border bg-slate-800/50 p-3">
+          <div key={i} className="rounded-lg border bg-card/50 p-3">
             <div className="flex items-start gap-2">
               <Skeleton className="h-4 w-4 rounded" />
               <Skeleton className="h-4 flex-1" />
@@ -144,7 +144,7 @@ export function NotesSidebarSkeleton() {
       <Skeleton className="h-10 w-full rounded-lg" />
       <div className="space-y-2">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="rounded-lg bg-slate-800/30 p-3">
+          <div key={i} className="rounded-lg bg-card/30 p-3">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="mt-2 h-3 w-full" />
             <Skeleton className="mt-1 h-3 w-1/2" />
