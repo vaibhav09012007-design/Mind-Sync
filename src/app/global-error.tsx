@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import { reportError } from "@/lib/error-reporting";
+import { Button } from "@/components/ui/button";
 
 export default function GlobalError({
   error,
@@ -10,16 +12,20 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("Global Error:", error);
+    // Report to error service
+    reportError(error, {
+      componentStack: "GlobalError",
+      extra: { digest: error.digest }
+    });
   }, [error]);
 
   return (
-    <html>
-      <body className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground">
-        <div className="flex flex-col items-center gap-4 p-8">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-error">
+    <html lang="en">
+      <body className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground antialiased font-sans">
+        <div className="flex flex-col items-center gap-6 p-8 max-w-md text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-destructive/10 animate-pulse-glow">
             <svg
-              className="h-8 w-8 text-error"
+              className="h-10 w-10 text-destructive"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -32,16 +38,42 @@ export default function GlobalError({
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-error">Something went wrong!</h2>
-          <p className="text-center text-muted-foreground">
-            {error.message || "An unexpected error occurred"}
-          </p>
-          <button
-            className="mt-2 rounded-md bg-primary px-6 py-2.5 font-semibold text-primary-foreground transition-all duration-200 hover:opacity-90 hover:shadow-gold-glow-sm active:scale-[0.98]"
-            onClick={() => reset()}
-          >
-            Try again
-          </button>
+
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">System Malfunction</h1>
+            <p className="text-muted-foreground">
+              We've encountered a critical error. Our team has been notified.
+            </p>
+          </div>
+
+          <div className="p-4 rounded-lg bg-muted/50 border border-border w-full text-left overflow-hidden">
+            <code className="text-xs font-mono text-destructive block break-words">
+              {error.message || "Unknown error occurred"}
+            </code>
+            {error.digest && (
+              <p className="text-xs text-muted-foreground mt-2 font-mono">
+                ID: {error.digest}
+              </p>
+            )}
+          </div>
+
+          <div className="flex gap-4 mt-2">
+            <Button
+              variant="default"
+              size="lg"
+              onClick={() => reset()}
+              className="hover-lift"
+            >
+              Try Again
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => window.location.href = "/"}
+            >
+              Return Home
+            </Button>
+          </div>
         </div>
       </body>
     </html>
