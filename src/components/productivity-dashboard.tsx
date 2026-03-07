@@ -8,7 +8,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useStore } from "@/store/useStore";
+import { useTasks } from "@/store/selectors";
 import { RefreshCw, Target, Timer, CheckCircle2, Flame } from "lucide-react";
 import { format, startOfYear, eachDayOfInterval, subDays, isWithinInterval } from "date-fns";
 import { StatsCalculator, DailyActivity } from "@/lib/stats-calculator";
@@ -41,7 +41,7 @@ interface Goal {
 }
 
 export function ProductivityDashboard() {
-  const { tasks } = useStore();
+  const tasks = useTasks();
   const { userId } = useAuth();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,8 +52,12 @@ export function ProductivityDashboard() {
     async function loadGoals() {
       if (!userId) return;
       try {
-        const data = await getGoals();
-        setGoals(data as unknown as Goal[]);
+        const result = await getGoals();
+        if (result.success) {
+          setGoals(result.data as unknown as Goal[]);
+        } else {
+          console.error("Failed to load goals:", result.error);
+        }
       } catch (e) {
         console.error("Failed to load goals", e);
       }
