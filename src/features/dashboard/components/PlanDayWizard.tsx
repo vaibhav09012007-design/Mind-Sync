@@ -17,16 +17,15 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useStore, Task } from "@/store/useStore";
+import { Task } from "@/store/useStore";
+import { useTasks } from "@/store/selectors";
 import { cn } from "@/lib/utils";
 import {
   Wand2,
-  Battery,
   BatteryLow,
   BatteryMedium,
   BatteryFull,
   Clock,
-  CheckSquare,
   Loader2,
   Zap,
   Coffee,
@@ -51,6 +50,7 @@ export interface SchedulePreferences {
   endHour: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const ENERGY_OPTIONS: { value: EnergyLevel; label: string; icon: any; description: string }[] = [
   { value: "low", label: "Low Energy", icon: BatteryLow, description: "Start with easier tasks" },
   {
@@ -67,6 +67,7 @@ const ENERGY_OPTIONS: { value: EnergyLevel; label: string; icon: any; descriptio
   },
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const FOCUS_OPTIONS: { value: FocusDuration; label: string; icon: any; description: string }[] = [
   { value: 25, label: "25 min", icon: Clock, description: "Pomodoro-style sprints" },
   { value: 50, label: "50 min", icon: Brain, description: "Deep work blocks" },
@@ -74,7 +75,7 @@ const FOCUS_OPTIONS: { value: FocusDuration; label: string; icon: any; descripti
 ];
 
 export function PlanDayWizard({ open, onOpenChange, onGenerate }: PlanDayWizardProps) {
-  const { tasks } = useStore();
+  const tasks = useTasks();
   const [step, setStep] = useState(1);
   const [isGenerating, setIsGenerating] = useState(false);
 

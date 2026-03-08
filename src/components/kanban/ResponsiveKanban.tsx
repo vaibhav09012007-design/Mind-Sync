@@ -6,7 +6,8 @@
  */
 
 import { useState, useRef, useEffect } from "react";
-import { useStore, Task, Column } from "@/store/useStore";
+import { Task, Column } from "@/store/useStore";
+import { useTasks, useColumns, useViewSettings, useTaskActions } from "@/store/selectors";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +30,10 @@ interface ResponsiveKanbanProps {
 }
 
 export function ResponsiveKanban({ className }: ResponsiveKanbanProps) {
-  const { tasks, columns, toggleTask, viewSettings } = useStore();
+  const tasks = useTasks();
+  const columns = useColumns();
+  const viewSettings = useViewSettings();
+  const { toggleTask } = useTaskActions();
   const [activeColumnIndex, setActiveColumnIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);

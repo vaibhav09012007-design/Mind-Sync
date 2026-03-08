@@ -11,6 +11,8 @@ const isProtectedRoute = createRouteMatcher([
 export default clerkMiddleware(async (auth, req) => {
   // Debug check (visible in Vercel logs)
   if (!process.env.CLERK_SECRET_KEY) {
+    // We can't use logger here because edge runtime compatibility is tricky with some logger implementations,
+    // but console.error is standard in edge middleware.
     console.error("CRITICAL: CLERK_SECRET_KEY is missing from environment variables!");
   }
 

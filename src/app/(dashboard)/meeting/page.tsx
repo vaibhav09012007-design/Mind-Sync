@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useStore } from "@/store/useStore";
+import { useEvents, useNoteActions } from "@/store/selectors";
 import {
   Sheet,
   SheetContent,
@@ -37,7 +37,8 @@ import { toast } from "sonner";
 
 export default function MeetingPage() {
   const router = useRouter();
-  const { events, addNote } = useStore();
+  const events = useEvents();
+  const { addNote } = useNoteActions();
   const [isRecording, setIsRecording] = useState(false); // Start paused so user can grant permission
   const [duration, setDuration] = useState(0);
   const [linkedEventId, setLinkedEventId] = useState<string>("");

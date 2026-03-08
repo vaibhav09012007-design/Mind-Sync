@@ -5,12 +5,12 @@
  * Drag tasks onto calendar to create time blocks
  */
 
-import { useState, useCallback, useMemo } from "react";
-import { useStore, Task, CalendarEvent } from "@/store/useStore";
+import { useState, useMemo } from "react";
+import { Task, CalendarEvent } from "@/store/useStore";
+import { useTasks, useEvents, useEventActions } from "@/store/selectors";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DndContext,
@@ -21,10 +21,9 @@ import {
   DragEndEvent,
   closestCenter,
 } from "@dnd-kit/core";
-import { format, addHours, startOfDay, isSameDay } from "date-fns";
-import { Clock, GripVertical, Plus, X } from "lucide-react";
+import { format, isSameDay } from "date-fns";
+import { Clock, GripVertical, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { v4 as uuidv4 } from "uuid";
 
 interface TimeBlockingProps {
   selectedDate: Date;
@@ -35,7 +34,9 @@ interface TimeBlockingProps {
 const TIME_SLOTS = Array.from({ length: 17 }, (_, i) => i + 6);
 
 export function TimeBlocking({ selectedDate, className }: TimeBlockingProps) {
-  const { tasks, events, addEvent } = useStore();
+  const tasks = useTasks();
+  const events = useEvents();
+  const { addEvent } = useEventActions();
   const [activeTask, setActiveTask] = useState<Task | null>(null);
 
   // Get unscheduled tasks (not completed, not already on calendar for this day)
@@ -203,7 +204,6 @@ function DraggableTask({ task }: { task: Task }) {
 function TimeSlot({
   hour,
   events,
-  date,
 }: {
   hour: number;
   events: CalendarEvent[];

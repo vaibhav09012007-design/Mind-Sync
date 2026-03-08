@@ -17,6 +17,7 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
   const [segments, setSegments] = useState<SpeechSegment[]>([]);
   const [interimResult, setInterimResult] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
@@ -38,6 +39,7 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
     try {
       // Create speech recognition instance
       const SpeechRecognition =
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
 
@@ -50,6 +52,7 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
         console.log("Speech recognition started");
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onresult = (event: any) => {
         let interimTranscript = "";
         let finalTranscript = "";
@@ -80,6 +83,7 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
         }
       };
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       recognition.onerror = (event: any) => {
         console.error("Speech recognition error:", event.error);
         if (event.error === "not-allowed") {

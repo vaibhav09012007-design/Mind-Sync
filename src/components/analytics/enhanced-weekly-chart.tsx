@@ -20,7 +20,6 @@ import {
   Tooltip,
   ResponsiveContainer,
   Cell,
-  Legend,
 } from "recharts";
 import { format } from "date-fns";
 import { DailyActivity } from "@/lib/stats-calculator";

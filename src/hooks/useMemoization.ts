@@ -203,16 +203,16 @@ export function useDebouncedCallback<T extends (...args: Parameters<T>) => void>
   }, [callback]);
 
   return useCallback(
-    ((...args: Parameters<T>) => {
+    (...args: Parameters<T>) => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
       timeoutRef.current = setTimeout(() => {
         callbackRef.current(...args);
       }, delay);
-    }) as T,
+    },
     [delay]
-  );
+  ) as T;
 }
 
 /**
@@ -230,15 +230,15 @@ export function useThrottledCallback<T extends (...args: Parameters<T>) => void>
   }, [callback]);
 
   return useCallback(
-    ((...args: Parameters<T>) => {
+    (...args: Parameters<T>) => {
       const now = Date.now();
       if (now - lastCallRef.current >= delay) {
         lastCallRef.current = now;
         callbackRef.current(...args);
       }
-    }) as T,
+    },
     [delay]
-  );
+  ) as T;
 }
 
 /**

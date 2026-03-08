@@ -16,7 +16,8 @@ import {
   Edit3,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useStore, Task } from "@/store/useStore";
+import { Task } from "@/store/useStore";
+import { useTasks, useEvents, useTaskActions } from "@/store/selectors";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
@@ -93,7 +94,9 @@ function calculateStreak(tasks: Task[]): number {
 }
 
 export default function DashboardPage() {
-  const { tasks, events, toggleTask } = useStore();
+  const tasks = useTasks();
+  const events = useEvents();
+  const { toggleTask } = useTaskActions();
   const { user } = useUser();
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);

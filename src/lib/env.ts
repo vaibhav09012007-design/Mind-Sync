@@ -21,6 +21,9 @@ const envSchema = z.object({
   // Google AI (optional for development, required for AI features)
   GEMINI_API_KEY: z.string().optional(),
 
+  // Error Tracking (Sentry)
+  SENTRY_DSN: z.string().optional(),
+
   // Environment
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 }).partial().refine((data) => data.DATABASE_URL, {

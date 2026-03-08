@@ -16,7 +16,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon, ChevronDown } from "lucide-react";
-import { format, subDays, subMonths, startOfYear } from "date-fns";
+import { format, subDays, startOfYear } from "date-fns";
 import { cn } from "@/lib/utils";
 
 export type DateRangeOption = "7d" | "30d" | "90d" | "year" | "custom";

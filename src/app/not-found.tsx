@@ -33,7 +33,7 @@ export default function NotFound() {
         >
           <p className="text-lg text-muted-foreground">
             The page you are looking for has drifted away into the void.
-            Let's get you back to productivity.
+            Let&apos;s get you back to productivity.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">

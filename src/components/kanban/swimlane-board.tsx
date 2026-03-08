@@ -1,6 +1,7 @@
 "use client";
 
-import { useStore, Task, Column, Priority } from "@/store/useStore";
+import { Task, Column } from "@/store/useStore";
+import { useTasks, useColumns, useViewSettings, useTaskActions } from "@/store/selectors";
 import {
   DndContext,
   closestCenter,
@@ -20,14 +21,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriorityBadge } from "@/features/tasks/components/PriorityBadge";
-import { GripVertical, Plus } from "lucide-react";
-import { format, isPast, isToday, isTomorrow } from "date-fns";
 
 // Reusing SortableTaskCard logic but simplified for swimlanes if needed
 // For now, let's duplicate the core card to avoid circular deps or complex prop drilling
@@ -37,7 +33,7 @@ function SwimlaneTaskCard({ task, onToggle }: { task: Task; onToggle: (id: strin
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
   });
-  const { viewSettings } = useStore();
+  const viewSettings = useViewSettings();
 
   const style = { transform: CSS.Transform.toString(transform), transition };
 
@@ -72,12 +68,10 @@ function SwimlaneTaskCard({ task, onToggle }: { task: Task; onToggle: (id: strin
 
 function SwimlaneCell({
   column,
-  groupByValue,
   tasks,
   onToggle,
 }: {
   column: Column;
-  groupByValue: string;
   tasks: Task[];
   onToggle: (id: string) => void;
 }) {
@@ -98,7 +92,10 @@ function SwimlaneCell({
 }
 
 export function SwimlaneBoard() {
-  const { tasks, columns, viewSettings, updateTask, toggleTask } = useStore();
+  const tasks = useTasks();
+  const columns = useColumns();
+  const viewSettings = useViewSettings();
+  const { updateTask, toggleTask } = useTaskActions();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -207,7 +204,6 @@ export function SwimlaneBoard() {
                 <SwimlaneCell
                   key={`${lane}-${col.id}`}
                   column={col}
-                  groupByValue={lane}
                   tasks={getTasks(col.id, lane)}
                   onToggle={toggleTask}
                 />

@@ -57,6 +57,9 @@ export const createNoteSchema = z.object({
   title: z.string().min(1, "Note title is required").max(500),
   content: z.string(),
   date: z.string().datetime(),
+  tags: z.array(z.string()).optional(),
+  type: z.enum(["meeting", "personal", "journal"]).optional(),
+  sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
 });
 
 export const updateNoteSchema = z.object({
@@ -64,6 +67,10 @@ export const updateNoteSchema = z.object({
   title: z.string().min(1).max(500).optional(),
   content: z.string().optional(),
   preview: z.string().max(200).optional(),
+  tags: z.array(z.string()).optional(),
+  type: z.enum(["meeting", "personal", "journal"]).optional(),
+  sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
+  metadata: z.any().optional(),
 });
 
 export const deleteNoteSchema = z.object({

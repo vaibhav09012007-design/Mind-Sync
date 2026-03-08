@@ -1,11 +1,11 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useEffect, useRef, useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { useEffect, useRef } from "react";
 import { SpeechSegment } from "@/hooks/useSpeechRecognition";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Plus, CheckCircle } from "lucide-react";
-import { useStore } from "@/store/useStore";
+import { useTaskActions } from "@/store/selectors";
 import { toast } from "sonner";
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 }
 
 const ActionItemText = ({ text }: { text: string }) => {
-  const { addTask } = useStore();
+  const { addTask } = useTaskActions();
 
   // Regex to find "TODO: ...", "Action Item: ...", "I will ..." until punctuation/end
   const regex = /(TODO:|Action Item:|I will)\s+([^.?!]+)/gi;

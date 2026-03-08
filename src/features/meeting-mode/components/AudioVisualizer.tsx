@@ -20,6 +20,7 @@ export function AudioVisualizer({ isActive = true }: AudioVisualizerProps) {
   useEffect(() => {
     if (!isActive) return;
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let animationFrameId: number;
 
     const draw = () => {
@@ -77,6 +78,7 @@ export function AudioVisualizer({ isActive = true }: AudioVisualizerProps) {
         const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         setStream(audioStream);
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
         const analyser = audioContext.createAnalyser();
         const source = audioContext.createMediaStreamSource(audioStream);
@@ -98,17 +100,20 @@ export function AudioVisualizer({ isActive = true }: AudioVisualizerProps) {
     startAudio();
 
     return () => {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }
-      cancelAnimationFrame(animationFrameId);
+      // cancelAnimationFrame(animationFrameId); // This might be used but we used the ref
       if (animationRef.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         cancelAnimationFrame(animationRef.current);
       }
       if (audioContextRef.current) {
         audioContextRef.current.close();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive]);
 
   return (

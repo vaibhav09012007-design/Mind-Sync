@@ -1,7 +1,8 @@
 "use client";
 
 import { TaskList } from "@/features/tasks/components/TaskList";
-import { useStore, Task } from "@/store/useStore";
+import { Task } from "@/store/useStore";
+import { useTasks, useTaskActions, useHydrationActions } from "@/store/selectors";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
@@ -19,7 +20,9 @@ interface TaskColumnProps {
 }
 
 export function TaskColumn({ currentDate, onNextDay, onPrevDay }: TaskColumnProps) {
-  const { tasks, addTask, toggleTask, deleteTask, setTasks } = useStore();
+  const tasks = useTasks();
+  const { addTask, toggleTask, deleteTask } = useTaskActions();
+  const { setTasks } = useHydrationActions();
 
   // Filter Data locally for display
   const isSameDay = (d1: Date, d2: Date) => d1.toDateString() === d2.toDateString();

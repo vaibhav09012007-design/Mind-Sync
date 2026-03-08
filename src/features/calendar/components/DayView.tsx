@@ -2,7 +2,7 @@
 
 import { format } from "date-fns";
 import { TimeGrid, GridEvent } from "./TimeGrid";
-import { useStore } from "@/store/useStore";
+import { useEvents } from "@/store/selectors";
 import { useMemo } from "react";
 
 interface DayViewProps {
@@ -12,7 +12,7 @@ interface DayViewProps {
 }
 
 export function DayView({ date, onAddEvent, onEditEvent }: DayViewProps) {
-  const { events } = useStore();
+  const events = useEvents();
 
   const dayEvents = useMemo(() => {
     return events

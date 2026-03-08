@@ -1,27 +1,27 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
 import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
 import { useUser, useClerk } from "@clerk/nextjs";
-import { useStore } from "@/store/useStore";
+import { useTasks, useEvents, useNotes } from "@/store/selectors";
 import { exportAllData } from "@/lib/export-utils";
-import { Download, User, Globe, Bell, Shield, Calendar, Database } from "lucide-react";
+import { Download, User, Globe, Bell, Shield, Database } from "lucide-react";
 import { toast } from "sonner";
 import { GlassCard } from "@/components/ui/card";
 
 export default function SettingsPage() {
-  const { setTheme, theme } = useTheme();
   const { user } = useUser();
   const { openUserProfile } = useClerk();
-  const { tasks, events, notes } = useStore();
+  const tasks = useTasks();
+  const events = useEvents();
+  const notes = useNotes();
   const [notifications, setNotifications] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 

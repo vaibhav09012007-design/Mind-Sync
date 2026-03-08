@@ -5,7 +5,7 @@
  * GitHub-style heatmap with improved tooltips showing detailed stats
  */
 
-import { eachDayOfInterval, endOfYear, format, startOfYear, isSameDay, subDays } from "date-fns";
+import { eachDayOfInterval, endOfYear, format, startOfYear, isSameDay } from "date-fns";
 import { DailyActivity } from "@/lib/stats-calculator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -63,7 +63,7 @@ export function EnhancedActivityHeatmap({ data }: EnhancedActivityHeatmapProps) 
     }
   };
 
-  const getComparisonText = (value: number, avg: number, unit: string) => {
+  const getComparisonText = (value: number, avg: number) => {
     if (avg === 0) return "";
     const diff = ((value - avg) / avg) * 100;
     if (Math.abs(diff) < 5) return "Average";
@@ -118,7 +118,7 @@ export function EnhancedActivityHeatmap({ data }: EnhancedActivityHeatmapProps) 
                               <span className="font-medium">
                                 {activity.tasksCompleted}
                                 <span className="text-muted-foreground ml-1 text-xs">
-                                  {getComparisonText(activity.tasksCompleted, avgTasks, "tasks")}
+                                  {getComparisonText(activity.tasksCompleted, avgTasks)}
                                 </span>
                               </span>
                             </div>
@@ -127,7 +127,7 @@ export function EnhancedActivityHeatmap({ data }: EnhancedActivityHeatmapProps) 
                               <span className="font-medium">
                                 {activity.focusMinutes} min
                                 <span className="text-muted-foreground ml-1 text-xs">
-                                  {getComparisonText(activity.focusMinutes, avgFocus, "min")}
+                                  {getComparisonText(activity.focusMinutes, avgFocus)}
                                 </span>
                               </span>
                             </div>

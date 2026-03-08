@@ -9,12 +9,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useStore } from "@/store/useStore";
+import { useNotifications, useNotificationActions } from "@/store/selectors";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 
 export function NotificationBell() {
-  const { notifications, markNotificationAsRead, markAllNotificationsAsRead, clearNotifications } = useStore();
+  const notifications = useNotifications();
+  const { markNotificationAsRead, markAllNotificationsAsRead, clearNotifications } = useNotificationActions();
   const [open, setOpen] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.read).length;

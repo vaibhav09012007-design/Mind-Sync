@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useStore, Priority, Task } from "@/store/useStore";
+import { Priority, Task } from "@/store/useStore";
+import { useTaskActions } from "@/store/selectors";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -43,7 +44,7 @@ interface SubtaskInput {
 }
 
 export function CreateTaskDialog({ children, defaultColumnId }: CreateTaskDialogProps) {
-  const { addTask } = useStore();
+  const { addTask } = useTaskActions();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");

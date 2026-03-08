@@ -2,7 +2,6 @@
 
 import { StickyNote, PenLine } from "lucide-react";
 import { GlassCard } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 export default function NotesIndexPage() {
   return (

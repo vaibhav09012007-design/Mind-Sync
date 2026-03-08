@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logger } from '@/lib/logger';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_REDIRECT_URI = process.env.GOOGLE_REDIRECT_URI;
@@ -32,7 +33,7 @@ export async function GET() {
     // Redirect to Google's OAuth 2.0 server
     return NextResponse.redirect(authUrl.toString());
   } catch (error) {
-    console.error('Google OAuth initiation error:', error);
+    logger.error('Google OAuth initiation error', error as Error, { action: 'initiateGoogleAuth' });
     return NextResponse.json(
       { error: 'Failed to initiate Google OAuth' },
       { status: 500 }

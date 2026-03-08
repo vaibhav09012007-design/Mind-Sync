@@ -7,11 +7,12 @@
 
 import { useEffect, useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useStore } from "@/store/useStore";
+import { useHistory, useHistoryActions } from "@/store/selectors";
 
 export function useGlobalKeyboardShortcuts() {
   const router = useRouter();
-  const { undo, redo, canUndo, canRedo } = useStore();
+  const { canUndo, canRedo } = useHistory();
+  const { undo, redo } = useHistoryActions();
   const [pendingKey, setPendingKey] = useState<string | null>(null);
 
   const handleKeyDown = useCallback(
@@ -93,8 +94,21 @@ export function useGlobalKeyboardShortcuts() {
   return { pendingKey };
 }
 
-// Component wrapper for the hook
-export function GlobalKeyboardShortcuts() {
+// Component wrapper that defers rendering until client-side mount
+// to avoid SSR hydration issues with Zustand persist middleware
+function GlobalKeyboardShortcutsInner() {
   useGlobalKeyboardShortcuts();
   return null;
 }
+
+export function GlobalKeyboardShortcuts() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+  return <GlobalKeyboardShortcutsInner />;
+}
+

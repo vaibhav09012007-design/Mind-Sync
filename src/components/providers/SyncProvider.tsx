@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useStore } from "@/store/useStore";
+import { useHydrationActions } from "@/store/selectors";
 import { getTasks } from "@/actions/tasks";
 import { getEvents } from "@/actions/events";
 import { getNotes } from "@/actions/notes";
@@ -13,7 +13,7 @@ interface SyncProviderProps {
 
 export function SyncProvider({ children }: SyncProviderProps) {
   const { isSignedIn, isLoaded } = useAuth();
-  const { setTasks, setEvents, setNotes } = useStore();
+  const { setTasks, setEvents, setNotes } = useHydrationActions();
   const hasHydrated = useRef(false);
 
   // Fetch data client-side when authenticated

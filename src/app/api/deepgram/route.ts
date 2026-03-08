@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { checkRateLimit } from "@/lib/rate-limiter";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
@@ -27,7 +28,7 @@ export async function GET() {
 
     if (!deepgramApiKey) {
       // Return a mock key for testing UI components without crashing
-      console.warn("DEEPGRAM_API_KEY missing, returning mock key");
+      logger.warn("DEEPGRAM_API_KEY missing, returning mock key", { action: "getDeepgramToken" });
       return NextResponse.json({ key: "mock-deepgram-key" });
     }
 
@@ -37,7 +38,7 @@ export async function GET() {
 
     return NextResponse.json({ key: deepgramApiKey });
   } catch (error) {
-    console.error("Deepgram API Error:", error);
+    logger.error("Deepgram API Error", error as Error, { action: "getDeepgramToken" });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

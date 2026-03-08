@@ -1,6 +1,7 @@
 "use server";
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { logger } from "@/lib/logger";
 
 interface MeetingMinutesResult {
   success: boolean;
@@ -12,7 +13,7 @@ export async function generateMeetingMinutes(transcript: string): Promise<Meetin
   try {
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
     if (!apiKey) {
-      console.warn("Missing GOOGLE_GENERATIVE_AI_API_KEY. Using mock response for development.");
+      logger.warn("Missing GOOGLE_GENERATIVE_AI_API_KEY. Using mock response for development.", { action: "generateMeetingMinutes" });
       // Fallback for development if no key is present
       return {
         success: true,
@@ -34,7 +35,7 @@ export async function generateMeetingMinutes(transcript: string): Promise<Meetin
 
     const prompt = `
       You are an expert meeting assistant. Analyze the following transcript and generate a structured set of meeting minutes.
-      
+
       Required Sections:
       1. **Summary**: A concise paragraph summarizing the discussion.
       2. **Key Decisions**: A bulleted list of decisions made.
@@ -52,7 +53,7 @@ export async function generateMeetingMinutes(transcript: string): Promise<Meetin
 
     return { success: true, data: text };
   } catch (error) {
-    console.error("Error generating meeting minutes:", error);
+    logger.error("Error generating meeting minutes", error as Error, { action: "generateMeetingMinutes" });
     return { success: false, error: "Failed to generate meeting minutes. Please try again." };
   }
 }

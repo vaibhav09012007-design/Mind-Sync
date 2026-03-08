@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,13 +12,11 @@ import {
 } from "@/components/ui/command";
 import {
   Calendar,
-  CheckSquare,
   FileText,
   Home,
   Plus,
   Settings,
   Sparkles,
-  Search,
   Clock,
 } from "lucide-react";
 import { useRouter } from "next/navigation";

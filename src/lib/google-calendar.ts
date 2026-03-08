@@ -27,6 +27,8 @@ export interface GoogleCalendar {
   accessRole: string;
 }
 
+import { logger } from "@/lib/logger";
+
 export const GoogleCalendarService = {
   /**
    * List all calendars the user has access to
@@ -43,7 +45,7 @@ export const GoogleCalendarService = {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("Google Calendar List Error:", response.status, errorBody);
+      logger.error("Google Calendar List Error", new Error(errorBody), { action: "listCalendars", status: response.status });
       throw new Error(`Failed to fetch calendars: ${response.status}`);
     }
 
@@ -98,7 +100,7 @@ export const GoogleCalendarService = {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("Google Calendar API Error:", response.status, errorBody);
+      logger.error("Google Calendar API Error", new Error(errorBody), { action: "listEvents", status: response.status });
       throw new Error(`Failed to fetch calendar events: ${response.status}`);
     }
 
@@ -165,7 +167,7 @@ export const GoogleCalendarService = {
 
     if (!response.ok) {
       const errorBody = await response.text();
-      console.error("Google Create Event Error:", errorBody);
+      logger.error("Google Create Event Error", new Error(errorBody), { action: "insertEvent" });
       throw new Error("Failed to create event in Google Calendar");
     }
     return await response.json();
@@ -207,7 +209,7 @@ export const GoogleCalendarService = {
 
     if (!response.ok) {
       const text = await response.text();
-      console.error("Google Update Error:", text);
+      logger.error("Google Update Error", new Error(text), { action: "updateEvent" });
       throw new Error("Failed to update event in Google Calendar");
     }
     return await response.json();
@@ -305,7 +307,7 @@ export const GoogleCalendarService = {
 
     if (!response.ok) {
       const error = await response.text();
-      console.error("Watch setup error:", error);
+      logger.error("Watch setup error", new Error(error), { action: "watchCalendar" });
       throw new Error("Failed to set up calendar watch");
     }
 

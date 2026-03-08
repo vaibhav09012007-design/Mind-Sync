@@ -5,6 +5,8 @@
 
 import { isDevelopment } from "./env";
 
+import * as Sentry from "@sentry/nextjs";
+
 export interface ErrorContext {
   componentStack?: string;
   userId?: string;
@@ -46,16 +48,15 @@ export function reportError(error: Error | unknown, context?: ErrorContext): voi
 
   // In production, send to monitoring service
   if (!isDevelopment()) {
-    // Sentry integration placeholder
-    // Sentry.captureException(errorObj, {
-    //   level: severity as any,
-    //   extra: context?.extra,
-    //   user: context?.userId ? { id: context.userId } : undefined,
-    //   tags: {
-    //     action: context?.action,
-    //     path: context?.path,
-    //   },
-    // });
+    Sentry.captureException(errorObj, {
+      level: severity as Sentry.SeverityLevel,
+      extra: context?.extra,
+      user: context?.userId ? { id: context.userId } : undefined,
+      tags: {
+        action: context?.action,
+        path: context?.path,
+      },
+    });
   }
 }
 
@@ -69,7 +70,7 @@ export function reportWarning(message: string, context?: Omit<ErrorContext, "sev
 /**
  * Wrap an async function to automatically report errors
  */
-export function withErrorReporting<T extends (...args: any[]) => Promise<any>>(
+export function withErrorReporting<T extends (...args: unknown[]) => Promise<unknown>>(
   fn: T,
   context?: Omit<ErrorContext, "extra">
 ): T {

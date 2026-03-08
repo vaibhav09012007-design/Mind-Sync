@@ -21,6 +21,7 @@ import { requireAuth, ensureUserExists } from "./shared";
 import { reportError } from "@/lib/error-reporting";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { getCachedEvents, CACHE_TAGS } from "@/lib/data-fetchers";
+import { logger } from "@/lib/logger";
 
 // --- Events ---
 
@@ -73,7 +74,7 @@ export async function createEvent(data: {
         googleEventId = googleEvent.id;
       }
     } catch (e) {
-      console.error("Failed to sync new event to Google Calendar:", e);
+      logger.error("Failed to sync event to Google Calendar", e as Error, { action: "createEvent" });
       // Continue to save locally even if sync fails
     }
 
@@ -127,7 +128,7 @@ export async function deleteEvent(id: string): Promise<ActionResult<void>> {
           await GoogleCalendarService.deleteEvent(token, eventToDelete.googleEventId);
         }
       } catch (e) {
-        console.error("Failed to delete event from Google Calendar:", e);
+        logger.error("Failed to delete event from Google Calendar", e as Error, { action: "deleteEvent" });
       }
     }
 
@@ -188,7 +189,7 @@ export async function updateEvent(
           });
         }
       } catch (e) {
-        console.error("Failed to update event in Google Calendar:", e);
+        logger.error("Failed to update event in Google Calendar", e as Error, { action: "updateEvent" });
       }
     }
 
@@ -222,16 +223,16 @@ export async function syncGoogleCalendar(): Promise<
       throw new APIError("Too Many Requests", "Please wait before syncing again.");
     }
 
-    console.log("[Sync] Starting Google Calendar sync...");
+    logger.info("Starting Google Calendar sync", { action: "syncGoogleCalendar" });
 
     const token = await getToken({ template: "oauth_google" });
 
     if (!token) {
-      console.error("[Sync] No Google OAuth token found.");
+      logger.error("No Google OAuth token found", undefined, { action: "syncGoogleCalendar" });
       throw new APIError("Google Calendar", "Please connect your Google Calendar in Settings.");
     }
 
-    console.log("[Sync] Fetching events from Google...");
+    logger.info("Fetching events from Google", { action: "syncGoogleCalendar" });
     const response = await fetch(
       `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${new Date().toISOString()}&maxResults=50&singleEvents=true&orderBy=startTime`,
       {
@@ -241,8 +242,7 @@ export async function syncGoogleCalendar(): Promise<
     );
 
     if (!response.ok) {
-      const errText = await response.text();
-      console.error(`[Sync] Google API Error (${response.status}):`, errText);
+      logger.error(`Google API error (${response.status})`, undefined, { action: "syncGoogleCalendar", status: response.status });
 
       if (response.status === 401 || response.status === 403) {
         throw new APIError(
@@ -255,7 +255,7 @@ export async function syncGoogleCalendar(): Promise<
 
     const data = await response.json();
     const googleEvents = data.items || [];
-    console.log(`[Sync] Found ${googleEvents.length} events from Google.`);
+    logger.info("Google Calendar events fetched", { action: "syncGoogleCalendar", count: googleEvents.length });
 
     await ensureUserExists(userId);
 
@@ -298,8 +298,8 @@ export async function syncGoogleCalendar(): Promise<
     revalidatePath("/dashboard");
     return createSuccessResult({ count: syncedCount, total: googleEvents.length });
   } catch (error: unknown) {
-    console.error("[Sync] CRITICAL FAILURE:", error);
-    
+    logger.error("[Sync] CRITICAL FAILURE", error as Error, { action: "syncGoogleCalendar" });
+
     // Report sync failures with context
     reportError(error as Error, {
       action: "google_calendar_sync",
@@ -307,7 +307,7 @@ export async function syncGoogleCalendar(): Promise<
         errorMessage: (error as Error)?.message || "Unknown error",
       }
     });
-    
+
     return createErrorResult(error);
   }
 }

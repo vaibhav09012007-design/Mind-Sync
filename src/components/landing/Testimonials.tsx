@@ -36,14 +36,14 @@ const testimonials = [
     name: 'Michael C.',
     role: 'Startup Founder',
     avatar: 'MC',
-    quote: 'Finally, a productivity app that doesn\'t feel overwhelming. Simple yet powerful.',
+    quote: 'Finally, a productivity app that doesn&apos;t feel overwhelming. Simple yet powerful.',
     rating: 5,
   },
   {
     name: 'Lisa W.',
     role: 'Marketing Director',
     avatar: 'LW',
-    quote: 'The calendar integration is seamless. I can\'t imagine going back to my old workflow.',
+    quote: 'The calendar integration is seamless. I can&apos;t imagine going back to my old workflow.',
     rating: 5,
   },
 ];
@@ -99,7 +99,7 @@ export function Testimonials() {
               </div>
 
               {/* Quote */}
-              <p className="text-sm leading-relaxed mb-4">"{testimonial.quote}"</p>
+              <p className="text-sm leading-relaxed mb-4">&quot;{testimonial.quote}&quot;</p>
 
               {/* Author */}
               <div className="flex items-center gap-3">

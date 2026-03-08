@@ -13,7 +13,8 @@ import { deleteNote as serverDeleteNote } from "@/actions/notes";
 import { syncSubtask } from "@/actions/tasks";
 import { deleteSubtask } from "@/actions/tasks";
 import { cloneTaskToDb } from "@/actions/tasks";
-import { toast } from "sonner";
+import { showToast } from "@/lib/toast-queue";
+import { logger } from "@/lib/logger";
 
 // --- Types ---
 
@@ -73,8 +74,9 @@ export interface Note {
   content: string; // HTML content
   date: string; // ISO
   tags: string[];
-  type: "meeting" | "personal";
+  type: "meeting" | "personal" | "journal";
   eventId?: string; // Link to CalendarEvent
+  sentiment?: "positive" | "neutral" | "negative";
   metadata?: {
     checklist?: { checked: number; total: number };
     hasImages?: boolean;
@@ -103,9 +105,12 @@ export interface Column {
   order: number;
 }
 
+export type ViewMode = "board" | "swimlane";
+export type Density = "compact" | "comfortable";
+
 export interface ViewSettings {
-  mode: "board" | "swimlane";
-  density: "compact" | "comfortable";
+  mode: ViewMode;
+  density: Density;
   swimlaneGroupBy: "priority" | "none" | "assignee"; // Grouping logic
   showCoverImages: boolean;
 }
@@ -432,11 +437,11 @@ export const useStore = create<AppState>()(
           canRedo: true,
         });
 
-        toast.info("Action undone");
+        showToast.info("Action undone");
       },
 
       redo: () => {
-        const { history, historyIndex, tasks, events, notes, columns } = get();
+        const { history, historyIndex, tasks, events, notes } = get();
         if (historyIndex >= history.length - 1) return;
 
         const entry = history[historyIndex + 1];
@@ -486,7 +491,7 @@ export const useStore = create<AppState>()(
           canRedo: historyIndex + 1 < history.length - 1,
         });
 
-        toast.info("Action redone");
+        showToast.info("Action redone");
       },
 
       // --- Task Actions ---
@@ -530,11 +535,11 @@ export const useStore = create<AppState>()(
             set((state) => ({
               tasks: state.tasks.filter((t) => t.id !== newTask.id),
             }));
-            toast.error(result.error || "Failed to create task");
+            showToast.error(result.error || "Failed to create task");
           }
         } catch (error) {
-          console.error("Failed to save task", error);
-          toast.error("Failed to save task");
+          logger.error("Failed to save task", error as Error, { action: "addTask" });
+          showToast.error("Failed to save task");
         }
       },
 
@@ -558,7 +563,7 @@ export const useStore = create<AppState>()(
         if (isCompleting) {
           const unblockedTasks = get().tasks.filter((t) => t.dependsOn === id && !t.completed);
           if (unblockedTasks.length > 0) {
-            toast.success(`Unblocked ${unblockedTasks.length} task${unblockedTasks.length > 1 ? "s" : ""}: ${unblockedTasks.map((t) => t.title).join(", ")}`);
+            showToast.success(`Unblocked ${unblockedTasks.length} task${unblockedTasks.length > 1 ? "s" : ""}: ${unblockedTasks.map((t) => t.title).join(", ")}`);
           }
         }
 
@@ -576,10 +581,11 @@ export const useStore = create<AppState>()(
             set((state) => ({
               tasks: state.tasks.map((t) => (t.id === id ? task : t)),
             }));
-            toast.error(result.error || "Failed to update task");
+            showToast.error(result.error || "Failed to update task");
           }
         } catch (error) {
-          console.error("Failed to toggle task", error);
+          logger.error("Failed to toggle task", error as Error, { action: "toggleTask" });
+          showToast.error("Failed to sync task status");
         }
       },
 
@@ -624,7 +630,8 @@ export const useStore = create<AppState>()(
             completed: isCompleting,
           });
         } catch (error) {
-          console.error("Failed to sync subtask", error);
+          logger.error("Failed to sync subtask", error as Error, { action: "toggleSubtask" });
+          showToast.error("Failed to sync subtask");
         }
       },
 
@@ -646,10 +653,11 @@ export const useStore = create<AppState>()(
           if (!result.success) {
             // Rollback
             set((state) => ({ tasks: [...state.tasks, task] }));
-            toast.error(result.error || "Failed to delete task");
+            showToast.error(result.error || "Failed to delete task");
           }
         } catch (error) {
-          console.error("Failed to delete task", error);
+          logger.error("Failed to delete task", error as Error, { action: "deleteTask" });
+          showToast.error("Failed to delete task");
         }
       },
 
@@ -673,6 +681,7 @@ export const useStore = create<AppState>()(
         // Sync to server
         try {
           // Map Store Task fields to Server Update Input
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const serverUpdates: any = {
             id,
             ...updates,
@@ -690,15 +699,15 @@ export const useStore = create<AppState>()(
             set((state) => ({
               tasks: state.tasks.map((t) => (t.id === id ? task : t)),
             }));
-            toast.error(result.error || "Failed to update task");
+            showToast.error(result.error || "Failed to update task");
           }
         } catch (error) {
-          console.error("Failed to update task", error);
+          logger.error("Failed to update task", error as Error, { action: "updateTask" });
           // Rollback
             set((state) => ({
               tasks: state.tasks.map((t) => (t.id === id ? task : t)),
             }));
-            toast.error("Failed to update task");
+            showToast.error("Failed to update task");
         }
       },
 
@@ -719,21 +728,20 @@ export const useStore = create<AppState>()(
           after: updatedTask,
         });
 
-        toast.success(`Priority set to ${priority}`);
+        showToast.success(`Priority set to ${priority}`);
       },
 
       bulkDeleteTasks: (ids) => {
-        const tasksToDelete = get().tasks.filter((t) => ids.includes(t.id));
         set((state) => ({ tasks: state.tasks.filter((t) => !ids.includes(t.id)) }));
-        toast.success(`Deleted ${ids.length} tasks`);
-        ids.forEach((id) => deleteTask(id).catch(console.error));
+        showToast.success(`Deleted ${ids.length} tasks`);
+        ids.forEach((id) => deleteTask(id).catch((error) => logger.error("Failed to bulk delete task", error as Error, { action: "bulkDeleteTasks" })));
       },
 
       bulkUpdateTasks: (ids, updates) => {
         set((state) => ({
           tasks: state.tasks.map((t) => (ids.includes(t.id) ? { ...t, ...updates } : t)),
         }));
-        toast.success(`Updated ${ids.length} tasks`);
+        showToast.success(`Updated ${ids.length} tasks`);
       },
 
       // --- Task Clone ---
@@ -782,7 +790,7 @@ export const useStore = create<AppState>()(
           after: clonedTask,
         });
 
-        toast.success("Task cloned");
+        showToast.success("Task cloned");
 
         try {
           await cloneTaskToDb({
@@ -800,8 +808,8 @@ export const useStore = create<AppState>()(
             })),
           });
         } catch (error) {
-          console.error("Failed to clone task", error);
-          toast.error("Failed to save cloned task");
+          logger.error("Failed to clone task", error as Error, { action: "cloneTask" });
+          showToast.error("Failed to save cloned task");
         }
       },
 
@@ -844,7 +852,8 @@ export const useStore = create<AppState>()(
             completed: newSubtask.completed,
           });
         } catch (error) {
-          console.error("Failed to sync subtask", error);
+          logger.error("Failed to sync subtask", error as Error, { action: "addSubtask" });
+          showToast.error("Failed to save subtask");
         }
       },
 
@@ -872,7 +881,8 @@ export const useStore = create<AppState>()(
         try {
           await deleteSubtask(subtaskId);
         } catch (error) {
-          console.error("Failed to delete subtask", error);
+          logger.error("Failed to delete subtask", error as Error, { action: "deleteSubtask" });
+          showToast.error("Failed to delete subtask");
         }
       },
 
@@ -915,10 +925,11 @@ export const useStore = create<AppState>()(
             set((state) => ({
               events: state.events.filter((e) => e.id !== newEvent.id),
             }));
-            toast.error(result.error || "Failed to create event");
+            showToast.error(result.error || "Failed to create event");
           }
         } catch (error) {
-          console.error("Failed to create event", error);
+          logger.error("Failed to create event", error as Error, { action: "addEvent" });
+          showToast.error("Failed to save event");
         }
       },
 
@@ -934,10 +945,11 @@ export const useStore = create<AppState>()(
             end: updates.end,
           });
           if (!result.success) {
-            toast.error(result.error || "Failed to update event");
+            showToast.error(result.error || "Failed to update event");
           }
         } catch (error) {
-          console.error("Failed to update event", error);
+          logger.error("Failed to update event", error as Error, { action: "updateEvent" });
+          showToast.error("Failed to update event");
         }
       },
 
@@ -949,10 +961,11 @@ export const useStore = create<AppState>()(
           const result = await deleteEvent(id);
           if (!result.success && event) {
             set((state) => ({ events: [...state.events, event] }));
-            toast.error(result.error || "Failed to delete event");
+            showToast.error(result.error || "Failed to delete event");
           }
         } catch (error) {
-          console.error("Failed to delete event", error);
+          logger.error("Failed to delete event", error as Error, { action: "deleteEvent" });
+          showToast.error("Failed to delete event");
         }
       },
 
@@ -967,10 +980,11 @@ export const useStore = create<AppState>()(
             set((state) => ({
               notes: state.notes.filter((n) => n.id !== note.id),
             }));
-            toast.error(result.error || "Failed to create note");
+            showToast.error(result.error || "Failed to create note");
           }
         } catch (error) {
-          console.error("Failed to create note", error);
+          logger.error("Failed to create note", error as Error, { action: "addNote" });
+          showToast.error("Failed to save note");
         }
       },
 
@@ -990,10 +1004,11 @@ export const useStore = create<AppState>()(
             date: updates.date,
           });
           if (!result.success) {
-            toast.error(result.error || "Failed to update note");
+            showToast.error(result.error || "Failed to update note");
           }
         } catch (error) {
-          console.error("Failed to update note", error);
+          logger.error("Failed to update note", error as Error, { action: "updateNote" });
+          showToast.error("Failed to update note");
         }
       },
 
@@ -1005,10 +1020,11 @@ export const useStore = create<AppState>()(
           const result = await serverDeleteNote(id);
           if (!result.success && note) {
             set((state) => ({ notes: [...state.notes, note] }));
-            toast.error(result.error || "Failed to delete note");
+            showToast.error(result.error || "Failed to delete note");
           }
         } catch (error) {
-          console.error("Failed to delete note", error);
+          logger.error("Failed to delete note", error as Error, { action: "deleteNote" });
+          showToast.error("Failed to delete note");
         }
       },
 

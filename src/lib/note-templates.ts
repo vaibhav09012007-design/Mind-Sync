@@ -4,10 +4,34 @@ export interface NoteTemplate {
   description: string;
   icon: string;
   content: string;
-  type: "meeting" | "personal";
+  type: "meeting" | "personal" | "journal";
 }
 
 export const NOTE_TEMPLATES: NoteTemplate[] = [
+  {
+    id: "daily-journal",
+    name: "Daily Journal",
+    description: "Reflect on your day, gratitude, and goals",
+    icon: "BookHeart",
+    type: "journal",
+    content: `## 🌟 Daily Reflection
+
+### 3 Things I'm Grateful For
+1.
+2.
+3.
+
+### 🎯 Today's Wins
+-
+-
+
+### 🧠 What's on my mind?
+_Write your thoughts here..._
+
+### 🔮 Tomorrow's Focus
+-
+`,
+  },
   {
     id: "meeting",
     name: "Meeting Notes",

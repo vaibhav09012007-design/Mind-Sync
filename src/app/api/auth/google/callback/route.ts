@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
+import { logger } from '@/lib/logger';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
 
     // Handle user denial or errors
     if (error) {
-      console.error('Google OAuth error:', error);
+      logger.error('Google OAuth error', new Error(error), { action: 'googleAuthCallback', error_code: error });
       return NextResponse.redirect(new URL('/dashboard?error=google_auth_denied', request.url));
     }
 
@@ -57,7 +58,7 @@ export async function GET(request: Request) {
 
     if (!tokenResponse.ok) {
       const errorBody = await tokenResponse.text();
-      console.error('Google token exchange error:', errorBody);
+      logger.error('Google token exchange error', new Error(errorBody), { action: 'googleAuthCallback' });
       return NextResponse.json(
         { error: 'Failed to exchange authorization code for tokens' },
         { status: 500 }
@@ -68,7 +69,7 @@ export async function GET(request: Request) {
 
     // Set tokens in secure HTTP-only cookies
     const cookieStore = await cookies();
-    
+
     cookieStore.set('google_access_token', tokens.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -90,7 +91,7 @@ export async function GET(request: Request) {
     // Redirect to calendar page after successful authentication
     return NextResponse.redirect(new URL('/dashboard/calendar?google_connected=true', request.url));
   } catch (error) {
-    console.error('Google OAuth callback error:', error);
+    logger.error('Google OAuth callback error', error as Error, { action: 'googleAuthCallback' });
     return NextResponse.json(
       { error: 'Failed to complete Google OAuth' },
       { status: 500 }

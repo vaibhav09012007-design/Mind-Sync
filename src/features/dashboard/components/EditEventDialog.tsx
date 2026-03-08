@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import { useStore } from "@/store/useStore";
+import { useEvents, useEventActions } from "@/store/selectors";
 import { parseISO, format, setMinutes, setHours } from "date-fns";
 
 interface EditEventDialogProps {
@@ -17,7 +17,8 @@ interface EditEventDialogProps {
 }
 
 export function EditEventDialog({ isOpen, onOpenChange, eventId, currentDate }: EditEventDialogProps) {
-  const { events, updateEvent, deleteEvent } = useStore();
+  const events = useEvents();
+  const { updateEvent, deleteEvent } = useEventActions();
   const [title, setTitle] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");

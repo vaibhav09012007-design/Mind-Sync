@@ -12,7 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { NOTE_TEMPLATES, NoteTemplate } from "@/lib/note-templates";
-import { useStore, Note } from "@/store/useStore";
+import { Note } from "@/store/useStore";
+import { useNoteActions } from "@/store/selectors";
 import {
   Users,
   UserCircle,
@@ -21,6 +22,7 @@ import {
   Lightbulb,
   File,
   LucideIcon,
+  BookHeart,
 } from "lucide-react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -31,6 +33,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   FileText,
   Lightbulb,
   File,
+  BookHeart,
 };
 
 interface TemplatePickerProps {
@@ -40,7 +43,7 @@ interface TemplatePickerProps {
 
 export function TemplatePicker({ isOpen, onClose }: TemplatePickerProps) {
   const router = useRouter();
-  const { addNote } = useStore();
+  const { addNote } = useNoteActions();
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   const createNoteFromTemplate = (template: NoteTemplate): Note => {
@@ -91,6 +94,8 @@ export function TemplatePicker({ isOpen, onClose }: TemplatePickerProps) {
                     "rounded-full p-2",
                     template.type === "meeting"
                       ? "bg-blue-500/10 text-blue-500"
+                      : template.type === "journal"
+                      ? "bg-purple-500/10 text-purple-500"
                       : "bg-green-500/10 text-green-500"
                   )}
                 >

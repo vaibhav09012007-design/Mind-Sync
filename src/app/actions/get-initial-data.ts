@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { tasks, events, notes } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth } from "@clerk/nextjs/server";
+import { logger } from "@/lib/logger";
 
 export interface InitialData {
   tasks: {
@@ -92,7 +93,7 @@ export async function getInitialData(): Promise<InitialData | null> {
       })),
     };
   } catch (error) {
-    console.error("[getInitialData] Error fetching initial data:", error);
+    logger.error("Error fetching initial data", error as Error, { action: "getInitialData" });
     return null;
   }
 }

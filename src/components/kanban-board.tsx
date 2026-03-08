@@ -5,7 +5,7 @@
  * Drag-and-drop task management with status columns
  */
 
-import { useState } from "react";
+import { useState, useMemo, useCallback, memo } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -25,23 +25,19 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Task, useStore, Column } from "@/store/useStore";
+import { Task, Column, ViewSettings } from "@/store/useStore";
+import { useTasks, useTaskActions, useColumns, useViewSettings } from "@/store/selectors";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { PriorityBadge } from "@/features/tasks/components/PriorityBadge";
 import { Progress } from "@/components/ui/progress";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   GripVertical,
   Calendar,
   Clock,
-  MoreHorizontal,
   Plus,
-  Image as ImageIcon,
-  User,
-  Eye,
   Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -53,28 +49,31 @@ import { BulkActionBar } from "@/components/kanban/bulk-action-bar";
 import { TaskPreviewDialog } from "@/components/kanban/task-preview-dialog";
 
 // Sortable Task Card Component
-function SortableTaskCard({
+const SortableTaskCard = memo(function SortableTaskCard({
   task,
   onToggle,
   isSelected,
   onSelect,
   selectionMode,
+  viewSettings,
+  taskMap,
 }: {
   task: Task;
   onToggle: (id: string) => void;
   isSelected: boolean;
   onSelect: (id: string) => void;
   selectionMode: boolean;
+  viewSettings: ViewSettings;
+  taskMap: Map<string, Task>;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
   });
 
-  const { viewSettings, tasks } = useStore();
   const isCompact = viewSettings.density === "compact";
 
   // Check if task is blocked by another task
-  const blockingTask = task.dependsOn ? tasks.find((t) => t.id === task.dependsOn) : null;
+  const blockingTask = task.dependsOn ? taskMap.get(task.dependsOn) : null;
   const isBlocked = blockingTask && !blockingTask.completed;
 
   const style = {
@@ -263,7 +262,13 @@ function SortableTaskCard({
       </div>
     </motion.div>
   );
-}
+}, (prev, next) => (
+  prev.task === next.task &&
+  prev.isSelected === next.isSelected &&
+  prev.selectionMode === next.selectionMode &&
+  prev.viewSettings === next.viewSettings &&
+  prev.taskMap === next.taskMap
+));
 
 // Task Card for Drag Overlay
 function TaskCardOverlay({ task }: { task: Task }) {
@@ -279,13 +284,15 @@ function TaskCardOverlay({ task }: { task: Task }) {
 }
 
 // Kanban Column Component
-function KanbanColumn({
+const KanbanColumn = memo(function KanbanColumn({
   column,
   tasks,
   onToggleTask,
   onAddTask,
   selectedIds,
   onSelectTask,
+  viewSettings,
+  taskMap,
 }: {
   column: Column;
   tasks: Task[];
@@ -293,6 +300,8 @@ function KanbanColumn({
   onAddTask: (columnId: string) => void;
   selectedIds: string[];
   onSelectTask: (id: string) => void;
+  viewSettings: ViewSettings;
+  taskMap: Map<string, Task>;
 }) {
   const isOverLimit =
     column.wipLimit && tasks.length > column.wipLimit && column.id === "InProgress";
@@ -345,6 +354,8 @@ function KanbanColumn({
                 isSelected={selectedIds.includes(task.id)}
                 onSelect={onSelectTask}
                 selectionMode={selectedIds.length > 0}
+                viewSettings={viewSettings}
+                taskMap={taskMap}
               />
             ))}
           </AnimatePresence>
@@ -357,16 +368,23 @@ function KanbanColumn({
       </SortableContext>
     </div>
   );
-}
+});
 
 import { SwimlaneBoard } from "@/components/kanban/swimlane-board";
 
 // Main Kanban Board Component
 export function KanbanBoard() {
-  const { tasks, toggleTask, updateTask, columns, viewSettings } = useStore();
+  const tasks = useTasks();
+  const columns = useColumns();
+  const viewSettings = useViewSettings();
+  const { toggleTask, updateTask } = useTaskActions();
+
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [previewTask, setPreviewTask] = useState<Task | null>(null);
+
+  // Memoize task map for O(1) lookups
+  const taskMap = useMemo(() => new Map(tasks.map((t) => [t.id, t])), [tasks]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -380,26 +398,37 @@ export function KanbanBoard() {
   );
 
   // Group tasks by status (or columnId if present)
-  const getTasksByStatus = (columnId: string) => {
-    return tasks.filter((task) => {
-      // Explicit assignment
-      if (task.columnId === columnId) return true;
+  // Memoized to prevent recalculation on every render
+  const tasksByColumn = useMemo(() => {
+    const map = new Map<string, Task[]>();
 
-      // Fallback for legacy/unmigrated data
-      if (!task.columnId) {
-        if (columnId === "Done") return task.completed;
-        if (columnId === "InProgress") return !task.completed && task.tags?.includes("in-progress");
-        if (columnId === "Todo") return !task.completed && !task.tags?.includes("in-progress");
-      }
-      return false;
-    });
-  };
+    // Helper function
+    const getTasksForColumn = (columnId: string) => {
+      return tasks.filter((task) => {
+        // Explicit assignment
+        if (task.columnId === columnId) return true;
 
-  const handleDragStart = (event: DragStartEvent) => {
+        // Fallback for legacy/unmigrated data
+        if (!task.columnId) {
+          if (columnId === "Done") return task.completed;
+          if (columnId === "InProgress") return !task.completed && task.tags?.includes("in-progress");
+          if (columnId === "Todo") return !task.completed && !task.tags?.includes("in-progress");
+        }
+        return false;
+      });
+    };
+
+    for (const column of columns) {
+      map.set(column.id, getTasksForColumn(column.id));
+    }
+    return map;
+  }, [tasks, columns]);
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
     setActiveId(event.active.id as string);
-  };
+  }, []);
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
 
@@ -437,15 +466,15 @@ export function KanbanBoard() {
         toggleTask(activeTask.id);
       }
     }
-  };
+  }, [tasks, columns, updateTask, toggleTask]);
 
-  const handleAddTask = (columnId: string) => {
-    console.log("Add task to:", columnId);
-  };
+  const handleAddTask = useCallback(() => {
+    // Open create task dialog (to be implemented/wired)
+  }, []);
 
-  const toggleSelection = (id: string) => {
+  const toggleSelection = useCallback((id: string) => {
     setSelectedIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  };
+  }, []);
 
   const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
 
@@ -466,11 +495,13 @@ export function KanbanBoard() {
             <KanbanColumn
               key={column.id}
               column={column}
-              tasks={getTasksByStatus(column.id)}
+              tasks={tasksByColumn.get(column.id) || []}
               onToggleTask={toggleTask}
               onAddTask={handleAddTask}
               selectedIds={selectedIds}
               onSelectTask={toggleSelection}
+              viewSettings={viewSettings}
+              taskMap={taskMap}
             />
           ))}
         </div>

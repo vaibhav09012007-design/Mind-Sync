@@ -6,7 +6,7 @@
  */
 
 import { useState, useRef } from "react";
-import { useStore } from "@/store/useStore";
+import { useTasks, useHydrationActions } from "@/store/selectors";
 import {
   Dialog,
   DialogContent,
@@ -43,7 +43,8 @@ interface ImportExportDialogProps {
 }
 
 export function ImportExportDialog({ open, onOpenChange }: ImportExportDialogProps) {
-  const { tasks, setTasks } = useStore();
+  const tasks = useTasks();
+  const { setTasks } = useHydrationActions();
   const [activeTab, setActiveTab] = useState<"export" | "import">("export");
   const [exportFormat, setExportFormat] = useState<"csv" | "json">("json");
   const [importData, setImportData] = useState("");

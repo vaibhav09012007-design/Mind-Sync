@@ -26,7 +26,7 @@ const SOUNDSCAPES: { id: NoiseType; label: string; description: string }[] = [
 ];
 
 export function AudioPlayer() {
-  const { isPlaying, activeType, volume, play, stop, toggle, setVolume } = useSoundscapes();
+  const { isPlaying, activeType, volume, toggle, setVolume } = useSoundscapes();
   const [selectedTrack, setSelectedTrack] = useState(SOUNDSCAPES[0]);
 
   const selectTrack = (track: (typeof SOUNDSCAPES)[0]) => {
@@ -35,7 +35,7 @@ export function AudioPlayer() {
       return;
     }
     setSelectedTrack(track);
-    play(track.id);
+    toggle(); // Switch to new track
   };
 
   return (

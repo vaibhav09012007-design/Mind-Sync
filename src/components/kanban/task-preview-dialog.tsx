@@ -1,6 +1,7 @@
 "use client";
 
-import { Task, useStore, Priority } from "@/store/useStore";
+import { Task, Priority } from "@/store/useStore";
+import { useTaskActions } from "@/store/selectors";
 import {
   Dialog,
   DialogContent,
@@ -23,7 +24,6 @@ import {
 } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { format, isPast, isToday, isTomorrow } from "date-fns";
@@ -34,8 +34,6 @@ import {
   CheckCircle2,
   Trash2,
   Edit3,
-  X,
-  AlertTriangle,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -47,7 +45,7 @@ interface TaskPreviewDialogProps {
 }
 
 export function TaskPreviewDialog({ task, open, onOpenChange }: TaskPreviewDialogProps) {
-  const { updateTask, toggleTask, deleteTask } = useStore();
+  const { updateTask, toggleTask, deleteTask } = useTaskActions();
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedDescription, setEditedDescription] = useState("");

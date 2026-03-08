@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { format, startOfWeek, addDays, isSameDay } from "date-fns";
-import { useStore } from "@/store/useStore";
+import { useEvents } from "@/store/selectors";
 import { useMemo, useRef, useState, useEffect } from "react";
 import { calculateEventLayout, EVENT_STYLES } from "./calendar-utils";
 import { GridEvent } from "./TimeGrid";
@@ -16,7 +16,7 @@ interface WeekViewProps {
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 
 export function WeekView({ date, onAddEvent, onEditEvent }: WeekViewProps) {
-  const { events } = useStore();
+  const events = useEvents();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -67,6 +67,7 @@ export function WeekView({ date, onAddEvent, onEditEvent }: WeekViewProps) {
           start: startMinutes,
           duration,
           timeString: `${format(start, "h:mm")} - ${format(end, "h:mm")}`,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           type: e.type as any,
         };
         const current = map.get(dayKey) || [];
@@ -172,9 +173,11 @@ export function WeekView({ date, onAddEvent, onEditEvent }: WeekViewProps) {
                   className="group/col hover:bg-muted/5 relative h-full transition-colors"
                   onClick={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
-                    const y = e.clientY - rect.top + e.currentTarget.scrollTop; // need correct scroll offset
+                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    const _y = e.clientY - rect.top + e.currentTarget.scrollTop; // need correct scroll offset
                     // Since we can't easily get scroll offset here on the sticky item,
                     // we might rely on the parent scrollRef or just approximate with event.nativeEvent.offsetY
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const offsetY = (e.nativeEvent as any).offsetY;
                     const hour = Math.floor(offsetY / 60);
                     const minute = Math.floor(offsetY % 60);

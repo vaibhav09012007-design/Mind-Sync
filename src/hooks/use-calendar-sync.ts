@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { GoogleCalendarService, GoogleCalendarEvent } from "@/lib/google-calendar";
-import { useStore, CalendarEvent } from "@/store/useStore";
+import { CalendarEvent } from "@/store/useStore";
+import { useEvents, useEventActions } from "@/store/selectors";
 import { toast } from "sonner";
 
 export type SyncStatus = "idle" | "syncing" | "success" | "error";
@@ -45,7 +46,8 @@ function localEventToGoogle(event: CalendarEvent) {
 
 export function useCalendarSync() {
   const { user, isLoaded } = useUser();
-  const { events, addEvent, updateEvent } = useStore();
+  const events = useEvents();
+  const { addEvent, updateEvent } = useEventActions();
 
   const [syncState, setSyncState] = useState<SyncState>({
     status: "idle",
@@ -75,6 +77,7 @@ export function useCalendarSync() {
     try {
       // The oauth_access_token might be available on the external account
       // Note: This requires proper OAuth scopes during sign-in
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const token = (googleAccount as any).accessToken || (googleAccount as any).oauth_access_token;
 
       if (!token) {

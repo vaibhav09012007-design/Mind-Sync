@@ -18,6 +18,7 @@ import {
 import { requireAuth, ensureUserExists } from "./shared";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { getCachedNotes, CACHE_TAGS } from "@/lib/data-fetchers";
+import { logger } from "@/lib/logger";
 
 // --- Notes ---
 
@@ -39,7 +40,8 @@ export async function createNote(data: {
   preview: string;
   date: string;
   tags?: string[];
-  type?: "meeting" | "personal";
+  type?: "meeting" | "personal" | "journal";
+  sentiment?: "positive" | "neutral" | "negative";
   metadata?: unknown;
 }): Promise<ActionResult<void>> {
   try {
@@ -64,6 +66,7 @@ export async function createNote(data: {
       preview: data.preview,
       tags: data.tags,
       type: data.type || "personal",
+      sentiment: data.sentiment,
       metadata: data.metadata,
       createdAt: new Date(data.date),
     });
@@ -84,7 +87,8 @@ export async function updateNote(
     content?: string;
     preview?: string;
     tags?: string[];
-    type?: "meeting" | "personal";
+    type?: "meeting" | "personal" | "journal";
+    sentiment?: "positive" | "neutral" | "negative";
     metadata?: unknown;
     date?: string;
   }
@@ -104,6 +108,7 @@ export async function updateNote(
     if (data.preview) updates.preview = data.preview;
     if (data.tags) updates.tags = data.tags;
     if (data.type) updates.type = data.type;
+    if (data.sentiment) updates.sentiment = data.sentiment;
     if (data.metadata) updates.metadata = data.metadata;
     if (data.date) updates.updatedAt = new Date(data.date);
 
@@ -142,7 +147,7 @@ export async function deleteNote(id: string): Promise<ActionResult<void>> {
       // provided was not a valid UUID (e.g. "9efxvmn1m").
       // Since it's invalid, it can't exist in the DB, so we treat it as successfully deleted.
       if (typeof dbError === 'object' && dbError !== null && 'code' in dbError && (dbError as { code: string }).code === "22P02") {
-        console.warn(`[deleteNote] Ignored invalid UUID format: ${id}`);
+        logger.warn(`Ignored invalid UUID format: ${id}`, { action: "deleteNote" });
         // Fallthrough to return success
       } else {
         throw dbError;

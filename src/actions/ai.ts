@@ -22,7 +22,8 @@ import { summarizeMeetingSchema } from "@/lib/validation";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { requireAuth, ensureUserExists } from "./shared";
 import { getEnv, getEnvOptional } from "@/lib/env";
-import { reportError, reportWarning } from "@/lib/error-reporting";
+import { reportError } from "@/lib/error-reporting";
+import { logger } from "@/lib/logger";
 
 // Lazy initialization to avoid crashes if API key is missing
 let genAI: GoogleGenerativeAI | null = null;
@@ -62,7 +63,7 @@ export async function summarizeMeeting(
     // Check for API key and mock if missing
     const apiKey = getEnvOptional("GEMINI_API_KEY");
     if (!apiKey) {
-      console.warn("[AI Summary] GEMINI_API_KEY missing, returning mock response");
+      logger.warn("GEMINI_API_KEY missing, returning mock response", { action: "ai_summarize" });
 
       // Simulate delay
       await new Promise(resolve => setTimeout(resolve, 1500));
@@ -154,7 +155,7 @@ Remember: Only output the JSON object, nothing else.
       }
     });
     
-    console.error("AI Summarization Error:", error);
+    logger.error("AI summarization failed", error as Error, { action: "ai_summarize" });
     return createErrorResult(new APIError("Gemini", "Failed to summarize meeting"));
   }
 }
@@ -174,7 +175,7 @@ export async function generateSchedule(): Promise<ActionResult<{ count: number }
     // Validate API key is configured
     const apiKey = getEnvOptional("GEMINI_API_KEY");
     if (!apiKey) {
-      console.warn("[AI Schedule] GEMINI_API_KEY missing, returning mock response");
+      logger.warn("GEMINI_API_KEY missing, returning mock response", { action: "ai_schedule" });
       return createSuccessResult({ count: 0 });
     }
 
@@ -204,9 +205,7 @@ export async function generateSchedule(): Promise<ActionResult<{ count: number }
       throw new ValidationError({ tasks: ["No tasks to schedule"] });
     }
 
-    console.log(
-      `[AI Schedule] Scheduling ${todoTasks.length} tasks around ${todaysEvents.length} events.`
-    );
+    logger.info("Scheduling tasks", { action: "ai_schedule", taskCount: todoTasks.length, eventCount: todaysEvents.length });
 
     const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" });
 
@@ -305,7 +304,7 @@ Format:
 
     return createSuccessResult({ count: newEvents.length });
   } catch (error: unknown) {
-    console.error("[AI Schedule] Error:", error);
+    logger.error("AI schedule failed", error as Error, { action: "ai_schedule" });
     return createErrorResult(error);
   }
 }

@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { format, subDays, isSameDay, parseISO } from "date-fns";
-import { Check, Flame, MoreVertical, Trash2, Edit, Calendar as CalendarIcon, RotateCcw } from "lucide-react";
+import { format, subDays, isSameDay } from "date-fns";
+import { Check, Flame, MoreVertical, Trash2, Edit, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { logHabit, deleteHabit } from "@/actions/habits";
 import { toast } from "sonner";
 import { HabitForm } from "./habit-form";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Habit {
   id: string;
@@ -54,7 +53,7 @@ export function HabitCard({ habit, completedToday, recentLogs = [] }: HabitCardP
       } else {
         toast.error(result.error || "Failed to update habit");
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred");
     } finally {
       setIsCompleting(false);
@@ -71,7 +70,7 @@ export function HabitCard({ habit, completedToday, recentLogs = [] }: HabitCardP
       } else {
         toast.error("Failed to delete habit");
       }
-    } catch (error) {
+    } catch {
       toast.error("An error occurred");
     }
   };

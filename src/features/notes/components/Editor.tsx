@@ -8,9 +8,10 @@ import Placeholder from "@tiptap/extension-placeholder";
 
 import { Separator } from "@/components/ui/separator";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-import { useStore, Note } from "@/store/useStore";
+import { Note } from "@/store/useStore";
+import { useNoteActions, useTaskActions } from "@/store/selectors";
 
 import { toast } from "sonner";
 
@@ -18,12 +19,21 @@ import { format } from "date-fns";
 
 import { Toggle } from "@/components/ui/toggle";
 
-import { Bold, Italic, List, ListOrdered, Heading1, Heading2, Quote } from "lucide-react";
+import { analyzeSentiment } from "@/features/ai/advanced-ai";
+import { Badge } from "@/components/ui/badge";
+
+import { Bold, Italic, List, ListOrdered, Heading1, Heading2, Quote, Sparkles } from "lucide-react";
 
 export function Editor({ note, initialContent }: { note?: Note; initialContent?: string }) {
-  const { updateNote, addTask } = useStore();
+  const { updateNote } = useNoteActions();
+  const { addTask } = useTaskActions();
 
   const [title, setTitle] = useState(note?.title || "Untitled");
+  const [sentiment, setSentiment] = useState<"positive" | "neutral" | "negative" | null>(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (note as any)?.sentiment || null
+  );
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Debounce title updates
 
@@ -36,6 +46,24 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
       return () => clearTimeout(timer);
     }
   }, [title, note, updateNote]);
+
+  const runSentimentAnalysis = useCallback(
+    async (text: string) => {
+      if (!note || note.type !== "journal") return;
+      setIsAnalyzing(true);
+      try {
+        const result = await analyzeSentiment(text);
+        if (result.success) {
+          setSentiment(result.data.overall);
+        }
+      } catch (error) {
+        console.error("Sentiment analysis failed", error);
+      } finally {
+        setIsAnalyzing(false);
+      }
+    },
+    [note]
+  );
 
   const editor = useEditor({
     extensions: [
@@ -98,12 +126,19 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
 
         const preview = text.slice(0, 150) + (text.length > 150 ? "..." : "");
 
+        // Run sentiment analysis if enough text and is journal
+        // Debounce this separately or just run it periodically?
+        // Let's run it here but with a randomized check or length check to avoid every keystroke spamming
+        // For simulated AI, it's cheap.
+        if (note.type === "journal" && text.length > 20 && Math.random() > 0.7) {
+           runSentimentAnalysis(text);
+        }
+
         updateNote(note.id, {
           content,
-
           preview,
-
           date: new Date().toISOString(),
+          sentiment: sentiment || undefined, // Include current sentiment in update
         });
       }
     },
@@ -113,14 +148,32 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-8">
-      <input
-        type="text"
-        placeholder="Untitled"
-        className="placeholder:text-muted-foreground/40 mb-4 w-full border-none bg-transparent text-4xl font-bold focus:outline-none"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        readOnly={!note} // Only editable if it's a real note
-      />
+      <div className="flex items-center justify-between mb-4">
+        <input
+            type="text"
+            placeholder="Untitled"
+            className="placeholder:text-muted-foreground/40 w-full border-none bg-transparent text-4xl font-bold focus:outline-none flex-1"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            readOnly={!note} // Only editable if it's a real note
+        />
+        {note?.type === "journal" && (
+            <div className="flex items-center gap-2">
+                {isAnalyzing && <Sparkles className="h-4 w-4 animate-spin text-primary" />}
+                {sentiment && (
+                    <Badge variant="outline" className={
+                        sentiment === "positive" ? "border-green-500 text-green-500 bg-green-500/10" :
+                        sentiment === "negative" ? "border-red-500 text-red-500 bg-red-500/10" :
+                        "border-blue-500 text-blue-500 bg-blue-500/10"
+                    }>
+                        {sentiment === "positive" ? "🌟 Positive" :
+                         sentiment === "negative" ? "🌧️ Negative" :
+                         "😐 Neutral"}
+                    </Badge>
+                )}
+            </div>
+        )}
+      </div>
 
       <div className="text-muted-foreground mb-8 flex items-center gap-4 text-sm">
         <span>

@@ -3,7 +3,7 @@
  * Intelligently reschedules events when delays occur
  */
 
-import { addMinutes, parseISO, format } from "date-fns";
+import { addMinutes, parseISO } from "date-fns";
 
 export interface ScheduleEvent {
   id: string;

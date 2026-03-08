@@ -7,7 +7,7 @@ import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { Button } from "@/components/ui/button";
 import { KanbanBoardSkeleton } from "@/components/ui/skeleton";
 import { Plus, Download } from "lucide-react";
-import { useStore } from "@/store/useStore";
+import { useTasks } from "@/store/selectors";
 import { exportTasksToCSV, exportTasksToJSON } from "@/lib/export-utils";
 import {
   DropdownMenu,
@@ -24,7 +24,7 @@ const KanbanBoard = dynamic(() => import("@/components/kanban-board"), {
 });
 
 export default function KanbanPage() {
-  const { tasks } = useStore();
+  const tasks = useTasks();
 
   return (
     <div className="h-full flex flex-col p-6 overflow-hidden">

@@ -1,7 +1,5 @@
 "use client";
 
-import { Bell, Search, User } from "lucide-react";
-import { UserButton } from "@clerk/nextjs";
 import { NotificationBell } from "@/components/layout/notification-bell";
 
 interface HeaderProps {

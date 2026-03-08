@@ -21,8 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { createGoal, updateGoalProgress, deleteGoal } from "@/actions/goals";
-import { Plus, Trash2, CheckCircle2 } from "lucide-react";
+import { createGoal, deleteGoal } from "@/actions/goals";
+import { Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { addDays, addMonths, startOfDay } from "date-fns";
 
@@ -78,7 +78,7 @@ export function GoalsWidget({ initialGoals, userId, className }: GoalsWidgetProp
       // For this UX, let's assume parent will re-render or we optimistically update if we had the full object.
       // Since we don't have the ID back easily without a more complex return from action, we'll force a reload or wait for revalidation.
       window.location.reload();
-    } catch (error) {
+    } catch {
       toast.error("Failed to create goal");
     } finally {
       setIsSubmitting(false);
@@ -90,7 +90,7 @@ export function GoalsWidget({ initialGoals, userId, className }: GoalsWidgetProp
       await deleteGoal(id);
       setGoals((prev) => prev.filter((g) => g.id !== id));
       toast.success("Goal deleted");
-    } catch (e) {
+    } catch {
       toast.error("Failed to delete goal");
     }
   };

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useStore } from "@/store/useStore";
+import { useTasks, useTimerState } from "@/store/selectors";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { format, startOfWeek, endOfWeek, isWithinInterval } from "date-fns";
@@ -17,7 +17,8 @@ interface FocusGoal {
 }
 
 export function FocusSidebar() {
-  const { tasks, completedSessions, timerSettings } = useStore();
+  const tasks = useTasks();
+  const { completedSessions } = useTimerState();
 
   // Calculate today's stats
   const todayStats = useMemo(() => {
@@ -161,7 +162,7 @@ export function FocusSidebar() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <TrendingUp className="h-4 w-4 text-info" />
-            Today's Progress
+            Today&apos;s Progress
           </CardTitle>
         </CardHeader>
         <CardContent>

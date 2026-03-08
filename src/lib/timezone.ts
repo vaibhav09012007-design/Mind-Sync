@@ -169,10 +169,10 @@ export function createDateInTimezone(
   const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:00`;
 
   // Get the offset for this timezone
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: timezone,
-    timeZoneName: "longOffset",
-  });
+  // const formatter = new Intl.DateTimeFormat("en-US", {
+  //   timeZone: timezone,
+  //   timeZoneName: "longOffset",
+  // });
 
   // This is a simplified approach - for production, consider using date-fns-tz
   const testDate = new Date(dateStr);

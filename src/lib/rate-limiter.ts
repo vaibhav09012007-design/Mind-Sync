@@ -7,6 +7,7 @@
 import { db } from "@/db";
 import { rateLimits } from "@/db/schema";
 import { eq, lt } from "drizzle-orm";
+import { logger } from "@/lib/logger";
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -113,12 +114,13 @@ export async function checkRateLimit(
   } catch (error) {
     // If database fails, allow the request but log the error
     // This prevents rate limiting failures from blocking legitimate users
-    console.error("[RateLimit] Database error, allowing request:", error);
+    logger.error("Database error in rate limiter, allowing request", error as Error, { action: "checkRateLimit", key });
     return {
       allowed: true,
       remaining: maxRequests,
       retryAfter: 0,
-    };
+      error: true,
+    } as RateLimitResult;
   }
 }
 
@@ -133,7 +135,7 @@ export async function clearRateLimit(
   try {
     await db.delete(rateLimits).where(eq(rateLimits.key, key));
   } catch (error) {
-    console.error("[RateLimit] Failed to clear rate limit:", error);
+    logger.error("Failed to clear rate limit", error as Error, { action: "clearRateLimit", key });
   }
 }
 
@@ -176,7 +178,7 @@ export async function getRateLimitStatus(
       retryAfter: entry.count >= maxRequests ? retryAfter : 0,
     };
   } catch (error) {
-    console.error("[RateLimit] Failed to get status:", error);
+    logger.error("Failed to get rate limit status", error as Error, { action: "getRateLimitStatus", key });
     return {
       allowed: true,
       remaining: maxRequests,
@@ -197,10 +199,10 @@ export async function cleanupExpiredRateLimits(): Promise<number> {
       .where(lt(rateLimits.expiresAt, now))
       .returning();
 
-    console.log(`[RateLimit] Cleaned up ${result.length} expired entries`);
+    logger.info("Cleaned up expired rate limit entries", { action: "cleanupExpiredRateLimits", count: result.length });
     return result.length;
   } catch (error) {
-    console.error("[RateLimit] Failed to cleanup expired entries:", error);
+    logger.error("Failed to cleanup expired entries", error as Error, { action: "cleanupExpiredRateLimits" });
     return 0;
   }
 }

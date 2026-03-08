@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { habits, habitLogs } from "@/db/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
 import {
   ValidationError,

@@ -17,7 +17,7 @@ interface HealthStatus {
  * GET /api/health
  */
 export async function GET() {
-  const startTime = Date.now();
+  // const startTime = Date.now();
   const health: HealthStatus = {
     status: "healthy",
     timestamp: new Date().toISOString(),

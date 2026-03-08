@@ -10,9 +10,11 @@ import { PriorityBadge, PrioritySelector, priorityConfig } from "../PriorityBadg
 // Mock Radix UI DropdownMenu as it doesn't work well in JSDOM
 vi.mock("@/components/ui/dropdown-menu", () => {
   return {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     DropdownMenu: ({ children, open: propsOpen, onOpenChange }: any) => {
       const [internalOpen, setInternalOpen] = React.useState(false);
       const open = propsOpen !== undefined ? propsOpen : internalOpen;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const setOpen = onOpenChange || setInternalOpen;
 
       // Pass open state to children via a simple mechanism
@@ -22,17 +24,20 @@ vi.mock("@/components/ui/dropdown-menu", () => {
         </div>
       );
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     DropdownMenuTrigger: ({ children, asChild, ...props }: any) => {
       // In a real mock we'd want to trigger setOpen here
       // But for simplicity in this test, we can just render it
       return <div {...props}>{children}</div>;
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     DropdownMenuContent: ({ children, ...props }: any) => {
       // We'll use a data attribute to control visibility in tests if needed
       // or just rely on the parent's state.
       // For these tests, let's actually just render it but make it toggleable
-      return <div data-slot="dropdown-menu-content">{children}</div>;
+      return <div data-slot="dropdown-menu-content" {...props}>{children}</div>;
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     DropdownMenuItem: ({ children, onClick }: any) => (
       <div onClick={onClick} role="menuitem">
         {children}

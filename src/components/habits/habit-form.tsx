@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { createHabitSchema, updateHabitSchema, type CreateHabitInput } from "@/lib/validation";
+import { createHabitSchema, type CreateHabitInput } from "@/lib/validation";
 import { createHabit, updateHabit } from "@/actions/habits";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { v4 as uuidv4 } from "uuid";
 
 interface HabitFormProps {
-  initialData?: any; // Replace with proper type from DB
+  initialData?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   onSuccess?: () => void;
 }
 
@@ -56,6 +56,7 @@ export function HabitForm({ initialData, onSuccess }: HabitFormProps) {
         },
   });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async function onSubmit(data: any) {
     setIsSubmitting(true);
     try {
@@ -73,7 +74,7 @@ export function HabitForm({ initialData, onSuccess }: HabitFormProps) {
       } else {
         toast.error(result.error || "Failed to save habit");
       }
-    } catch (error) {
+    } catch {
       toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);

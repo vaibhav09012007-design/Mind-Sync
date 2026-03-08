@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function ServiceWorkerRegistration() {
-  const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+  const [_registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
@@ -50,6 +50,7 @@ export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (typeof window !== "undefined" && "Notification" in window) {
       setIsSupported(true);
       setPermission(Notification.permission);
@@ -113,6 +114,7 @@ export function useOfflineStatus() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsOnline(navigator.onLine);
 
     const handleOnline = () => {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Plus, MapPin, Repeat } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import {
   format,
@@ -22,7 +22,6 @@ import {
   subDays,
 } from "date-fns";
 import { cn } from "@/lib/utils";
-import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +40,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useStore, CalendarEvent } from "@/store/useStore";
+import { CalendarEvent } from "@/store/useStore";
+import { useEvents, useEventActions, useViewActions } from "@/store/selectors";
 import { useCalendarSync } from "@/hooks/use-calendar-sync";
 // Import new components
 import {
@@ -59,8 +59,10 @@ import { GlassCard } from "@/components/ui/card";
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function CalendarPage() {
-  const router = useRouter();
-  const { events, setSelectedDate, addEvent } = useStore();
+  // const router = useRouter();
+  const events = useEvents();
+  const { addEvent } = useEventActions();
+  const { setSelectedDate } = useViewActions();
   const { pushToGoogle, hasGoogleAccount } = useCalendarSync();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarViewType>("month");
@@ -72,8 +74,7 @@ export default function CalendarPage() {
 
   const [hydrated, setHydrated] = useState(false);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+    useEffect(() => {
     setHydrated(true);
   }, []);
 
@@ -346,7 +347,7 @@ export default function CalendarPage() {
 
               {/* Month Grid */}
               <div className="grid flex-1 grid-cols-7 grid-rows-5 divide-x divide-y lg:grid-rows-6">
-                {calendarDays.map((day, i) => {
+                {calendarDays.map((day) => {
                   const isCurrentMonth = isSameMonth(day, monthStart);
                   const isDayToday = isToday(day);
                   const dayEvents = events.filter((e) => isSameDay(parseISO(e.start), day));

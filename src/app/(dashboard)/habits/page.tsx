@@ -46,7 +46,7 @@ async function HabitsList() {
         </div>
         <h3 className="text-2xl font-bold mb-2">No habits yet</h3>
         <p className="text-muted-foreground max-w-sm mb-8">
-          "We are what we repeatedly do. Excellence, then, is not an act, but a habit."
+          &quot;We are what we repeatedly do. Excellence, then, is not an act, but a habit.&quot;
         </p>
         <CreateHabitButton />
       </div>

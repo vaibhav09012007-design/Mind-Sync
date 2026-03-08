@@ -17,6 +17,7 @@ import {
   createErrorResult,
 } from "@/lib/errors";
 import { reportError } from "@/lib/error-reporting";
+import { logger } from "@/lib/logger";
 
 // --- Helper: Auth Check ---
 export async function requireAuth() {
@@ -56,14 +57,14 @@ export async function syncUser(): Promise<ActionResult<string | null>> {
           email: email,
           preferences: { theme: "system" },
         });
-        console.log("[syncUser] Created new user:", user.id);
+        logger.info("Created new user", { action: "syncUser", userId: user.id });
       } catch (insertError: unknown) {
         // Handle race condition: another request may have created the user
         if (typeof insertError === 'object' && insertError !== null && 'code' in insertError) {
           const pgError = insertError as { code: string };
           if (pgError.code === "23505") {
             // Unique violation - user was created by another request
-            console.log("[syncUser] User already exists (race condition handled):", user.id);
+            logger.info("User already exists (race condition handled)", { action: "syncUser", userId: user.id });
           } else {
             reportError(insertError as unknown as Error, { 
               action: "sync_user_insert", 
@@ -83,7 +84,7 @@ export async function syncUser(): Promise<ActionResult<string | null>> {
 
     return createSuccessResult(user.id);
   } catch (error) {
-    console.error("[syncUser] Critical error:", error);
+    logger.error("Critical error in syncUser", error as Error, { action: "syncUser" });
     reportError(error as Error, { action: "sync_user" });
     return createErrorResult(error);
   }
@@ -93,7 +94,7 @@ export async function syncUser(): Promise<ActionResult<string | null>> {
  * Ensure user exists in database before performing operations.
  * Throws AuthError if user creation fails.
  */
-export async function ensureUserExists(userId: string): Promise<void> {
+export async function ensureUserExists(userId?: string): Promise<void> {
   const result = await syncUser();
   if (!result.success) {
     throw new AuthError("Failed to sync user to database");

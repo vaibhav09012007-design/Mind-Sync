@@ -6,10 +6,7 @@ import {
   CheckSquare,
   FileText,
   Mic,
-  Plus,
-  Search,
   Settings,
-  User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -23,12 +20,13 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-import { useStore } from "@/store/useStore";
+import { useTasks, useNotes, useTaskActions, useNoteActions } from "@/store/selectors";
 
 export function CommandMenu() {
   const [open, setOpen] = React.useState(false);
   const router = useRouter();
-  const { notes, tasks, addNote, addTask } = useStore();
+  const notes = useNotes();
+  const tasks = useTasks();
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {

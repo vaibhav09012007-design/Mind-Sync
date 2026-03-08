@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
+import { useEvents } from "@/store/selectors";
 import { format, isToday, isTomorrow, isSameDay, startOfDay } from "date-fns";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
@@ -11,7 +11,7 @@ interface AgendaViewProps {
 }
 
 export function AgendaView({ onEditEvent }: AgendaViewProps) {
-  const { events } = useStore();
+  const events = useEvents();
 
   const sortedEvents = useMemo(() => {
     return [...events]

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useStore, Task } from "@/store/useStore";
+import { Task } from "@/store/useStore";
+import { useTasks } from "@/store/selectors";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -24,7 +25,7 @@ export function TaskDependencyPicker({
   onChange,
   excludeTaskId,
 }: TaskDependencyPickerProps) {
-  const { tasks } = useStore();
+  const tasks = useTasks();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 

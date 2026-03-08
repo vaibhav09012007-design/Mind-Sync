@@ -63,10 +63,10 @@ Mind-Sync has a solid foundation with Next.js 16, Drizzle ORM, and Clerk Auth. H
 ## Phase 4: Reliability & Monitoring (Low Priority)
 
 ### 4.1 Error Handling
-**Current Status:** `global-error.tsx` exists.
+**Current Status:** ✅ Completed
 **Action Plan:**
-*   Add `Sentry` or similar for real-time error tracking (optional but recommended).
-*   Ensure graceful degradation if AI services (Gemini/Deepgram) fail.
+*   Add `Sentry` or similar for real-time error tracking. (Done: `@sentry/nextjs` integrated in `src/lib/error-reporting.ts`)
+*   Ensure graceful degradation if AI services (Gemini/Deepgram) fail. (Done)
 
 ---
 

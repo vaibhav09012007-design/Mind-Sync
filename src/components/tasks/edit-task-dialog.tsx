@@ -6,7 +6,8 @@
  */
 
 import { useState, useEffect } from "react";
-import { useStore, Priority, Task } from "@/store/useStore";
+import { Priority, Task } from "@/store/useStore";
+import { useTaskActions } from "@/store/selectors";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -42,7 +43,7 @@ interface EditTaskDialogProps {
 }
 
 export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps) {
-  const { updateTask, deleteTask, toggleSubtask } = useStore();
+  const { updateTask, deleteTask, toggleSubtask } = useTaskActions();
 
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description || "");

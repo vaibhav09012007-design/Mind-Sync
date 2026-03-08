@@ -6,12 +6,11 @@ import { forwardRef } from 'react';
 
 interface GradientButtonProps extends Omit<HTMLMotionProps<'button'>, 'ref'> {
   children: React.ReactNode;
-  variant?: 'primary' | 'secondary';
   size?: 'default' | 'sm' | 'lg';
 }
 
 export const GradientButton = forwardRef<HTMLButtonElement, GradientButtonProps>(
-  ({ children, variant = 'primary', size = 'default', className, ...props }, ref) => {
+  ({ children, size = 'default', className, ...props }, ref) => {
     const sizeClasses = {
       default: 'px-6 py-2.5 text-sm',
       sm: 'px-4 py-2 text-xs',

@@ -1,8 +1,8 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search, Folder, Tag, Hash, Calendar, StickyNote, Trash2 } from "lucide-react";
-import { useStore, Note } from "@/store/useStore";
+import { Plus, Search, Hash, Calendar, StickyNote, Trash2, BookHeart } from "lucide-react";
+import { useNotes, useNoteActions } from "@/store/selectors";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { format } from "date-fns";
@@ -14,9 +14,10 @@ interface NotesSidebarProps {
 }
 
 export function NotesSidebar({ currentNoteId, onSelectNote, onCreateNote }: NotesSidebarProps) {
-  const { notes, deleteNote } = useStore();
+  const notes = useNotes();
+  const { deleteNote } = useNoteActions();
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "meeting" | "personal">("all");
+  const [filter, setFilter] = useState<"all" | "meeting" | "personal" | "journal">("all");
 
   const filteredNotes = notes
     .filter((note) => {
@@ -51,20 +52,28 @@ export function NotesSidebar({ currentNoteId, onSelectNote, onCreateNote }: Note
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           <Button
             variant={filter === "all" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setFilter("all")}
-            className="flex-1 text-xs"
+            className="flex-1 text-xs px-2 min-w-[3rem]"
           >
             All
+          </Button>
+          <Button
+            variant={filter === "journal" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setFilter("journal")}
+            className="flex-1 text-xs px-2 min-w-[4rem]"
+          >
+            Journal
           </Button>
           <Button
             variant={filter === "meeting" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setFilter("meeting")}
-            className="flex-1 text-xs"
+            className="flex-1 text-xs px-2 min-w-[4rem]"
           >
             Meetings
           </Button>
@@ -72,7 +81,7 @@ export function NotesSidebar({ currentNoteId, onSelectNote, onCreateNote }: Note
             variant={filter === "personal" ? "secondary" : "ghost"}
             size="sm"
             onClick={() => setFilter("personal")}
-            className="flex-1 text-xs"
+            className="flex-1 text-xs px-2 min-w-[4rem]"
           >
             Personal
           </Button>
@@ -129,6 +138,12 @@ export function NotesSidebar({ currentNoteId, onSelectNote, onCreateNote }: Note
 
                 {/* Mini Badges */}
                 <div className="flex flex-wrap gap-1">
+                  {note.type === "journal" && (
+                    <div className="flex items-center gap-1 rounded-sm bg-purple-500/10 px-1.5 py-0.5 text-[10px] text-purple-500">
+                      <BookHeart className="h-2.5 w-2.5" />
+                      <span>Journal</span>
+                    </div>
+                  )}
                   {note.type === "meeting" && (
                     <div className="flex items-center gap-1 rounded-sm bg-blue-500/10 px-1.5 py-0.5 text-[10px] text-blue-500">
                       <Calendar className="h-2.5 w-2.5" />

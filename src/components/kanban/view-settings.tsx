@@ -1,6 +1,6 @@
 "use client";
 
-import { useStore } from "@/store/useStore";
+import { useViewSettings, useViewActions, useColumnActions } from "@/store/selectors";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,10 +12,13 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
-import { Settings2, LayoutTemplate, Image, KanbanSquare } from "lucide-react";
+import { Settings2, LayoutTemplate, Image as ImageIcon, KanbanSquare } from "lucide-react";
+import { Density, ViewMode } from "@/store/useStore";
 
 export function ViewSettings() {
-  const { viewSettings, setViewSettings, columns, addColumn } = useStore();
+  const viewSettings = useViewSettings();
+  const { setViewSettings } = useViewActions();
+  const { addColumn } = useColumnActions();
 
   return (
     <div className="flex items-center gap-2">
@@ -30,7 +33,7 @@ export function ViewSettings() {
           <DropdownMenuLabel>View Mode</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={viewSettings.mode}
-            onValueChange={(v) => setViewSettings({ mode: v as any })}
+            onValueChange={(v) => setViewSettings({ mode: v as ViewMode })}
           >
             <DropdownMenuRadioItem value="board">
               <KanbanSquare className="mr-2 h-4 w-4" /> Board
@@ -44,7 +47,7 @@ export function ViewSettings() {
           <DropdownMenuLabel>Card Appearance</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={viewSettings.density}
-            onValueChange={(v) => setViewSettings({ density: v as any })}
+            onValueChange={(v) => setViewSettings({ density: v as Density })}
           >
             <DropdownMenuRadioItem value="comfortable">Comfortable</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="compact">Compact</DropdownMenuRadioItem>
@@ -55,7 +58,7 @@ export function ViewSettings() {
             checked={viewSettings.showCoverImages}
             onCheckedChange={(checked) => setViewSettings({ showCoverImages: checked })}
           >
-            <Image className="mr-2 h-4 w-4" /> Show Cover Images
+            <ImageIcon className="mr-2 h-4 w-4" /> Show Cover Images
           </DropdownMenuCheckboxItem>
         </DropdownMenuContent>
       </DropdownMenu>

@@ -42,7 +42,7 @@ export default function GlobalError({
           <div className="space-y-2">
             <h1 className="text-3xl font-bold tracking-tight">System Malfunction</h1>
             <p className="text-muted-foreground">
-              We've encountered a critical error. Our team has been notified.
+              We&apos;ve encountered a critical error. Our team has been notified.
             </p>
           </div>
 

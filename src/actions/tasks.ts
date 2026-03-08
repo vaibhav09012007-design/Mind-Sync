@@ -19,6 +19,7 @@ import { createTaskSchema, updateTaskSchema } from "@/lib/validation";
 import { requireAuth, ensureUserExists } from "./shared";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { getCachedTasks, CACHE_TAGS } from "@/lib/data-fetchers";
+import { logger } from "@/lib/logger";
 
 // --- Tasks ---
 
@@ -174,7 +175,7 @@ export async function toggleTaskStatus(
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 
     if (existingTask.length === 0) {
-      console.warn(`[toggleTaskStatus] Task not found: ${id} for user ${userId}`);
+      logger.warn("Task not found for toggle", { action: "toggleTaskStatus", taskId: id });
       // Task doesn't exist in DB - this can happen with optimistic updates
       // Return success to avoid showing error to user
       return createSuccessResult(undefined);
@@ -192,7 +193,7 @@ export async function toggleTaskStatus(
 
     return createSuccessResult(undefined);
   } catch (error) {
-    console.error("[toggleTaskStatus] Error:", error);
+    logger.error("Failed to toggle task status", error as Error, { action: "toggleTaskStatus" });
     return createErrorResult(error);
   }
 }

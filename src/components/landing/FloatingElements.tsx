@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 interface FloatingElement {
   id: number;
@@ -13,15 +13,21 @@ interface FloatingElement {
 }
 
 export function FloatingElements() {
-  const elements = useMemo<FloatingElement[]>(() => {
-    return Array.from({ length: 15 }, (_, i) => ({
-      id: i,
-      size: Math.random() * 80 + 40,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      duration: Math.random() * 20 + 15,
-      delay: Math.random() * 5,
-    }));
+  const [elements, setElements] = useState<FloatingElement[]>([]);
+
+  useEffect(() => {
+    // Delay setting elements to avoid hydration mismatch and "setState in effect" warnings
+    const timer = setTimeout(() => {
+      setElements(Array.from({ length: 15 }, (_, i) => ({
+        id: i,
+        size: Math.random() * 80 + 40,
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        duration: Math.random() * 20 + 15,
+        delay: Math.random() * 5,
+      })));
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   return (

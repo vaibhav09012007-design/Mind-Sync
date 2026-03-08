@@ -2,11 +2,9 @@
 
 import { Editor } from "@/features/notes/components/Editor";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MoreHorizontal, Share, Trash2, Download } from "lucide-react";
-import Link from "next/link";
+import { MoreHorizontal, Share, Trash2, Download } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useStore } from "@/store/useStore";
-import { useEffect, useState } from "react";
+import { useNotes, useNoteActions } from "@/store/selectors";
 import { format } from "date-fns";
 import { exportNoteToMarkdown } from "@/lib/export-utils";
 import {
@@ -21,7 +19,8 @@ export default function NoteEditorPage() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
-  const { notes, deleteNote } = useStore();
+  const notes = useNotes();
+  const { deleteNote } = useNoteActions();
 
   // Find note in store
   const note = notes.find((n) => n.id === id);

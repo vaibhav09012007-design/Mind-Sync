@@ -5,7 +5,7 @@
  * Pomodoro-style focus timer with visual progress
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,6 @@ import {
   Coffee,
   Target,
   Zap,
-  CheckCircle2,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
@@ -33,7 +32,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
-import { useStore, TimerMode } from "@/store/useStore";
+import { TimerMode } from "@/store/useStore";
+import { useTasks, useTimerState, useTimerActions, useNotificationActions } from "@/store/selectors";
 import { toast } from "sonner";
 import { AudioPlayer } from "@/components/audio-player";
 import { Maximize2, Minimize2 } from "lucide-react";
@@ -64,6 +64,7 @@ const modeConfig = {
 };
 
 export function FocusTimer() {
+  const tasks = useTasks();
   const {
     timerMode,
     timeLeft,
@@ -71,17 +72,17 @@ export function FocusTimer() {
     completedSessions,
     timerSettings,
     activeTaskId,
+  } = useTimerState();
+  const {
     setTimerMode,
     setTimerRunning,
-    setTimeLeft,
     tickTimer,
     updateTimerSettings,
     incrementCompletedSessions,
     setActiveTimerTask,
     resetTimer,
-    tasks,
-    addNotification,
-  } = useStore();
+  } = useTimerActions();
+  const { addNotification } = useNotificationActions();
 
   const [zenMode, setZenMode] = useState(false);
   const workerRef = useRef<Worker | null>(null);
@@ -124,14 +125,14 @@ export function FocusTimer() {
     }
   };
 
-  const playSound = () => {
+  const playSound = useCallback(() => {
     if (timerSettings.soundEnabled && typeof window !== "undefined") {
       // Use built-in sound for reliability
       const audio = new Audio(BELL_SOUND);
       audio.volume = 0.5;
       audio.play().catch((e) => console.warn("Audio play failed", e));
     }
-  };
+  }, [timerSettings.soundEnabled]);
 
   const showNotification = (title: string, body: string) => {
     if (typeof window !== "undefined" && "Notification" in window) {
@@ -197,6 +198,8 @@ export function FocusTimer() {
     incrementCompletedSessions,
     setTimerMode,
     setTimerRunning,
+    addNotification,
+    playSound,
   ]);
 
   const formatTime = (seconds: number) => {

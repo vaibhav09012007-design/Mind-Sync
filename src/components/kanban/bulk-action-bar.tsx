@@ -1,9 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, CheckCircle2, X } from "lucide-react";
-import { useStore } from "@/store/useStore";
+import { useTaskActions } from "@/store/selectors";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface BulkActionBarProps {
@@ -12,7 +11,7 @@ interface BulkActionBarProps {
 }
 
 export function BulkActionBar({ selectedIds, onClearSelection }: BulkActionBarProps) {
-  const { bulkDeleteTasks, bulkUpdateTasks } = useStore();
+  const { bulkDeleteTasks, bulkUpdateTasks } = useTaskActions();
 
   if (selectedIds.length === 0) return null;
 
