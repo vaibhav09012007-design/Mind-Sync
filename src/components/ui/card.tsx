@@ -4,22 +4,23 @@ import { cn } from "@/lib/utils";
 
 export interface CardProps extends React.ComponentProps<"div"> {
   variant?: "default" | "glass" | "gradient-border" | "elevated";
-  hover?: "none" | "lift" | "glow" | "scale";
+  hover?: "none" | "lift" | "glow" | "scale" | "shimmer";
 }
 
 function Card({ className, variant = "default", hover = "lift", ...props }: CardProps) {
   const variantStyles = {
-    default: "bg-card border-border border",
-    glass: "glass-gold",
+    default: "bg-card border-border/50 border",
+    glass: "glass-card",
     "gradient-border": "gradient-border border-0",
-    elevated: "bg-card shadow-elevation-md border-border border",
+    elevated: "bg-card shadow-elevated border-border/50 border",
   };
 
   const hoverStyles = {
     none: "",
-    lift: "hover-lift",
+    lift: "hover:-translate-y-1 hover:shadow-lg hover:border-primary/20 transition-all duration-300 ease-out",
     glow: "hover-glow",
     scale: "hover:scale-[1.02] transition-transform duration-300",
+    shimmer: "relative overflow-hidden group",
   };
 
   return (
@@ -33,7 +34,12 @@ function Card({ className, variant = "default", hover = "lift", ...props }: Card
         className
       )}
       {...props}
-    />
+    >
+      {props.children}
+      {hover === "shimmer" && (
+        <div className="absolute inset-0 -translate-x-full group-hover:animate-shimmer-sweep bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
+      )}
+    </div>
   );
 }
 

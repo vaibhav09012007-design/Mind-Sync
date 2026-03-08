@@ -20,10 +20,12 @@ function Progress({
 }: ProgressProps) {
   const indicatorVariants = {
     default: "bg-primary",
-    gradient: "bg-gradient-to-r from-gold-600 via-gold-400 to-gold-500",
+    gradient: "bg-gradient-to-r from-primary via-purple-400 to-cyan-400",
     success: "bg-success-solid",
     warning: "bg-warning-solid",
   };
+
+  const showShimmer = (value || 0) >= 90;
 
   return (
     <ProgressPrimitive.Root
@@ -38,13 +40,17 @@ function Progress({
         <motion.div
           data-slot="progress-indicator"
           className={cn(
-            "h-full rounded-full",
+            "h-full rounded-full relative overflow-hidden",
             indicatorVariants[variant]
           )}
           initial={{ width: 0 }}
           animate={{ width: `${value || 0}%` }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-        />
+        >
+          {showShimmer && (
+            <div className="absolute inset-0 animate-shimmer-sweep bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          )}
+        </motion.div>
       ) : (
         <ProgressPrimitive.Indicator
           data-slot="progress-indicator"

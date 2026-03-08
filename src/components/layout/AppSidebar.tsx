@@ -33,9 +33,9 @@ export function AppSidebar() {
   const { user, isLoaded } = useUser();
 
   return (
-    <aside className="border-r border-white/10 bg-background/60 backdrop-blur-xl h-full w-full flex flex-col transition-all duration-300">
+    <aside className="glass-sidebar h-full w-full flex flex-col transition-all duration-300">
       {/* Logo */}
-      <div className="border-b border-white/10 p-4 flex items-center justify-between">
+      <div className="border-b border-border/30 p-4 flex items-center justify-between">
         <Logo size="sm" />
       </div>
 
@@ -49,7 +49,7 @@ export function AppSidebar() {
           <input
             type="text"
             placeholder="Quick Search (Cmd+K)"
-            className="bg-white/5 border-white/10 focus:border-primary/50 focus:ring-primary/20 placeholder:text-muted-foreground hover:bg-white/10 w-full cursor-pointer rounded-lg border py-2 pl-9 text-sm transition-all focus:ring-2 focus:outline-none"
+            className="bg-muted/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 placeholder:text-muted-foreground/60 hover:bg-muted/80 w-full cursor-pointer rounded-lg border py-2 pl-9 text-sm transition-all focus:ring-2 focus:outline-none"
             readOnly
             onClick={() => {
               const down = new KeyboardEvent("keydown", {
@@ -73,10 +73,10 @@ export function AppSidebar() {
             <Link
               key={item.href}
               href={item.href}
-              className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
+              className={`group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ${
                 isActive
-                  ? "bg-primary/10 text-primary font-medium"
-                  : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                  ? "bg-primary/10 text-primary font-medium shadow-sm"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
               }`}
             >
               <Icon
@@ -92,7 +92,7 @@ export function AppSidebar() {
               {isActive && (
                 <motion.div
                   layoutId="activeIndicator"
-                  className="absolute left-0 h-6 w-1 rounded-r-full bg-primary shadow-[0_0_10px_2px_rgba(255,215,0,0.3)]"
+                  className="absolute left-0 h-6 w-1 rounded-r-full bg-primary shadow-[0_0_10px_2px_rgba(139,92,246,0.3)]"
                   initial={false}
                   transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
@@ -103,10 +103,10 @@ export function AppSidebar() {
       </nav>
 
       {/* Bottom Section */}
-      <div className="border-t border-white/10 space-y-2 p-4 bg-background/20 backdrop-blur-sm">
+      <div className="border-t border-border/30 space-y-2 p-4">
         <Link
           href="/settings"
-          className="text-muted-foreground hover:bg-white/5 hover:text-foreground flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors"
+          className="text-muted-foreground hover:bg-muted/60 hover:text-foreground flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors"
         >
           <Settings size={18} />
           <span className="text-sm font-medium">Settings</span>
@@ -117,15 +117,15 @@ export function AppSidebar() {
           href="/meeting"
           className="relative overflow-hidden group mb-2 flex items-center gap-2 rounded-lg p-[1px]"
         >
-          <div className="absolute inset-0 bg-primary/20 group-hover:opacity-40 transition-opacity" />
-          <div className="relative bg-background/80 backdrop-blur-md flex items-center gap-2 w-full p-2.5 rounded-[7px] border border-white/10 group-hover:bg-background/60 transition-colors">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 group-hover:opacity-50 transition-opacity" />
+          <div className="relative bg-card/80 backdrop-blur-md flex items-center gap-2 w-full p-2.5 rounded-[7px] border border-primary/20 group-hover:border-primary/40 transition-all">
             <Sparkles size={16} className="text-primary transition-transform group-hover:scale-110 group-hover:rotate-12" />
             <span className="text-foreground text-xs font-semibold">Meeting Mode</span>
           </div>
         </Link>
 
         {/* User Profile */}
-        <div className="bg-white/5 border-white/10 flex items-center gap-3 rounded-lg border p-3 hover:bg-white/10 transition-colors cursor-pointer">
+        <div className="bg-muted/40 border-border/50 flex items-center gap-3 rounded-xl border p-3 hover:bg-muted/60 transition-colors cursor-pointer">
           <div className="flex-shrink-0">
             <UserButton
               appearance={{

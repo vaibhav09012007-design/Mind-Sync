@@ -17,11 +17,10 @@ const badgeVariants = cva(
           "border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
           "text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
-        // Gold-themed gradient variants
         gradient:
-          "border-0 bg-gradient-to-r from-gold-600 to-gold-400 text-black shadow-sm",
+          "border-0 bg-gradient-to-r from-primary to-blue-500 text-primary-foreground shadow-sm",
         "gradient-subtle":
-          "border-0 bg-gradient-to-r from-gold-500/20 to-gold-300/20 text-primary",
+          "border-0 bg-gradient-to-r from-primary/20 to-blue-500/20 text-primary",
         // Semantic state variants using CSS variables
         success:
           "border-transparent bg-success text-success",
@@ -32,7 +31,7 @@ const badgeVariants = cva(
         error:
           "border-transparent bg-error text-error",
         glow:
-          "border-transparent bg-primary text-primary-foreground shadow-glow",
+          "border-transparent bg-primary text-primary-foreground shadow-glow animate-pulse-glow",
       },
     },
     defaultVariants: {

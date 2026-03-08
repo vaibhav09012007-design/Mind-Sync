@@ -16,7 +16,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex h-screen overflow-hidden bg-background relative">
       {/* Background Gradient Mesh */}
-      <div className="absolute inset-0 bg-gradient-mesh opacity-20 dark:opacity-10 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-mesh opacity-30 dark:opacity-20 pointer-events-none" />
       
       {/* Accessibility: Skip to main content link */}
       <SkipLink />
@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative z-10">
         {/* Mobile Header (Hidden on Desktop) */}
         <header
-          className="border-border bg-background flex h-14 flex-shrink-0 items-center justify-between border-b px-4 md:hidden"
+          className="border-border/30 bg-white/60 dark:bg-card/60 backdrop-blur-xl flex h-14 flex-shrink-0 items-center justify-between border-b px-4 md:hidden"
           role="banner"
         >
           <div className="flex items-center gap-4">

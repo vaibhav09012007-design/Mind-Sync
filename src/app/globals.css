@@ -83,26 +83,34 @@
   }
 
   .dark {
-    /* Map everything to light theme. We are disabling dark mode to force the Light Pastel UI */
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 262 83% 58%;
+    --background: 224 47% 8%;
+    --foreground: 210 40% 96%;
+    --card: 224 47% 11%;
+    --card-foreground: 210 40% 96%;
+    --popover: 224 47% 11%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 262 83% 65%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262 83% 58%;
+    --secondary: 224 40% 16%;
+    --secondary-foreground: 210 40% 90%;
+    --muted: 224 40% 16%;
+    --muted-foreground: 215 16% 57%;
+    --accent: 224 40% 16%;
+    --accent-foreground: 210 40% 90%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 224 30% 18%;
+    --input: 224 30% 18%;
+    --ring: 262 83% 65%;
+
+    --color-success-bg: 142 50% 12%;
+    --color-success-text: 142 76% 55%;
+    --color-warning-bg: 38 60% 12%;
+    --color-warning-text: 38 92% 60%;
+    --color-error-bg: 0 60% 12%;
+    --color-error-text: 0 84% 60%;
+    --color-info-bg: 199 60% 12%;
+    --color-info-text: 199 89% 60%;
   }
 }
 
@@ -122,9 +130,6 @@
 
 /* 1. Animated Gradient Mesh Background */
 .bg-gradient-mesh {
-  background: radial-gradient(at 0% 0%, hsla(253,16%,7%,0) 0, transparent 50%), 
-              radial-gradient(at 50% 0%, hsla(225,39%,30%,0) 0, transparent 50%), 
-              radial-gradient(at 100% 0%, hsla(339,49%,30%,0) 0, transparent 50%);
   background-color: #f1f5f9;
   background-image: 
     radial-gradient(at 40% 20%, hsla(262, 83%, 90%, 1) 0px, transparent 50%),
@@ -134,9 +139,23 @@
     radial-gradient(at 0% 100%, hsla(22, 100%, 87%, 1) 0px, transparent 50%),
     radial-gradient(at 80% 100%, hsla(242, 100%, 85%, 1) 0px, transparent 50%),
     radial-gradient(at 0% 0%, hsla(343, 100%, 86%, 1) 0px, transparent 50%);
+  background-size: 200% 200%;
+  animation: gradient-shift 20s ease-in-out infinite;
   filter: blur(40px);
   z-index: 0;
-  opacity: 0.8 !important; /* Override layout opacity */
+  opacity: 0.8 !important;
+}
+
+.dark .bg-gradient-mesh {
+  background-color: hsl(224 47% 8%);
+  background-image: 
+    radial-gradient(at 40% 20%, hsla(262, 70%, 25%, 0.8) 0px, transparent 50%),
+    radial-gradient(at 80% 0%, hsla(199, 80%, 20%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 0% 50%, hsla(330, 60%, 20%, 0.5) 0px, transparent 50%),
+    radial-gradient(at 80% 50%, hsla(260, 70%, 20%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, hsla(22, 60%, 18%, 0.5) 0px, transparent 50%),
+    radial-gradient(at 80% 100%, hsla(242, 70%, 20%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 0% 0%, hsla(343, 60%, 18%, 0.5) 0px, transparent 50%);
 }
 
 /* 2. Glass Morphism Panels */
@@ -145,9 +164,32 @@
   box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
 }
 
+.dark .glass {
+  @apply bg-white/[0.06] border-white/[0.08];
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+}
+
 .glass-card {
   @apply bg-white/60 backdrop-blur-md border border-white/50;
   box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.03);
+}
+
+.dark .glass-card {
+  @apply bg-white/[0.05] border-white/[0.06];
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Sidebar-specific glass */
+.glass-sidebar {
+  @apply bg-white/50 backdrop-blur-2xl;
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.03);
+}
+
+.dark .glass-sidebar {
+  @apply bg-white/[0.03] backdrop-blur-2xl;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
 }
 
 /* 3. Gradient Text Styling */
@@ -160,10 +202,10 @@
   text-shadow: none; /* Removed gold glow */
 }
 
-/* 4. Disable old gradients and use soft accents */
+/* 4. Gradient accents */
 .bg-gradient-primary,
 .bg-gradient-accent {
-  background: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 70% 65%));
+  background: linear-gradient(135deg, hsl(262 83% 58%), hsl(280 70% 65%), hsl(199 89% 55%));
 }
 
 /* 5. Premium Soft Shadows */
@@ -198,10 +240,14 @@
 }
 
 /* 8. Scrollbar - Soft Pastel Thumb */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 5px; height: 5px; transition: width 0.2s; }
+::-webkit-scrollbar:hover { width: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.2); }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; transition: background 0.2s; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
+.dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
 ::selection { background: hsl(var(--primary) / 0.2); color: hsl(var(--foreground)); }
 
@@ -217,33 +263,54 @@ html { scroll-behavior: smooth; }
 .text-pretty { text-wrap: pretty; }
 
 /* Typography */
-h1, .h1 { @apply scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-5xl text-slate-900; }
-h2, .h2 { @apply scroll-m-20 border-b border-slate-200 pb-2 text-3xl font-semibold tracking-tight first:mt-0 text-slate-800; }
-h3, .h3 { @apply scroll-m-20 text-2xl font-semibold tracking-tight text-slate-800; }
-h4, .h4 { @apply scroll-m-20 text-xl font-semibold tracking-tight text-slate-700; }
-h5, .h5 { @apply scroll-m-20 text-lg font-semibold tracking-tight text-slate-700; }
-h6, .h6 { @apply scroll-m-20 text-base font-semibold tracking-tight text-slate-700; }
+h1, .h1 { @apply scroll-m-20 text-4xl font-extrabold tracking-[-0.02em] lg:text-5xl text-foreground; }
+h2, .h2 { @apply scroll-m-20 border-b border-border pb-2 text-3xl font-semibold tracking-[-0.015em] first:mt-0 text-foreground; }
+h3, .h3 { @apply scroll-m-20 text-2xl font-semibold tracking-[-0.01em] text-foreground; }
+h4, .h4 { @apply scroll-m-20 text-xl font-semibold tracking-[-0.01em] text-foreground/90; }
+h5, .h5 { @apply scroll-m-20 text-lg font-semibold tracking-tight text-foreground/85; }
+h6, .h6 { @apply scroll-m-20 text-base font-semibold tracking-tight text-foreground/80; }
 
-.p { @apply leading-7 [&:not(:first-child)]:mt-6 text-slate-600; }
-.lead { @apply text-xl text-slate-600; }
-.muted { @apply text-sm text-slate-500; }
+.p { @apply leading-7 [&:not(:first-child)]:mt-6 text-muted-foreground; }
+.lead { @apply text-xl text-muted-foreground; }
+.muted { @apply text-sm text-muted-foreground; }
 
-code { @apply relative rounded bg-slate-100/80 px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold text-primary; }
-pre { @apply mb-4 mt-6 overflow-x-auto rounded-lg border border-slate-200 bg-white/80 backdrop-blur-sm py-4 shadow-inner; }
+code { @apply relative rounded bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm font-semibold text-primary; }
+pre { @apply mb-4 mt-6 overflow-x-auto rounded-lg border border-border bg-card/80 backdrop-blur-sm py-4 shadow-inner; }
 
 .prose-custom {
-  @apply prose prose-slate max-w-none;
-  @apply prose-headings:text-slate-900;
-  @apply prose-p:text-slate-600;
-  @apply prose-strong:text-slate-900;
+  @apply prose prose-slate dark:prose-invert max-w-none;
+  @apply prose-headings:text-foreground;
+  @apply prose-p:text-muted-foreground;
+  @apply prose-strong:text-foreground;
   @apply prose-a:text-primary hover:prose-a:text-primary/80;
 }
 
 /* Animations */
 .animate-float { animation: float 6s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-gradient-shift { animation: gradient-shift 20s ease-in-out infinite; }
+.animate-shimmer-sweep { animation: shimmer-sweep 2s ease-in-out infinite; }
+
 @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-10px); } }
 @keyframes pulse-glow { 0%, 100% { box-shadow: 0 0 10px rgba(139, 92, 246, 0.1); } 50% { box-shadow: 0 0 25px rgba(139, 92, 246, 0.25); } }
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  25% { background-position: 100% 25%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 0% 75%; }
+}
+
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: hsl(var(--primary) / 0.3); box-shadow: 0 0 8px hsl(var(--primary) / 0.1); }
+  50% { border-color: hsl(var(--primary) / 0.6); box-shadow: 0 0 16px hsl(var(--primary) / 0.2); }
+}
 
 @keyframes accordion-down {
   from { height: 0; }
@@ -290,7 +357,8 @@ pre { @apply mb-4 mt-6 overflow-x-auto rounded-lg border border-slate-200 bg-whi
    GLASS MORPHISM - PASTEL TINT
    ============================================ */
 
-.glass-gold { /* Keeping class name for compatibility, changing styles */
+.glass-gold,
+.glass-premium {
   background: linear-gradient(
     135deg,
     rgba(255,255,255, 0.5),
@@ -302,9 +370,24 @@ pre { @apply mb-4 mt-6 overflow-x-auto rounded-lg border border-slate-200 bg-whi
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
 }
 
+.dark .glass-gold,
+.dark .glass-premium {
+  background: linear-gradient(
+    135deg,
+    rgba(255,255,255, 0.05),
+    rgba(255,255,255, 0.02)
+  );
+  border: 1px solid rgba(255,255,255, 0.06);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+}
+
 /* Override existing cards to use glassmorphism */
 .bg-card {
   @apply bg-white/60 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+}
+
+.dark .bg-card {
+  @apply bg-white/[0.04] border-white/[0.06] shadow-[0_8px_30px_rgb(0,0,0,0.15)];
 }
 
 .bg-background {

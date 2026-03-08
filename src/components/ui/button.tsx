@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow hover:bg-primary/90 hover:shadow-md",
+          "bg-primary text-primary-foreground shadow hover:bg-primary/90 hover:shadow-md hover:scale-[1.02]",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
@@ -21,13 +21,12 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         success:
           "bg-green-600 text-white shadow hover:bg-green-600/90",
-        // Mapped "gradient" to "Polished Gold"
         gradient:
-          "bg-primary text-black shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 hover:brightness-110 font-bold",
+          "bg-gradient-to-r from-primary via-purple-500 to-blue-500 text-primary-foreground shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/40 hover:brightness-110 font-bold",
         "gradient-outline":
           "border border-primary bg-background text-primary hover:bg-primary/10",
         glow:
-          "bg-primary text-black shadow-glow hover:shadow-glow-lg font-bold",
+          "bg-primary text-primary-foreground shadow-glow hover:shadow-glow-lg font-bold",
       },
       size: {
         default: "h-9 px-4 py-2",
