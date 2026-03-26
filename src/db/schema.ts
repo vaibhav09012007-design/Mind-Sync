@@ -8,6 +8,7 @@ export const goalPeriodEnum = pgEnum("goal_period", ["weekly", "monthly"]);
 export const goalStatusEnum = pgEnum("goal_status", ["active", "completed", "failed"]);
 export const habitFrequencyEnum = pgEnum("habit_frequency", ["daily", "weekly", "custom"]);
 export const habitTimeOfDayEnum = pgEnum("habit_time_of_day", ["morning", "afternoon", "evening", "anytime"]);
+export const eventTypeEnum = pgEnum("event_type", ["work", "personal", "meeting"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk User ID
@@ -56,6 +57,7 @@ export const events = pgTable("events", {
   description: text("description"),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
+  type: eventTypeEnum("type").default("work").notNull(),
   meetingUrl: text("meeting_url"),
   location: text("location"),
   isRecurring: jsonb("is_recurring"), // { frequency, interval, until }
