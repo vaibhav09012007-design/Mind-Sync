@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export interface SpeechSegment {
   id: number;
@@ -107,7 +107,7 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
           setTimeout(() => {
             try {
               recognition.start();
-            } catch (e) {
+            } catch {
               console.log("Could not restart recognition");
             }
           }, 100);

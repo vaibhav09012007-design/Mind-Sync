@@ -115,7 +115,7 @@ export const getCachedHabits = cache(async (userId: string) => {
 });
 
 // --- Habit Logs Fetcher (Recent) ---
-export const getCachedHabitLogs = cache(async (userId: string, _days: number = 30) => {
+export const getCachedHabitLogs = cache(async (userId: string) => {
   try {
     return await unstable_cache(
       async () => {
