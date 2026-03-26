@@ -25,7 +25,7 @@ vi.mock("@/components/ui/dropdown-menu", () => {
       );
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    DropdownMenuTrigger: ({ children, asChild, ...props }: any) => {
+    DropdownMenuTrigger: ({ children, ...props }: any) => {
       // In a real mock we'd want to trigger setOpen here
       // But for simplicity in this test, we can just render it
       return <div {...props}>{children}</div>;

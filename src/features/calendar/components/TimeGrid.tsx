@@ -1,9 +1,8 @@
 "use client";
 
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useDroppable } from "@dnd-kit/core";
-import { MouseEvent, useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Plus } from "lucide-react";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -45,7 +44,8 @@ export function TimeGrid({ events = [], onAddEvent, onEditEvent, onResizeEvent }
   // Scroll to current time on mount
   useEffect(() => {
     if (scrollRef.current) {
-      const minutes = currentTime.getHours() * 60 + currentTime.getMinutes();
+      const now = new Date();
+      const minutes = now.getHours() * 60 + now.getMinutes();
       scrollRef.current.scrollTop = Math.max(0, minutes - 100);
     }
   }, []);
@@ -67,10 +67,7 @@ export function TimeGrid({ events = [], onAddEvent, onEditEvent, onResizeEvent }
   useEffect(() => {
     if (!resizing) return;
 
-    const handleMouseMove = (e: globalThis.MouseEvent) => {
-      const deltaY = e.clientY - resizing.startY;
-      const deltaMinutes = Math.round(deltaY); // 1px = 1 minute
-      const newDuration = Math.max(15, resizing.startDuration + deltaMinutes);
+    const handleMouseMove = () => {
       // Visual feedback handled by state
     };
 

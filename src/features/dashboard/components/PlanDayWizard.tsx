@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Task } from "@/store/useStore";
+
 import { useTasks } from "@/store/selectors";
 import { cn } from "@/lib/utils";
 import {

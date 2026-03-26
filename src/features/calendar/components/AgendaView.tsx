@@ -1,7 +1,7 @@
 "use client";
 
 import { useEvents } from "@/store/selectors";
-import { format, isToday, isTomorrow, isSameDay, startOfDay } from "date-fns";
+import { format, isToday, isTomorrow, startOfDay } from "date-fns";
 import { useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { EVENT_STYLES } from "./calendar-utils";

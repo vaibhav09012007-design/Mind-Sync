@@ -1,7 +1,7 @@
 "use client";
 
 import { TaskList } from "@/features/tasks/components/TaskList";
-import { Task } from "@/store/useStore";
+
 import { useTasks, useTaskActions, useHydrationActions } from "@/store/selectors";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";

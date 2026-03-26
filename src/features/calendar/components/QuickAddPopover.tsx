@@ -14,8 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format, addHours, startOfHour } from "date-fns";
 import { Calendar, Clock, Tag } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { EVENT_STYLES } from "./calendar-utils";
 import {
   Select,
   SelectContent,
@@ -57,7 +55,7 @@ export function QuickAddPopover({
       }
 
       const end = addHours(start, 1);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+       
       setParsedDate({ start, end });
     }
   }, [isOpen, initialDate, initialTime]);
