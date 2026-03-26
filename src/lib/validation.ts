@@ -44,6 +44,7 @@ export const updateEventSchema = z.object({
   title: z.string().min(1).max(500).optional(),
   start: z.string().datetime().optional(),
   end: z.string().datetime().optional(),
+  type: z.enum(["work", "personal", "meeting"]).optional(),
 });
 
 export const deleteEventSchema = z.object({
@@ -60,6 +61,7 @@ export const createNoteSchema = z.object({
   tags: z.array(z.string()).optional(),
   type: z.enum(["meeting", "personal", "journal"]).optional(),
   sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
+  eventId: z.string().uuid().optional(),
 });
 
 export const updateNoteSchema = z.object({
@@ -71,6 +73,7 @@ export const updateNoteSchema = z.object({
   type: z.enum(["meeting", "personal", "journal"]).optional(),
   sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
   metadata: z.any().optional(),
+  eventId: z.string().uuid().nullable().optional(),
 });
 
 export const deleteNoteSchema = z.object({

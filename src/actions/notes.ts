@@ -15,6 +15,7 @@ import {
   createErrorResult,
   APIError,
 } from "@/lib/errors";
+import { createNoteSchema } from "@/lib/validation";
 import { requireAuth, ensureUserExists } from "./shared";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { getCachedNotes, CACHE_TAGS } from "@/lib/data-fetchers";
@@ -43,6 +44,7 @@ export async function createNote(data: {
   type?: "meeting" | "personal" | "journal";
   sentiment?: "positive" | "neutral" | "negative";
   metadata?: unknown;
+  eventId?: string;
 }): Promise<ActionResult<void>> {
   try {
     const { userId } = await requireAuth();
@@ -53,8 +55,12 @@ export async function createNote(data: {
       throw new APIError("Too Many Requests", "Please wait before creating more notes.");
     }
 
-    // Use flexible validation or update schema in lib/validation
-    // For now assuming data is valid as per store
+    // Validate input
+    const validated = createNoteSchema.safeParse(data);
+    if (!validated.success) {
+      const errors = validated.error.flatten().fieldErrors;
+      throw new ValidationError(errors as Record<string, string[]>);
+    }
 
     await ensureUserExists(userId);
 
@@ -68,6 +74,7 @@ export async function createNote(data: {
       type: data.type || "personal",
       sentiment: data.sentiment,
       metadata: data.metadata,
+      eventId: data.eventId || null,
       createdAt: new Date(data.date),
     });
 
@@ -91,6 +98,7 @@ export async function updateNote(
     sentiment?: "positive" | "neutral" | "negative";
     metadata?: unknown;
     date?: string;
+    eventId?: string;
   }
 ): Promise<ActionResult<void>> {
   try {
@@ -111,6 +119,7 @@ export async function updateNote(
     if (data.sentiment) updates.sentiment = data.sentiment;
     if (data.metadata) updates.metadata = data.metadata;
     if (data.date) updates.updatedAt = new Date(data.date);
+    if (data.eventId !== undefined) updates.eventId = data.eventId || null;
 
     await db
       .update(notes)
