@@ -183,7 +183,10 @@ export async function toggleTaskStatus(
 
     await db
       .update(tasks)
-      .set({ status: completed ? "Done" : "Todo" })
+      .set({
+        status: completed ? "Done" : "Todo",
+        completedAt: completed ? new Date() : null,
+      })
       .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
 
     revalidatePath("/dashboard");

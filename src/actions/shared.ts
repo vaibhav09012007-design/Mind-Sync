@@ -94,7 +94,7 @@ export async function syncUser(): Promise<ActionResult<string | null>> {
  * Ensure user exists in database before performing operations.
  * Throws AuthError if user creation fails.
  */
-export async function ensureUserExists(userId?: string): Promise<void> {
+export async function ensureUserExists(): Promise<void> {
   const result = await syncUser();
   if (!result.success) {
     throw new AuthError("Failed to sync user to database");
