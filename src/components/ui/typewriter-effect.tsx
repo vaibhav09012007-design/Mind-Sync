@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, useMotionValue, animate } from "framer-motion";
 import { useEffect, useState } from "react";
 
 interface TypewriterEffectProps {
@@ -21,15 +21,11 @@ export function TypewriterEffect({
   onComplete,
 }: TypewriterEffectProps) {
   const count = useMotionValue(0);
-  const rounded = useTransform(count, (latest) => Math.round(latest));
   const [displayedText, setDisplayedText] = useState("");
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
-    // Reset state when text changes
     count.set(0);
-    setDisplayedText("");
-    setIsComplete(false);
 
     const controls = animate(count, text.length, {
       type: "tween",

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export function ServiceWorkerRegistration() {
-  const [_registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
@@ -13,7 +12,6 @@ export function ServiceWorkerRegistration() {
         .register("/sw.js")
         .then((reg) => {
           console.log("[PWA] Service Worker registered with scope:", reg.scope);
-          setRegistration(reg);
 
           // Check for updates periodically
           reg.addEventListener("updatefound", () => {
@@ -50,10 +48,12 @@ export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (typeof window !== "undefined" && "Notification" in window) {
-      setIsSupported(true);
-      setPermission(Notification.permission);
+      // Schedule state updates to avoid synchronous dispatch during commit
+      setTimeout(() => {
+        setIsSupported(true);
+        setPermission(Notification.permission);
+      }, 0);
     }
   }, []);
 
@@ -114,8 +114,10 @@ export function useOfflineStatus() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setIsOnline(navigator.onLine);
+    // Schedule state update to avoid synchronous dispatch during commit
+    setTimeout(() => {
+      setIsOnline(navigator.onLine);
+    }, 0);
 
     const handleOnline = () => {
       setIsOnline(true);
