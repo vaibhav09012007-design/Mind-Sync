@@ -40,7 +40,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarEvent } from "@/store/useStore";
 import { useEvents, useEventActions, useViewActions } from "@/store/selectors";
 import { useCalendarSync } from "@/hooks/use-calendar-sync";
 // Import new components
@@ -63,7 +62,7 @@ export default function CalendarPage() {
   const events = useEvents();
   const { addEvent } = useEventActions();
   const { setSelectedDate } = useViewActions();
-  const { pushToGoogle, hasGoogleAccount } = useCalendarSync();
+  useCalendarSync();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarViewType>("month");
 
@@ -134,16 +133,6 @@ export default function CalendarPage() {
       type: event.type as "work" | "meeting" | "personal",
     };
     addEvent(newEvent);
-
-    // Sync to Google Calendar if connected
-    if (hasGoogleAccount) {
-      const eventForSync: CalendarEvent = {
-        id: crypto.randomUUID(),
-        ...newEvent,
-        recurrence: null,
-      };
-      pushToGoogle(eventForSync);
-    }
     setQuickAddOpen(false);
   };
 
@@ -179,15 +168,6 @@ export default function CalendarPage() {
     };
 
     addEvent(newEvent);
-
-    // Sync to Google Calendar if connected
-    if (hasGoogleAccount) {
-      const eventForSync: CalendarEvent = {
-        id: crypto.randomUUID(),
-        ...newEvent,
-      };
-      pushToGoogle(eventForSync);
-    }
 
     setNewEventOpen(false);
     setNewEventTitle("");
