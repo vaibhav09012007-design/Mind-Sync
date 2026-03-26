@@ -85,6 +85,7 @@ export async function createEvent(data: {
       startTime: new Date(data.start),
       endTime: new Date(data.end),
       googleEventId: googleEventId,
+      type: (data.type as "work" | "personal" | "meeting") || "work",
     });
 
     revalidatePath("/calendar");
@@ -147,7 +148,7 @@ export async function deleteEvent(id: string): Promise<ActionResult<void>> {
 
 export async function updateEvent(
   id: string,
-  data: { title?: string; start?: string; end?: string }
+  data: { title?: string; start?: string; end?: string; type?: string }
 ): Promise<ActionResult<void>> {
   try {
     const { userId, getToken } = await requireAuth();
@@ -168,6 +169,7 @@ export async function updateEvent(
     if (data.title) updates.title = data.title;
     if (data.start) updates.startTime = new Date(data.start);
     if (data.end) updates.endTime = new Date(data.end);
+    if (data.type) updates.type = data.type;
 
     const [eventToUpdate] = await db
       .select()
@@ -279,6 +281,7 @@ export async function syncGoogleCalendar(): Promise<
           startTime: new Date(start),
           endTime: new Date(end),
           meetingUrl: gEvent.hangoutLink || gEvent.htmlLink,
+          type: gEvent.hangoutLink ? "meeting" : "work",
         });
         syncedCount++;
       } else {
@@ -289,6 +292,7 @@ export async function syncGoogleCalendar(): Promise<
             startTime: new Date(start),
             endTime: new Date(end),
             meetingUrl: gEvent.hangoutLink || gEvent.htmlLink,
+            type: gEvent.hangoutLink ? "meeting" : "work",
           })
           .where(eq(events.id, existing[0].id));
       }
