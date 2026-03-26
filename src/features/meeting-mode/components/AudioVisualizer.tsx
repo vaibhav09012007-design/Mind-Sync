@@ -100,7 +100,7 @@ export function AudioVisualizer({ isActive = true }: AudioVisualizerProps) {
     startAudio();
 
     return () => {
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+       
       if (stream) {
         stream.getTracks().forEach((track) => track.stop());
       }

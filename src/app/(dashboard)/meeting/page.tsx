@@ -5,7 +5,7 @@ import { Pause, Square, Play, Link as LinkIcon, FileText, Mic } from "lucide-rea
 import { Editor } from "@/features/notes/components/Editor";
 import { AudioVisualizer } from "@/features/meeting-mode/components/AudioVisualizer";
 import { TranscriptionSidebar } from "@/features/meeting-mode/components/TranscriptionSidebar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useBrowserSpeechRecognition } from "@/hooks/useBrowserSpeechRecognition";
 import { generateMeetingMinutes } from "./actions";
@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useEvents, useNoteActions } from "@/store/selectors";
+import { useStore, Note } from "@/store/useStore";
 import {
   Sheet,
   SheetContent,
@@ -38,8 +39,8 @@ import { toast } from "sonner";
 export default function MeetingPage() {
   const router = useRouter();
   const events = useEvents();
-  const { addNote } = useNoteActions();
-  const [isRecording, setIsRecording] = useState(false); // Start paused so user can grant permission
+  const { addNote, updateNote, deleteNote } = useNoteActions();
+  const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const [linkedEventId, setLinkedEventId] = useState<string>("");
   const [hasStarted, setHasStarted] = useState(false);
@@ -47,14 +48,19 @@ export default function MeetingPage() {
   const [meetingMinutes, setMeetingMinutes] = useState<string | null>(null);
   const [isMinutesOpen, setIsMinutesOpen] = useState(false);
 
-  // Use Browser Speech Recognition (works without API key)
+  // Live note for this meeting session
+  const [meetingNoteId, setMeetingNoteId] = useState<string | null>(null);
+  const meetingNoteRef = useRef<Note | null>(null);
+  const hasStartedRef = useRef(false);
+  const meetingEndedRef = useRef(false);
+
+  // Use Browser Speech Recognition
   const { segments, interimResult, error, isSupported } = useBrowserSpeechRecognition(isRecording);
 
   // Error handling
   useEffect(() => {
     if (error) {
       toast.error(error);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsRecording(false);
     }
   }, [error]);
@@ -70,6 +76,32 @@ export default function MeetingPage() {
     return () => clearInterval(interval);
   }, [isRecording]);
 
+  // Keep meetingNoteRef in sync with store
+  useEffect(() => {
+    if (meetingNoteId) {
+      const notes = useStore.getState().notes;
+      const note = notes.find((n) => n.id === meetingNoteId);
+      if (note) {
+        meetingNoteRef.current = note;
+      }
+    }
+  }, [meetingNoteId]);
+
+  // Cleanup: delete empty draft note if user abandons a started meeting
+  useEffect(() => {
+    return () => {
+      if (meetingNoteRef.current && hasStartedRef.current && !meetingEndedRef.current) {
+        // User started recording but navigated away without ending — clean up draft
+        const note = useStore.getState().notes.find((n) => n.id === meetingNoteRef.current!.id);
+        const isEmpty = !note?.content || note.content === "" || note.content === "<h2>Meeting Notes</h2><p>Start recording to begin taking notes...</p>";
+        if (isEmpty) {
+          deleteNote(meetingNoteRef.current.id);
+        }
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);
     const mins = Math.floor((seconds % 3600) / 60);
@@ -77,37 +109,108 @@ export default function MeetingPage() {
     return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleEndMeeting = () => {
+  const handleStartRecording = useCallback(() => {
+    if (!isSupported) {
+      toast.error(
+        "Speech recognition not supported in this browser. Please use Chrome, Edge, or Safari."
+      );
+      return;
+    }
+
+    // Create a persisted note for this meeting
+    const noteId = crypto.randomUUID();
+    const linkedEvent = linkedEventId ? events.find((e) => e.id === linkedEventId) : null;
+
+    const newNote: Note = {
+      id: noteId,
+      title: linkedEvent ? `Meeting: ${linkedEvent.title}` : "Meeting Notes",
+      preview: "Recording in progress...",
+      content: "",
+      date: new Date().toISOString(),
+      tags: ["Meeting"],
+      type: "meeting",
+      eventId: linkedEventId || undefined,
+    };
+
+    setMeetingNoteId(noteId);
+    meetingNoteRef.current = newNote;
+    addNote(newNote);
+
+    hasStartedRef.current = true;
+    setHasStarted(true);
+    setIsRecording(true);
+    toast.success("Recording started! Speak clearly into your microphone.");
+  }, [isSupported, linkedEventId, events, addNote]);
+
+  const handleEndMeeting = useCallback(() => {
+    meetingEndedRef.current = true;
     setIsRecording(false);
 
-    // Compile Transcript to HTML
+    // Compile transcript to HTML
     const transcriptHTML = segments
       .map((s) => `<p><strong>${s.speaker} (${s.time}):</strong> ${s.text}</p>`)
       .join("");
 
-    const newId = crypto.randomUUID();
+    // Get the current note content from the store (editor auto-saves to store)
+    const currentNote = meetingNoteId
+      ? useStore.getState().notes.find((n) => n.id === meetingNoteId)
+      : null;
+    const editorContent = currentNote?.content || "";
 
-    let content = `<h2>Meeting Transcript</h2>${transcriptHTML}`;
+    // Build comprehensive note content
+    let finalContent = "";
+
+    // 1. AI-generated minutes (if any)
     if (meetingMinutes) {
-      content = `${meetingMinutes}<hr/>${content}`;
+      finalContent += `<h2>Meeting Minutes</h2>${meetingMinutes}<hr/>`;
     }
 
-    addNote({
-      id: newId,
-      title: meetingMinutes ? "Meeting Minutes & Transcript" : "Meeting Transcript",
-      preview: meetingMinutes
-        ? "Minutes generated. " + (segments.length > 0 ? segments[0].text.slice(0, 50) + "..." : "")
-        : segments.length > 0
-          ? segments[0].text.slice(0, 100) + "..."
-          : "No audio recorded.",
-      content: content,
-      date: new Date().toISOString(),
-      tags: ["Meeting", "Transcript"],
-      type: "meeting",
-    });
+    // 2. User-authored editor notes
+    if (editorContent) {
+      finalContent += `<h2>Notes</h2>${editorContent}<hr/>`;
+    }
 
-    router.push(`/notes/${newId}`);
-  };
+    // 3. Full transcript
+    if (transcriptHTML) {
+      finalContent += `<h2>Transcript</h2>${transcriptHTML}`;
+    }
+
+    const preview = meetingMinutes
+      ? "Minutes generated. " + (segments.length > 0 ? segments[0].text.slice(0, 50) + "..." : "")
+      : segments.length > 0
+        ? segments[0].text.slice(0, 100) + "..."
+        : editorContent
+          ? editorContent.replace(/<[^>]*>/g, "").slice(0, 100) + "..."
+          : "No content recorded.";
+
+    if (meetingNoteId) {
+      // Update the existing live note
+      updateNote(meetingNoteId, {
+        title: meetingMinutes ? "Meeting Minutes & Notes" : "Meeting Notes",
+        preview,
+        content: finalContent || "No content recorded.",
+        date: new Date().toISOString(),
+        tags: ["Meeting", "Transcript"],
+        type: "meeting",
+        eventId: linkedEventId || undefined,
+      });
+      router.push(`/notes/${meetingNoteId}`);
+    } else {
+      // Fallback: create a new note if somehow no live note exists
+      const newId = crypto.randomUUID();
+      addNote({
+        id: newId,
+        title: meetingMinutes ? "Meeting Minutes & Notes" : "Meeting Notes",
+        preview,
+        content: finalContent || "No content recorded.",
+        date: new Date().toISOString(),
+        tags: ["Meeting", "Transcript"],
+        type: "meeting",
+        eventId: linkedEventId || undefined,
+      });
+      router.push(`/notes/${newId}`);
+    }
+  }, [segments, meetingMinutes, meetingNoteId, linkedEventId, updateNote, addNote, router]);
 
   const handleGenerateMinutes = async () => {
     if (segments.length === 0) {
@@ -128,27 +231,15 @@ export default function MeetingPage() {
       setMeetingMinutes(result.data);
       setIsMinutesOpen(true);
       toast.success("Meeting minutes generated successfully!");
-
-      // Optionally append to editor (this is a simple integration for now)
-      // trigger an event or state change to update editor content if needed
-      // For now we will just show it in a dialog or toast, or maybe we should
-      // automatically update the note content when ending the meeting if minutes exist.
     } else {
       toast.error(result.error || "Failed to generate minutes.");
     }
   };
 
-  const handleStartRecording = () => {
-    if (!isSupported) {
-      toast.error(
-        "Speech recognition not supported in this browser. Please use Chrome, Edge, or Safari."
-      );
-      return;
-    }
-    setHasStarted(true);
-    setIsRecording(true);
-    toast.success("Recording started! Speak clearly into your microphone.");
-  };
+  // Get the live note object from the store for the Editor
+  const liveNote = meetingNoteId
+    ? useStore.getState().notes.find((n) => n.id === meetingNoteId) || null
+    : null;
 
   return (
     <div className="relative -m-6 flex h-[calc(100vh-4rem)] overflow-hidden">
@@ -242,7 +333,11 @@ export default function MeetingPage() {
         </div>
 
         <div className="bg-background flex-1 overflow-auto">
-          <Editor initialContent="<h2>Meeting Notes</h2><p>Start typing...</p>" />
+          {liveNote ? (
+            <Editor note={liveNote} />
+          ) : (
+            <Editor initialContent="<h2>Meeting Notes</h2><p>Start recording to begin taking notes...</p>" />
+          )}
         </div>
       </div>
 
