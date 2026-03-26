@@ -41,7 +41,9 @@ export interface InitialData {
     content: string;
     date: string;
     tags: string[];
-    type: "meeting" | "personal";
+    type: "meeting" | "personal" | "journal";
+    eventId?: string;
+    sentiment?: "positive" | "neutral" | "negative";
   }[];
 }
 
@@ -79,7 +81,7 @@ export async function getInitialData(): Promise<InitialData | null> {
         title: e.title,
         start: e.startTime.toISOString(),
         end: e.endTime.toISOString(),
-        type: "work" as const,
+        type: (e.type as "work" | "personal" | "meeting") || "work",
         googleId: e.googleEventId,
       })),
       notes: notesData.map((n) => ({
@@ -89,7 +91,9 @@ export async function getInitialData(): Promise<InitialData | null> {
         content: typeof n.content === "string" ? n.content : JSON.stringify(n.content),
         date: n.createdAt ? n.createdAt.toISOString() : new Date().toISOString(),
         tags: n.tags || [],
-        type: (n.type as "meeting" | "personal") || "personal",
+        type: (n.type as "meeting" | "personal" | "journal") || "personal",
+        eventId: n.eventId || undefined,
+        sentiment: (n.sentiment as "positive" | "neutral" | "negative") || undefined,
       })),
     };
   } catch (error) {
