@@ -7,8 +7,6 @@ import {
   CheckSquare,
   Calendar,
   Clock,
-  FileText,
-  BarChart3,
   Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";

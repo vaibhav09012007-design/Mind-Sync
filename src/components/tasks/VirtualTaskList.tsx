@@ -5,7 +5,7 @@
  * Efficiently renders long lists of tasks using virtualization
  */
 
-import { useMemo, memo } from "react";
+import { memo } from "react";
 import { useVirtualList } from "@/hooks/useVirtualList";
 import { Task } from "@/store/useStore";
 import { cn } from "@/lib/utils";
@@ -171,7 +171,7 @@ export function VirtualTaskList({
       className={cn("overflow-y-auto relative", className)}
     >
       <div style={{ height: totalHeight, position: "relative" }}>
-        {virtualItems.map(({ item, index, style }) => (
+        {virtualItems.map(({ item, style }) => (
           <TaskRow
             key={item.id}
             task={item}

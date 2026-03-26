@@ -20,7 +20,7 @@ import {
   CommandSeparator,
   CommandShortcut,
 } from "@/components/ui/command";
-import { useTasks, useNotes, useTaskActions, useNoteActions } from "@/store/selectors";
+import { useTasks, useNotes } from "@/store/selectors";
 
 export function CommandMenu() {
   const [open, setOpen] = React.useState(false);

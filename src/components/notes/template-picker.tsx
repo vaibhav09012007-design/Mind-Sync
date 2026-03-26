@@ -44,7 +44,7 @@ interface TemplatePickerProps {
 export function TemplatePicker({ isOpen, onClose }: TemplatePickerProps) {
   const router = useRouter();
   const { addNote } = useNoteActions();
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [selectedTemplate] = useState<string | null>(null);
 
   const createNoteFromTemplate = (template: NoteTemplate): Note => {
     return {

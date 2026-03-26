@@ -9,7 +9,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTasks } from "@/store/selectors";
-import { RefreshCw, Target, Timer, CheckCircle2, Flame } from "lucide-react";
+import { RefreshCw, Timer, CheckCircle2, Flame } from "lucide-react";
 import { format, startOfYear, eachDayOfInterval, subDays, isWithinInterval } from "date-fns";
 import { StatsCalculator, DailyActivity } from "@/lib/stats-calculator";
 
@@ -44,7 +44,7 @@ export function ProductivityDashboard() {
   const tasks = useTasks();
   const { userId } = useAuth();
   const [goals, setGoals] = useState<Goal[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const isLoading = false; // Kept for the button animation
   const [dateRangeOption, setDateRangeOption] = useState<DateRangeOption>("30d");
   const [dateRange, setDateRange] = useState<DateRange>(getDateRangeFromOption("30d"));
 
@@ -144,18 +144,6 @@ export function ProductivityDashboard() {
   // Weekly data for chart (last 7 days of selected period)
   const weeklyData = useMemo(() => filteredActivityData.slice(-7), [filteredActivityData]);
   const previousWeekData = useMemo(() => previousPeriodData.slice(-7), [previousPeriodData]);
-
-  // Category breakdown
-  const breakdownData = useMemo(() => {
-    const counts: Record<string, number> = {};
-    tasks
-      .filter((t) => t.completed)
-      .forEach((t) => {
-        const cat = t.tags?.[0] || "Uncategorized";
-        counts[cat] = (counts[cat] || 0) + 1;
-      });
-    return Object.entries(counts).map(([name, value]) => ({ name, value }));
-  }, [tasks]);
 
   // Goals progress for productivity score
   const goalsProgress = useMemo(() => {

@@ -27,7 +27,6 @@ import {
   FileSpreadsheet,
   Copy,
   Check,
-  AlertCircle,
 } from "lucide-react";
 import {
   exportTasksToCSV,
@@ -116,7 +115,7 @@ export function ImportExportDialog({ open, onOpenChange }: ImportExportDialogPro
       } else {
         toast.success(`Found ${parsed.length} tasks`);
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to parse data. Check the format.");
       setPreviewTasks([]);
     }
@@ -167,7 +166,7 @@ export function ImportExportDialog({ open, onOpenChange }: ImportExportDialogPro
       } else {
         toast.error(result.error || "Failed to import tasks");
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to import tasks");
     } finally {
       setImporting(false);

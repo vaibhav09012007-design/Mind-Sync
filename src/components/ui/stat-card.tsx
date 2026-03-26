@@ -28,11 +28,11 @@ export function StatCard({
   variant = "default",
   className,
 }: StatCardProps) {
-  const getTrendIcon = () => {
+  const renderTrendIcon = () => {
     if (!trend) return null;
-    if (trend.value > 0) return TrendingUp;
-    if (trend.value < 0) return TrendingDown;
-    return Minus;
+    if (trend.value > 0) return <TrendingUp className="h-3 w-3" />;
+    if (trend.value < 0) return <TrendingDown className="h-3 w-3" />;
+    return <Minus className="h-3 w-3" />;
   };
 
   const getTrendColor = () => {
@@ -57,7 +57,7 @@ export function StatCard({
     }
   };
 
-  const TrendIcon = getTrendIcon();
+
 
   return (
     <motion.div
@@ -81,9 +81,9 @@ export function StatCard({
               <span className="text-foreground text-2xl font-bold tracking-tight">{value}</span>
 
               {/* Trend indicator */}
-              {trend && TrendIcon && (
+              {trend && (
                 <div className={cn("flex items-center gap-1 text-xs font-medium", getTrendColor())}>
-                  <TrendIcon className="h-3 w-3" />
+                  {renderTrendIcon()}
                   <span>{Math.abs(trend.value)}%</span>
                   {trend.label && <span className="text-muted-foreground">{trend.label}</span>}
                 </div>
