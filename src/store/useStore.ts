@@ -711,7 +711,7 @@ export const useStore = create<AppState>()(
         }
       },
 
-      updateTaskPriority: (id, priority) => {
+      updateTaskPriority: async (id, priority) => {
         const task = get().tasks.find((t) => t.id === id);
         if (!task) return;
 
@@ -729,6 +729,24 @@ export const useStore = create<AppState>()(
         });
 
         showToast.success(`Priority set to ${priority}`);
+
+        // Sync to server
+        try {
+          const result = await serverUpdateTask({ id, priority });
+          if (!result.success) {
+            // Rollback
+            set((state) => ({
+              tasks: state.tasks.map((t) => (t.id === id ? task : t)),
+            }));
+            showToast.error(result.error || "Failed to update priority");
+          }
+        } catch (error) {
+          logger.error("Failed to update priority", error as Error, { action: "updateTaskPriority" });
+          set((state) => ({
+            tasks: state.tasks.map((t) => (t.id === id ? task : t)),
+          }));
+          showToast.error("Failed to update priority");
+        }
       },
 
       bulkDeleteTasks: (ids) => {
@@ -737,11 +755,42 @@ export const useStore = create<AppState>()(
         ids.forEach((id) => deleteTask(id).catch((error) => logger.error("Failed to bulk delete task", error as Error, { action: "bulkDeleteTasks" })));
       },
 
-      bulkUpdateTasks: (ids, updates) => {
+      bulkUpdateTasks: async (ids, updates) => {
+        // Capture previous state for rollback
+        const previousTasks = get().tasks.filter((t) => ids.includes(t.id));
+
         set((state) => ({
           tasks: state.tasks.map((t) => (ids.includes(t.id) ? { ...t, ...updates } : t)),
         }));
         showToast.success(`Updated ${ids.length} tasks`);
+
+        // Sync each task to server
+        const failedIds: string[] = [];
+        for (const id of ids) {
+          try {
+            const result = await serverUpdateTask({ id, ...updates });
+            if (!result.success) {
+              failedIds.push(id);
+            }
+          } catch (error) {
+            logger.error("Failed to bulk update task", error as Error, { action: "bulkUpdateTasks", taskId: id });
+            failedIds.push(id);
+          }
+        }
+
+        // Rollback failed tasks
+        if (failedIds.length > 0) {
+          set((state) => ({
+            tasks: state.tasks.map((t) => {
+              if (failedIds.includes(t.id)) {
+                const prev = previousTasks.find((pt) => pt.id === t.id);
+                return prev || t;
+              }
+              return t;
+            }),
+          }));
+          showToast.error(`Failed to update ${failedIds.length} task(s)`);
+        }
       },
 
       // --- Task Clone ---
@@ -934,6 +983,8 @@ export const useStore = create<AppState>()(
       },
 
       updateEvent: async (id, updates) => {
+        const event = get().events.find((e) => e.id === id);
+
         set((state) => ({
           events: state.events.map((e) => (e.id === id ? { ...e, ...updates } : e)),
         }));
@@ -944,11 +995,20 @@ export const useStore = create<AppState>()(
             start: updates.start,
             end: updates.end,
           });
-          if (!result.success) {
+          if (!result.success && event) {
+            // Rollback
+            set((state) => ({
+              events: state.events.map((e) => (e.id === id ? event : e)),
+            }));
             showToast.error(result.error || "Failed to update event");
           }
         } catch (error) {
           logger.error("Failed to update event", error as Error, { action: "updateEvent" });
+          if (event) {
+            set((state) => ({
+              events: state.events.map((e) => (e.id === id ? event : e)),
+            }));
+          }
           showToast.error("Failed to update event");
         }
       },
@@ -989,6 +1049,8 @@ export const useStore = create<AppState>()(
       },
 
       updateNote: async (id, updates) => {
+        const note = get().notes.find((n) => n.id === id);
+
         set((state) => ({
           notes: state.notes.map((n) => (n.id === id ? { ...n, ...updates } : n)),
         }));
@@ -1003,11 +1065,20 @@ export const useStore = create<AppState>()(
             metadata: updates.metadata,
             date: updates.date,
           });
-          if (!result.success) {
+          if (!result.success && note) {
+            // Rollback
+            set((state) => ({
+              notes: state.notes.map((n) => (n.id === id ? note : n)),
+            }));
             showToast.error(result.error || "Failed to update note");
           }
         } catch (error) {
           logger.error("Failed to update note", error as Error, { action: "updateNote" });
+          if (note) {
+            set((state) => ({
+              notes: state.notes.map((n) => (n.id === id ? note : n)),
+            }));
+          }
           showToast.error("Failed to update note");
         }
       },
