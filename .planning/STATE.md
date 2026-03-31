@@ -2,23 +2,23 @@
 
 ## Current Position
 - **Milestone:** Codebase Improvement v1
-- **Phase:** Not started
-- **Next action:** `/gsd-discuss-phase 1` or `/gsd-plan-phase 1`
+- **Phase:** 1 ✅ Done → Phase 2 next
+- **Next action:** `/gsd-plan-phase 2` or execute Phase 2 directly
+
+## Phase 1 Summary
+Fixed 4 data integrity gaps in `src/store/useStore.ts`:
+1. `updateTaskPriority` — now persists to DB via `serverUpdateTask` with rollback
+2. `bulkUpdateTasks` — now persists each task to DB with per-task rollback
+3. `updateEvent` — now rolls back optimistic update on server failure
+4. `updateNote` — now rolls back optimistic update on server failure
 
 ## Active Context
 - Brownfield project — existing functional app
-- Codebase mapped to `.planning/codebase/` (7 documents)
-- 20 requirements across 5 phases
-- Sequential execution due to shared file dependencies
-
-## Key Decisions
-- Zustand slices pattern (not separate stores)
-- Sequential execution (store changes affect many files)
-- Model profile: inherit (use active session model)
-- YOLO mode (auto-approve)
+- Pre-existing TypeScript error in `src/actions/ai.ts:189` (not from our changes)
+- 17 requirements remaining across 4 phases
 
 ## Blockers
 None.
 
 ---
-*Last updated: 2026-03-31 after initialization*
+*Last updated: 2026-03-31 after Phase 1 completion*
