@@ -62,7 +62,7 @@ export async function createNote(data: {
       throw new ValidationError(errors as Record<string, string[]>);
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     await db.insert(notes).values({
       id: data.id,

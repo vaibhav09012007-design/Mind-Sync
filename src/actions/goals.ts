@@ -46,7 +46,7 @@ export async function createGoal(data: {
       throw new APIError("Too Many Requests", "Please wait before creating more goals.");
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     // Ensure we use the authenticated user's ID, not the one passed in data if different
     // Although the signature takes userId, we should override it or validate it.

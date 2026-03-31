@@ -58,7 +58,7 @@ export async function createEvent(data: {
       throw new ValidationError(errors as Record<string, string[]>);
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     let googleEventId = "local-" + data.id;
 
@@ -259,7 +259,7 @@ export async function syncGoogleCalendar(): Promise<
     const googleEvents = data.items || [];
     logger.info("Google Calendar events fetched", { action: "syncGoogleCalendar", count: googleEvents.length });
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     let syncedCount = 0;
     for (const gEvent of googleEvents) {

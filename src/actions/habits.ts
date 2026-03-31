@@ -44,7 +44,7 @@ export async function createHabit(data: {
       throw new ValidationError(errors as Record<string, string[]>);
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     await db.insert(habits).values({
       id: data.id,
@@ -95,7 +95,7 @@ export async function updateHabit(data: {
       throw new ValidationError(errors as Record<string, string[]>);
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     const updates: Partial<typeof habits.$inferInsert> = {};
     if (data.title !== undefined) updates.title = data.title;
@@ -134,7 +134,7 @@ export async function deleteHabit(id: string): Promise<ActionResult<void>> {
       throw new APIError("Too Many Requests", "Please wait before deleting habits.");
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     await db.delete(habits).where(and(eq(habits.id, id), eq(habits.userId, userId)));
 
@@ -172,7 +172,7 @@ export async function logHabit(data: {
       throw new ValidationError(errors as Record<string, string[]>);
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     // Check if habit belongs to user
     const habit = await db

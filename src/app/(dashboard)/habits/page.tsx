@@ -19,7 +19,7 @@ async function HabitsList() {
 
   const [habits, logs] = await Promise.all([
     getCachedHabits(userId),
-    getCachedHabitLogs(userId, 7), // Fetch last 7 days of logs
+    getCachedHabitLogs(userId), // Fetch habit logs
   ]);
 
   const today = format(new Date(), "yyyy-MM-dd");

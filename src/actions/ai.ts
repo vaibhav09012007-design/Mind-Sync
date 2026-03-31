@@ -186,7 +186,7 @@ export async function generateSchedule(): Promise<ActionResult<{ count: number }
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     // Ensure user exists before database operations
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     const [todoTasks, dayEvents] = await Promise.all([
       db

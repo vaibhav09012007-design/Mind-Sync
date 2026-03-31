@@ -56,7 +56,7 @@ export async function createTask(data: {
     }
 
     // Ensure user exists in database (handles race conditions)
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     await db.insert(tasks).values({
       id: data.id,
@@ -104,7 +104,7 @@ export async function updateTask(data: {
       throw new ValidationError(errors as Record<string, string[]>);
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     // Prepare update object
     const updates: Partial<typeof tasks.$inferInsert> = {};
@@ -166,7 +166,7 @@ export async function toggleTaskStatus(
       throw new ValidationError({ id: ["Invalid task ID"] });
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     // Check if task exists first
     const existingTask = await db
@@ -348,7 +348,7 @@ export async function cloneTaskToDb(data: {
       throw new APIError("Too Many Requests", "Please wait before cloning tasks.");
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     // Create cloned task
     await db.insert(tasks).values({
@@ -409,7 +409,7 @@ export async function bulkImportTasks(
       throw new APIError("Too Many Requests", "Please wait before importing tasks.");
     }
 
-    await ensureUserExists(userId);
+    await ensureUserExists();
 
     let imported = 0;
     for (const task of tasksData) {
