@@ -111,8 +111,8 @@
 
 | # | Phase | Goal | Requirements | Status |
 |---|-------|------|--------------|--------|
-| 1 | Fix Data Integrity Gaps | Mutations persist to DB | DATA-01, DATA-02, DATA-03 | Not Started |
-| 2 | Split Monolithic Store | Domain-based slices | STORE-01 → STORE-08 | Not Started |
+| 1 | Fix Data Integrity Gaps | Mutations persist to DB | DATA-01, DATA-02, DATA-03 | ✅ Done |
+| 2 | Split Monolithic Store | Domain-based slices | STORE-01 → STORE-08 | ✅ Done |
 | 3 | Resolve ESLint Suppressions | Clean linting | LINT-01 → LINT-04 | Not Started |
 | 4 | Clean Up Stale Files | No artifacts in repo | CLEAN-01 → CLEAN-03 | Not Started |
 | 5 | Add Critical Test Coverage | Server action tests | TEST-01 → TEST-04 | Not Started |

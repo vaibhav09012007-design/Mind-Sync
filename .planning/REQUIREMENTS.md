@@ -3,19 +3,19 @@
 ## v1 Requirements
 
 ### Data Integrity
-- [ ] **DATA-01**: `updateTaskPriority` persists priority changes to database via server action
-- [ ] **DATA-02**: `bulkUpdateTasks` persists bulk changes to database via server action
-- [ ] **DATA-03**: All store optimistic updates have matching server sync calls
+- [x] **DATA-01**: `updateTaskPriority` persists priority changes to database via server action
+- [x] **DATA-02**: `bulkUpdateTasks` persists bulk changes to database via server action
+- [x] **DATA-03**: All store optimistic updates have matching server sync calls
 
 ### Store Architecture
-- [ ] **STORE-01**: Task state and actions extracted to dedicated slice (`taskSlice.ts`)
-- [ ] **STORE-02**: Event state and actions extracted to dedicated slice (`eventSlice.ts`)
-- [ ] **STORE-03**: Note state and actions extracted to dedicated slice (`noteSlice.ts`)
-- [ ] **STORE-04**: Timer state and actions extracted to dedicated slice (`timerSlice.ts`)
-- [ ] **STORE-05**: Kanban state and actions extracted to dedicated slice (`kanbanSlice.ts`)
-- [ ] **STORE-06**: Notification/history/view state extracted to dedicated slice (`appSlice.ts`)
-- [ ] **STORE-07**: Main `useStore.ts` composes slices and remains under 100 lines
-- [ ] **STORE-08**: All existing selectors in `selectors.ts` continue to work without changes
+- [x] **STORE-01**: Task state and actions extracted to dedicated slice (`taskSlice.ts`)
+- [x] **STORE-02**: Event state and actions extracted to dedicated slice (`eventSlice.ts`)
+- [x] **STORE-03**: Note state and actions extracted to dedicated slice (`noteSlice.ts`)
+- [x] **STORE-04**: Timer state and actions extracted to dedicated slice (`timerSlice.ts`)
+- [x] **STORE-05**: Kanban state and actions extracted to dedicated slice (`kanbanSlice.ts`)
+- [x] **STORE-06**: Notification/history/view state extracted to dedicated slice (`appSlice.ts`)
+- [x] **STORE-07**: Main `useStore.ts` composes slices and remains under 100 lines
+- [x] **STORE-08**: All existing selectors in `selectors.ts` continue to work without changes
 
 ### Code Quality
 - [ ] **LINT-01**: All `react-hooks/set-state-in-effect` suppressions resolved properly
