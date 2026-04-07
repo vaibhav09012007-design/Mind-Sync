@@ -121,6 +121,10 @@ export async function updateNote(
     if (data.date) updates.updatedAt = new Date(data.date);
     if (data.eventId !== undefined) updates.eventId = data.eventId || null;
 
+    if (Object.keys(updates).length === 0) {
+      return createSuccessResult(undefined);
+    }
+
     await db
       .update(notes)
       .set(updates)

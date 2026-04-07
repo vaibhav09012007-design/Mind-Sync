@@ -171,6 +171,10 @@ export async function updateEvent(
     if (data.end) updates.endTime = new Date(data.end);
     if (data.type) updates.type = data.type;
 
+    if (Object.keys(updates).length === 0) {
+      return createSuccessResult(undefined);
+    }
+
     const [eventToUpdate] = await db
       .select()
       .from(events)

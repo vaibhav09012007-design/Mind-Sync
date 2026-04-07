@@ -231,8 +231,7 @@ export const createTaskSlice: StateCreator<AppState, [], [], TaskSlice> = (set, 
     // Sync to server
     try {
       // Map Store Task fields to Server Update Input
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const serverUpdates: any = {
+      const serverUpdates: Record<string, unknown> & { id: string } = {
         id,
         ...updates,
       };
