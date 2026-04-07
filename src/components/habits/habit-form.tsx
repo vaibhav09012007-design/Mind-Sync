@@ -28,7 +28,7 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { v4 as uuidv4 } from "uuid";
 
 interface HabitFormProps {
-  initialData?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  initialData?: Partial<CreateHabitInput> & { id: string; title: string };
   onSuccess?: () => void;
 }
 
@@ -56,11 +56,10 @@ export function HabitForm({ initialData, onSuccess }: HabitFormProps) {
         },
   });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  async function onSubmit(data: any) {
+  async function onSubmit(data: Record<string, unknown>) {
     setIsSubmitting(true);
     try {
-      const payload = data as CreateHabitInput;
+      const payload = data as unknown as CreateHabitInput;
       let result;
       if (isEditing) {
         result = await updateHabit({ ...payload, id: initialData.id });

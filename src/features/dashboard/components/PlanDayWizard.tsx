@@ -6,6 +6,7 @@
  */
 
 import { useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -50,8 +51,7 @@ export interface SchedulePreferences {
   endHour: number;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ENERGY_OPTIONS: { value: EnergyLevel; label: string; icon: any; description: string }[] = [
+const ENERGY_OPTIONS: { value: EnergyLevel; label: string; icon: LucideIcon; description: string }[] = [
   { value: "low", label: "Low Energy", icon: BatteryLow, description: "Start with easier tasks" },
   {
     value: "medium",
@@ -67,8 +67,7 @@ const ENERGY_OPTIONS: { value: EnergyLevel; label: string; icon: any; descriptio
   },
 ];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const FOCUS_OPTIONS: { value: FocusDuration; label: string; icon: any; description: string }[] = [
+const FOCUS_OPTIONS: { value: FocusDuration; label: string; icon: LucideIcon; description: string }[] = [
   { value: 25, label: "25 min", icon: Clock, description: "Pomodoro-style sprints" },
   { value: 50, label: "50 min", icon: Brain, description: "Deep work blocks" },
   { value: 90, label: "90 min", icon: Zap, description: "Flow state sessions" },

@@ -23,8 +23,7 @@ export function useSpeechRecognition(isRecording: boolean) {
   // Initialize Audio Context & Mixer
   const initMixer = useCallback(() => {
       if (!audioContext.current) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          audioContext.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+          audioContext.current = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
           audioDestination.current = audioContext.current.createMediaStreamDestination();
       }
       return { ctx: audioContext.current, dest: audioDestination.current! };

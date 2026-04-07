@@ -10,35 +10,28 @@ import { PriorityBadge, PrioritySelector, priorityConfig } from "../PriorityBadg
 // Mock Radix UI DropdownMenu as it doesn't work well in JSDOM
 vi.mock("@/components/ui/dropdown-menu", () => {
   return {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    DropdownMenu: ({ children, open: propsOpen, onOpenChange }: any) => {
-      const [internalOpen, setInternalOpen] = React.useState(false);
-      const open = propsOpen !== undefined ? propsOpen : internalOpen;
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const setOpen = onOpenChange || setInternalOpen;
+    DropdownMenu: ({ children, open: propsOpen }: { children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) => {
+      const open = propsOpen !== undefined ? propsOpen : false;
 
       // Pass open state to children via a simple mechanism
       return (
         <div data-state={open ? "open" : "closed"}>
-          {typeof children === "function" ? children({ open }) : children}
+          {children}
         </div>
       );
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    DropdownMenuTrigger: ({ children, ...props }: any) => {
+    DropdownMenuTrigger: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => {
       // In a real mock we'd want to trigger setOpen here
       // But for simplicity in this test, we can just render it
       return <div {...props}>{children}</div>;
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    DropdownMenuContent: ({ children, ...props }: any) => {
+    DropdownMenuContent: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => {
       // We'll use a data attribute to control visibility in tests if needed
       // or just rely on the parent's state.
       // For these tests, let's actually just render it but make it toggleable
       return <div data-slot="dropdown-menu-content" {...props}>{children}</div>;
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    DropdownMenuItem: ({ children, onClick }: any) => (
+    DropdownMenuItem: ({ children, onClick }: React.PropsWithChildren<{ onClick?: () => void }>) => (
       <div onClick={onClick} role="menuitem">
         {children}
       </div>

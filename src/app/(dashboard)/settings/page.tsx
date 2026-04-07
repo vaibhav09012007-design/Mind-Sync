@@ -3,7 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Switch } from "@/components/ui/switch";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useTasks, useEvents, useNotes } from "@/store/selectors";
 import { exportAllData } from "@/lib/export-utils";
@@ -18,12 +19,7 @@ export default function SettingsPage() {
   const events = useEvents();
   const notes = useNotes();
   const [notifications, setNotifications] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setMounted(true);
-  }, []);
+  const mounted = useHydrated();
 
   const handleGoogleConnect = () => {
     openUserProfile();

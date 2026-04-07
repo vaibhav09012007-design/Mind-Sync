@@ -67,8 +67,7 @@ export function WeekView({ date, onAddEvent, onEditEvent }: WeekViewProps) {
           start: startMinutes,
           duration,
           timeString: `${format(start, "h:mm")} - ${format(end, "h:mm")}`,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          type: e.type as any,
+          type: e.type as GridEvent["type"],
         };
         const current = map.get(dayKey) || [];
         map.set(dayKey, [...current, gridEvent]);
@@ -172,13 +171,7 @@ export function WeekView({ date, onAddEvent, onEditEvent }: WeekViewProps) {
                   key={day.toISOString()}
                   className="group/col hover:bg-muted/5 relative h-full transition-colors"
                   onClick={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                    const _y = e.clientY - rect.top + e.currentTarget.scrollTop; // need correct scroll offset
-                    // Since we can't easily get scroll offset here on the sticky item,
-                    // we might rely on the parent scrollRef or just approximate with event.nativeEvent.offsetY
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const offsetY = (e.nativeEvent as any).offsetY;
+                    const offsetY = (e.nativeEvent as MouseEvent).offsetY;
                     const hour = Math.floor(offsetY / 60);
                     const minute = Math.floor(offsetY % 60);
                     const timeStr = `${hour.toString().padStart(2, "0")}:${minute < 30 ? "00" : "30"}`;

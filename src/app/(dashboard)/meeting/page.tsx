@@ -88,6 +88,7 @@ export default function MeetingPage() {
   }, [meetingNoteId]);
 
   // Cleanup: delete empty draft note if user abandons a started meeting
+  // Refs are used intentionally — cleanup only runs on unmount, refs hold latest values
   useEffect(() => {
     return () => {
       if (meetingNoteRef.current && hasStartedRef.current && !meetingEndedRef.current) {
@@ -99,8 +100,7 @@ export default function MeetingPage() {
         }
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [deleteNote]);
 
   const formatTime = (seconds: number) => {
     const hrs = Math.floor(seconds / 3600);

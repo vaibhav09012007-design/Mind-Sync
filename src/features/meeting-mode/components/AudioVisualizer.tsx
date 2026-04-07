@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 interface AudioVisualizerProps {
   isActive?: boolean;
@@ -11,7 +11,6 @@ const FFT_SIZE = 1024; // Better resolution
 
 export function AudioVisualizer({ isActive = true }: AudioVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const animationRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -20,8 +19,7 @@ export function AudioVisualizer({ isActive = true }: AudioVisualizerProps) {
   useEffect(() => {
     if (!isActive) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    let animationFrameId: number;
+    let localStream: MediaStream | null = null;
 
     const draw = () => {
       if (!canvasRef.current || !analyserRef.current) return;
@@ -70,16 +68,15 @@ export function AudioVisualizer({ isActive = true }: AudioVisualizerProps) {
         x += barWidth + 2;
       }
 
-      animationFrameId = requestAnimationFrame(draw);
+      animationRef.current = requestAnimationFrame(draw);
     };
 
     async function startAudio() {
       try {
         const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        setStream(audioStream);
+        localStream = audioStream;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
         const analyser = audioContext.createAnalyser();
         const source = audioContext.createMediaStreamSource(audioStream);
 
@@ -101,19 +98,17 @@ export function AudioVisualizer({ isActive = true }: AudioVisualizerProps) {
 
     return () => {
        
-      if (stream) {
-        stream.getTracks().forEach((track) => track.stop());
+      if (localStream) {
+        localStream.getTracks().forEach((track) => track.stop());
       }
       // cancelAnimationFrame(animationFrameId); // This might be used but we used the ref
       if (animationRef.current) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         cancelAnimationFrame(animationRef.current);
       }
       if (audioContextRef.current) {
         audioContextRef.current.close();
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActive]);
 
   return (

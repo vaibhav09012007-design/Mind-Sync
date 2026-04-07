@@ -1,5 +1,28 @@
 import { useState, useEffect, useRef } from "react";
 
+// Web Speech API types (not yet in standard TypeScript lib)
+interface SpeechRecognitionEvent extends Event {
+  readonly resultIndex: number;
+  readonly results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  readonly error: string;
+  readonly message: string;
+}
+
+interface SpeechRecognitionInstance extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onstart: ((event: Event) => void) | null;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null;
+  onend: ((event: Event) => void) | null;
+}
+
 export interface SpeechSegment {
   id: number;
   speaker: string;
@@ -8,17 +31,27 @@ export interface SpeechSegment {
   isFinal: boolean;
 }
 
-// Check if browser supports Web Speech API
-const isBrowserSpeechSupported =
-  typeof window !== "undefined" &&
-  ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
+// Helper to get Constructor
+const getSpeechRecognitionCtor = () => {
+  if (typeof window === "undefined") return null;
+  return (
+    (window as unknown as { SpeechRecognition?: new () => SpeechRecognitionInstance }).SpeechRecognition ||
+    (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognitionInstance }).webkitSpeechRecognition ||
+    null
+  );
+};
+const SpeechRecognitionCtor = getSpeechRecognitionCtor();
+const isBrowserSpeechSupported = !!SpeechRecognitionCtor;
 
 export function useBrowserSpeechRecognition(isRecording: boolean) {
   const [segments, setSegments] = useState<SpeechSegment[]>([]);
   const [interimResult, setInterimResult] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const [error, setError] = useState<string | null>(
+    isBrowserSpeechSupported
+      ? null
+      : "Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari."
+  );
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
   useEffect(() => {
     if (!isRecording) {
@@ -29,19 +62,11 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
     }
 
     if (!isBrowserSpeechSupported) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setError(
-        "Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari."
-      );
       return;
     }
 
     try {
-      // Create speech recognition instance
-      const SpeechRecognition =
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
+      const recognition = new SpeechRecognitionCtor!();
 
       recognition.continuous = true;
       recognition.interimResults = true;
@@ -52,8 +77,7 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
         console.log("Speech recognition started");
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         let interimTranscript = "";
         let finalTranscript = "";
 
@@ -83,8 +107,7 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
         }
       };
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      recognition.onerror = (event: any) => {
+      recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error("Speech recognition error:", event.error);
         if (event.error === "not-allowed") {
           setError(
@@ -118,7 +141,7 @@ export function useBrowserSpeechRecognition(isRecording: boolean) {
       recognitionRef.current = recognition;
     } catch (err) {
       console.error("Error starting speech recognition:", err);
-      setError("Failed to start speech recognition");
+      setTimeout(() => setError("Failed to start speech recognition"), 0);
     }
 
     return () => {

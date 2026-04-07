@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
+import { useHydrated } from "@/hooks/useHydrated";
 import {
   format,
   addMonths,
@@ -71,11 +72,7 @@ export default function CalendarPage() {
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddData, setQuickAddData] = useState<{ date: Date; time: string } | null>(null);
 
-  const [hydrated, setHydrated] = useState(false);
-
-    useEffect(() => {
-    setHydrated(true);
-  }, []);
+  const hydrated = useHydrated();
 
   // Form State
   const [newEventTitle, setNewEventTitle] = useState("");
@@ -103,15 +100,12 @@ export default function CalendarPage() {
   const startDate = startOfWeek(monthStart);
   const endDate = endOfWeek(monthEnd);
 
-  const calendarDays = useMemo(
-    () =>
-      eachDayOfInterval({
-        start: startDate,
-        end: endDate,
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [startDate.getTime(), endDate.getTime()]
-  );
+  const startTime = startDate.getTime();
+  const endTime = endDate.getTime();
+  const calendarDays = eachDayOfInterval({
+    start: new Date(startTime),
+    end: new Date(endTime),
+  });
 
   const handleDateClick = (date: Date) => {
     setSelectedDate(date);

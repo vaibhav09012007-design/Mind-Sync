@@ -1,6 +1,4 @@
 /* eslint-disable react-hooks/refs */
- 
- 
 /**
  * Virtual List Hook for efficient rendering of long lists
  * Uses windowing to only render visible items

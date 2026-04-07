@@ -5,7 +5,7 @@
  * Allows editing existing tasks with subtask management
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Priority, Task } from "@/store/useStore";
 import { useTaskActions } from "@/store/selectors";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,15 @@ interface EditTaskDialogProps {
 }
 
 export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      {/* key forces remount + state reset when a different task is selected */}
+      <EditTaskDialogInner key={task.id} task={task} onOpenChange={onOpenChange} />
+    </Dialog>
+  );
+}
+
+function EditTaskDialogInner({ task, onOpenChange }: Omit<EditTaskDialogProps, "open">) {
   const { updateTask, deleteTask } = useTaskActions();
 
   const [title, setTitle] = useState(task.title);
@@ -55,24 +64,6 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
   const [tags, setTags] = useState(task.tags?.join(", ") || "");
   const [subtasks, setSubtasks] = useState<Task["subtasks"]>(task.subtasks || []);
   const [newSubtask, setNewSubtask] = useState("");
-
-  // Reset form when task changes
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setTitle(task.title);
-     
-    setDescription(task.description || "");
-     
-    setPriority(task.priority || "P1");
-     
-    setDate(task.dueDate ? new Date(task.dueDate) : undefined);
-     
-    setEstimatedMinutes(task.estimatedMinutes || 25);
-     
-    setTags(task.tags?.join(", ") || "");
-     
-    setSubtasks(task.subtasks || []);
-  }, [task]);
 
   const handleAddSubtask = () => {
     if (newSubtask.trim()) {
@@ -131,7 +122,6 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
   const totalSubtasks = subtasks?.length || 0;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
@@ -285,6 +275,5 @@ export function EditTaskDialog({ task, open, onOpenChange }: EditTaskDialogProps
           <Button onClick={handleSave}>Save Changes</Button>
         </DialogFooter>
       </DialogContent>
-    </Dialog>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useCallback } from "react";
 import * as chrono from "chrono-node";
 import {
   Dialog,
@@ -37,43 +37,39 @@ export function QuickAddPopover({
   initialDate,
   initialTime,
 }: QuickAddPopoverProps) {
+  // Initialize state when opening — use key prop on parent or handle via onOpenChange
+  const defaultDate = useMemo(() => {
+    const start = initialDate ? new Date(initialDate) : startOfHour(addHours(new Date(), 1));
+    if (initialTime && initialDate) {
+      const [h, m] = initialTime.split(":").map(Number);
+      start.setHours(h, m);
+    }
+    const end = addHours(start, 1);
+    return { start, end };
+  }, [initialDate, initialTime]);
+
   const [input, setInput] = useState("");
-  const [parsedDate, setParsedDate] = useState<{ start: Date; end: Date } | null>(null);
+  const [parsedDate, setParsedDate] = useState<{ start: Date; end: Date }>(defaultDate);
   const [selectedType, setSelectedType] = useState("work");
 
-  // Initialize state when opening
-  useEffect(() => {
-    if (isOpen) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setInput("");
-      // Default to provided date/time or next hour
-      const start = initialDate ? new Date(initialDate) : startOfHour(addHours(new Date(), 1));
-
-      if (initialTime && initialDate) {
-        const [h, m] = initialTime.split(":").map(Number);
-        start.setHours(h, m);
-      }
-
-      const end = addHours(start, 1);
-       
-      setParsedDate({ start, end });
-    }
-  }, [isOpen, initialDate, initialTime]);
-
   // Parse input as user types
-  useEffect(() => {
-    if (!input.trim()) return;
-
-    const parsed = chrono.parse(input, initialDate || new Date(), { forwardDate: true });
-
-    if (parsed.length > 0) {
-      const result = parsed[0];
-      const start = result.start.date();
-      const end = result.end ? result.end.date() : addHours(start, 1);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setParsedDate({ start, end });
-    }
-  }, [input, initialDate]);
+  const handleInputChange = useCallback(
+    (val: string) => {
+      setInput(val);
+      if (!val.trim()) {
+        setParsedDate(defaultDate);
+        return;
+      }
+      const parsed = chrono.parse(val, initialDate || new Date(), { forwardDate: true });
+      if (parsed.length > 0) {
+        const result = parsed[0];
+        const start = result.start.date();
+        const end = result.end ? result.end.date() : addHours(start, 1);
+        setParsedDate({ start, end });
+      }
+    },
+    [initialDate, defaultDate]
+  );
 
   const handleSave = () => {
     if (!parsedDate) return;
@@ -116,7 +112,7 @@ export function QuickAddPopover({
               id="quick-input"
               placeholder="e.g. Lunch with John tomorrow at 1pm"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => handleInputChange(e.target.value)}
               className="text-lg"
               autoFocus
               onKeyDown={(e) => {

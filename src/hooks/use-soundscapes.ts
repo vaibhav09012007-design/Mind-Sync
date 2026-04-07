@@ -16,8 +16,7 @@ export function useSoundscapes() {
   // Initialize Audio Context
   const initAudio = useCallback(() => {
     if (!audioContextRef.current) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const Ctx = window.AudioContext || (window as any).webkitAudioContext;
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       audioContextRef.current = new Ctx();
       gainNodeRef.current = audioContextRef.current.createGain();
       gainNodeRef.current.connect(audioContextRef.current.destination);

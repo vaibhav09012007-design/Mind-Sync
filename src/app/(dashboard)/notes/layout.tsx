@@ -3,19 +3,15 @@
 import { NotesSidebar } from "@/features/notes/components/NotesSidebar";
 import { TemplatePicker } from "@/components/notes/template-picker";
 import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useHydrated } from "@/hooks/useHydrated";
 
 export default function NotesLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const params = useParams();
   const currentNoteId = params.id as string;
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useHydrated();
   const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setHydrated(true);
-  }, []);
 
   const handleCreateNote = () => {
     setTemplatePickerOpen(true);

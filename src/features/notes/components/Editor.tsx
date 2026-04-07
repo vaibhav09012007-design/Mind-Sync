@@ -30,8 +30,7 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
 
   const [title, setTitle] = useState(note?.title || "Untitled");
   const [sentiment, setSentiment] = useState<"positive" | "neutral" | "negative" | null>(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (note as any)?.sentiment || null
+    note?.sentiment || null
   );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 

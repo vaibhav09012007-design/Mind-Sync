@@ -190,7 +190,7 @@ export function HabitCard({ habit, completedToday, recentLogs = [] }: HabitCardP
             <DialogTitle>Edit Habit</DialogTitle>
           </DialogHeader>
           <HabitForm
-            initialData={habit}
+            initialData={{ id: habit.id, title: habit.title, description: habit.description ?? undefined, frequency: habit.frequency }}
             onSuccess={() => setIsEditOpen(false)}
           />
         </DialogContent>

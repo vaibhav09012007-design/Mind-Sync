@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useEvents, useEventActions } from "@/store/selectors";
 import { parseISO, format, setMinutes, setHours } from "date-fns";
 
@@ -18,27 +18,28 @@ interface EditEventDialogProps {
 
 export function EditEventDialog({ isOpen, onOpenChange, eventId, currentDate }: EditEventDialogProps) {
   const events = useEvents();
-  const { updateEvent, deleteEvent } = useEventActions();
-  const [title, setTitle] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const event = useMemo(() => events.find(e => e.id === eventId), [events, eventId]);
 
-  useEffect(() => {
-    if (isOpen && eventId) {
-      const event = events.find(e => e.id === eventId);
-      if (event) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
-        setTitle(event.title);
-         
-        setStartTime(format(parseISO(event.start), "HH:mm"));
-         
-        setEndTime(format(parseISO(event.end), "HH:mm"));
-      }
-    }
-  }, [isOpen, eventId, events]);
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      {event ? (
+        <EditEventDialogInner key={eventId} event={event} currentDate={currentDate} onOpenChange={onOpenChange} />
+      ) : null}
+    </Dialog>
+  );
+}
+
+function EditEventDialogInner({ event, currentDate, onOpenChange }: {
+  event: { id: string; title: string; start: string; end: string };
+  currentDate: Date;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const { updateEvent, deleteEvent } = useEventActions();
+  const [title, setTitle] = useState(event.title);
+  const [startTime, setStartTime] = useState(format(parseISO(event.start), "HH:mm"));
+  const [endTime, setEndTime] = useState(format(parseISO(event.end), "HH:mm"));
 
   const handleSave = () => {
-    if (!eventId) return;
     
     const [startH, startM] = startTime.split(':').map(Number);
     const [endH, endM] = endTime.split(':').map(Number);
@@ -46,7 +47,7 @@ export function EditEventDialog({ isOpen, onOpenChange, eventId, currentDate }: 
     const start = setMinutes(setHours(currentDate, startH), startM);
     const end = setMinutes(setHours(currentDate, endH), endM);
 
-    updateEvent(eventId, {
+    updateEvent(event.id, {
       title,
       start: start.toISOString(),
       end: end.toISOString()
@@ -55,14 +56,11 @@ export function EditEventDialog({ isOpen, onOpenChange, eventId, currentDate }: 
   };
 
   const handleDelete = () => {
-    if (eventId) {
-      deleteEvent(eventId);
-      onOpenChange(false);
-    }
+    deleteEvent(event.id);
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
         <DialogContent>
             <DialogHeader>
                 <DialogTitle>Edit Event</DialogTitle>
@@ -108,6 +106,5 @@ export function EditEventDialog({ isOpen, onOpenChange, eventId, currentDate }: 
                 </div>
             </DialogFooter>
         </DialogContent>
-    </Dialog>
   );
 }
