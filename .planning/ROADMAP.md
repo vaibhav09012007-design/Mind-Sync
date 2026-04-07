@@ -1,109 +1,126 @@
-# Roadmap — Codebase Improvement Milestone
+# Roadmap — Mind-Sync
 
-## Overview
-**5 phases** | **20 requirements** | Sequential execution (shared file dependencies)
+---
 
-## Phases
+## Milestone 1: Codebase Improvement ✅ COMPLETE
 
-### Phase 1: Fix Data Integrity Gaps
-**Goal:** All store mutations persist to the database — no silent data loss.
-**Requirements:** DATA-01, DATA-02, DATA-03
+**5 phases** | **20 requirements** | Completed 2026-04-07
+
+| # | Phase | Status |
+|---|-------|--------|
+| 1 | Fix Data Integrity Gaps — mutations persist to DB | ✅ Done |
+| 2 | Split Monolithic Store — domain-based Zustand slices | ✅ Done |
+| 3 | Resolve ESLint Suppressions — zero lint warnings | ✅ Done |
+| 4 | Clean Up Stale Files — no artifacts in repo | ✅ Done |
+| 5 | Add Critical Test Coverage — 109 tests passing | ✅ Done |
+
+---
+
+## Milestone 2: Performance & Reliability
+
+**5 phases** | **18 requirements** | Sequential execution
+
+### Phase 1: Batch Database Operations
+**Goal:** Eliminate sequential DB loops — all bulk operations use batch inserts.
+**Requirements:** PERF-01, PERF-02, PERF-03
 **Depends on:** None
 
 **What to do:**
-- Add server action call to `updateTaskPriority` in store (currently local-only)
-- Add server action call to `bulkUpdateTasks` in store (currently local-only)
-- Audit all other store actions to verify they have matching server sync
-- Add rollback on server failure for any actions missing it
+- Refactor `bulkImportTasks` in `src/actions/tasks.ts` to use `db.insert().values([...])` batch insert instead of sequential `for` loop
+- Refactor `cloneTaskToDb` subtask creation to batch-insert child tasks
+- Refactor `syncGoogleCalendar` in `src/actions/events.ts` to collect inserts/updates and execute in batches instead of per-event DB calls
+- Add rate limit entry cleanup: scheduled deletion of expired `rateLimits` rows (via a server action or cron endpoint)
 
 **Success criteria:**
-1. Changing task priority in the UI persists after page refresh
-2. Bulk updating tasks persists after page refresh
-3. No store action mutates data without a corresponding server call
+1. `bulkImportTasks` with 50 tasks completes in <2s (vs current sequential ~10s)
+2. Google Calendar sync with 50 events does ≤3 DB round-trips (vs current 50+)
+3. Expired rate limit entries are cleaned up automatically
 
 ---
 
-### Phase 2: Split Monolithic Zustand Store
-**Goal:** `useStore.ts` decomposed into domain slices, each under 200 lines.
-**Requirements:** STORE-01, STORE-02, STORE-03, STORE-04, STORE-05, STORE-06, STORE-07, STORE-08
-**Depends on:** Phase 1 (data integrity fixes need to be in before restructuring)
+### Phase 2: Bundle Size Optimization
+**Goal:** Reduce initial JS bundle by lazy-loading heavy dependencies.
+**Requirements:** PERF-04, PERF-05, PERF-06
+**Depends on:** None (can run in parallel with Phase 1)
 
 **What to do:**
-- Create `src/store/slices/taskSlice.ts` — task state + actions
-- Create `src/store/slices/eventSlice.ts` — event state + actions
-- Create `src/store/slices/noteSlice.ts` — note state + actions
-- Create `src/store/slices/timerSlice.ts` — timer/pomodoro state + actions
-- Create `src/store/slices/kanbanSlice.ts` — columns, view settings, drag state
-- Create `src/store/slices/appSlice.ts` — notifications, history, undo/redo, google token
-- Rewrite `useStore.ts` to compose slices (~100 lines)
-- Verify `selectors.ts` works without changes (backward compatible)
+- Lazy-load Three.js + @react-three/fiber + @react-three/drei in `Hero3D.tsx` using `next/dynamic` with `ssr: false`
+- Lazy-load Tiptap editor in notes pages (only load when user opens a note)
+- Lazy-load Recharts in analytics/dashboard (only load when charts are visible)
+- Audit bundle with `@next/bundle-analyzer` and document baseline vs optimized sizes
+- Reduce Sentry `tracesSampleRate` from `1.0` to `0.1` in production (keep 1.0 in dev)
 
 **Success criteria:**
-1. `useStore.ts` is under 100 lines
-2. Each slice file is under 200 lines
-3. All existing selectors work unchanged
-4. `npm run build` succeeds with no errors
-5. App behaves identically to before
+1. Landing page JS bundle reduced by ≥30%
+2. Three.js chunk only loads on the landing page
+3. Tiptap chunk only loads on `/notes/[id]`
+4. Sentry traces sampled at 10% in production
 
 ---
 
-### Phase 3: Resolve ESLint Suppressions
-**Goal:** Zero `eslint-disable` comments that mask real issues. `lint:strict` passes.
-**Requirements:** LINT-01, LINT-02, LINT-03, LINT-04
-**Depends on:** Phase 2 (store restructure may resolve some suppressions)
+### Phase 3: Smart Store Persistence
+**Goal:** Prevent localStorage bloat and reduce serialization overhead.
+**Requirements:** PERF-07, PERF-08, PERF-09
+**Depends on:** Phase 1 (batch operations must work first)
 
 **What to do:**
-- Fix 5x `react-hooks/set-state-in-effect` — refactor to avoid setState in useEffect
-- Fix 3x `react-hooks/exhaustive-deps` — add missing deps or refactor
-- Fix `react-hooks/refs` in `useVirtualList.ts`
-- Replace `any` types with proper types where feasible (keep explicit-any for truly dynamic cases)
-- Remove stale `@typescript-eslint/no-unused-vars` suppressions
-- Run `eslint --max-warnings 0` to verify
+- Add `partialize` to Zustand persist config — only persist essential state (timer settings, view preferences, columns), NOT full task/event/note arrays
+- Remove tasks, events, and notes from localStorage — rely on server-fetched data + StoreHydrator
+- Add `version` field to persist config with migration function for future schema changes
+- Benchmark: measure time for `JSON.stringify` of full store vs partialized store
 
 **Success criteria:**
-1. `npm run lint:strict` passes with 0 warnings
-2. No `react-hooks/set-state-in-effect` or `exhaustive-deps` suppressions remain
-3. `any` usage reduced by at least 50%
-4. App behaves identically to before
+1. localStorage usage reduced by ≥80% (tasks/events/notes no longer stored)
+2. Page load with 500+ tasks shows no jank from deserialization
+3. Timer settings, column config, and view preferences survive page refresh
+4. Fresh page load still hydrates correctly from server data
 
 ---
 
-### Phase 4: Clean Up Stale Files
-**Goal:** Repository contains only meaningful files. No artifacts, backups, or dead code.
-**Requirements:** CLEAN-01, CLEAN-02, CLEAN-03
-**Depends on:** None (can run after Phase 3)
+### Phase 4: Accessibility & SEO Hardening
+**Goal:** Fix accessibility violations and optimize for search engines.
+**Requirements:** ACC-01, ACC-02, ACC-03, ACC-04
+**Depends on:** None
 
 **What to do:**
-- Delete `src/app/globals.css.bak`
-- Delete `knip_output.txt`, `knip_result.json`, `unused_knip_files.txt`
-- Review and resolve commented-out `revalidateTag` calls in subtask actions
-- Add these patterns to `.gitignore` to prevent recurrence
+- Remove `userScalable: false` from viewport meta — allow pinch-to-zoom
+- Add `aria-label` attributes to all icon-only buttons (sidebar, kanban column actions)
+- Add keyboard navigation to Kanban board (arrow keys to move between columns/cards)
+- Add `<meta>` descriptions and OpenGraph tags to the landing page for SEO
+- Add `robots.txt` and `sitemap.xml` generation via Next.js metadata API
+- Verify color contrast ratios meet WCAG 2.1 AA in dark mode
 
 **Success criteria:**
-1. No `.bak` files in repo
-2. No analysis artifact files in repo
-3. All `revalidateTag` calls are either active or removed with rationale in commit message
+1. Lighthouse Accessibility score ≥90
+2. All interactive elements reachable via keyboard
+3. No `userScalable: false` in viewport config
+4. Landing page has valid OpenGraph and Twitter card meta tags
 
 ---
 
-### Phase 5: Add Critical Test Coverage
-**Goal:** Core server actions have test coverage — the most critical untested code path.
-**Requirements:** TEST-01, TEST-02, TEST-03, TEST-04
-**Depends on:** Phase 2 (need stable store slices to test)
+### Phase 5: Expand Test Coverage
+**Goal:** Custom hooks and E2E flows have test coverage.
+**Requirements:** TEST-05, TEST-06, TEST-07, TEST-08
+**Depends on:** Phase 3 (store persistence changes affect hook behavior)
 
 **What to do:**
-- Create `src/actions/__tests__/tasks.test.ts` — test CRUD, toggle, clone, bulk import
-- Create `src/actions/__tests__/events.test.ts` — test CRUD, sync
-- Create `src/actions/__tests__/notes.test.ts` — test CRUD
-- Create `src/store/__tests__/slices.test.ts` — test optimistic update + rollback per slice
-- Mock database and auth for isolated testing
+- Add unit tests for critical custom hooks:
+  - `useBrowserSpeechRecognition` — test recognition lifecycle
+  - `useVirtualList` — test scroll position and item measurement
+  - `useHydrated` — test SSR vs client state
+  - `useSoundscapes` — test audio context management
+- Add E2E tests with Playwright:
+  - Task CRUD flow (create → edit → toggle → delete)
+  - Calendar event creation and Google sync flow
+  - Note creation with rich text editor
+  - Kanban drag-and-drop column reorder
+- Set up CI coverage reporting (Vitest `--coverage` in GitHub Actions)
 
 **Success criteria:**
-1. `npm run test` passes
-2. Task server actions have >80% line coverage
-3. Event server actions have >80% line coverage
-4. Note server actions have >80% line coverage
-5. Store slice tests verify optimistic update and rollback behavior
+1. Custom hook test coverage ≥70%
+2. 4+ E2E test scenarios passing in Playwright
+3. CI pipeline runs tests on every PR
+4. Total test count ≥150
 
 ---
 
@@ -111,11 +128,28 @@
 
 | # | Phase | Goal | Requirements | Status |
 |---|-------|------|--------------|--------|
-| 1 | Fix Data Integrity Gaps | Mutations persist to DB | DATA-01, DATA-02, DATA-03 | ✅ Done |
-| 2 | Split Monolithic Store | Domain-based slices | STORE-01 → STORE-08 | ✅ Done |
-| 3 | Resolve ESLint Suppressions | Clean linting | LINT-01 → LINT-04 | Not Started |
-| 4 | Clean Up Stale Files | No artifacts in repo | CLEAN-01 → CLEAN-03 | Not Started |
-| 5 | Add Critical Test Coverage | Server action tests | TEST-01 → TEST-04 | Not Started |
+| 1 | Batch Database Operations | Eliminate sequential loops | PERF-01 → PERF-03 | Not Started |
+| 2 | Bundle Size Optimization | Lazy-load heavy deps | PERF-04 → PERF-06 | Not Started |
+| 3 | Smart Store Persistence | Reduce localStorage bloat | PERF-07 → PERF-09 | Not Started |
+| 4 | Accessibility & SEO Hardening | WCAG AA, OpenGraph | ACC-01 → ACC-04 | Not Started |
+| 5 | Expand Test Coverage | Hooks + E2E tests | TEST-05 → TEST-08 | Not Started |
 
 ---
-*Last updated: 2026-03-31 after initialization*
+
+## Future Milestones (Backlog)
+
+### Milestone 3: Feature Enhancements
+- Recurring tasks with RRULE support
+- Offline-first PWA with background sync
+- Collaborative notes (real-time via WebSockets or Partykit)
+- AI-powered daily briefing and task prioritization
+- Mobile-responsive Kanban board improvements
+
+### Milestone 4: Infrastructure
+- Database connection pooling (PgBouncer or Supabase pooler)
+- Redis-based rate limiting (replace PostgreSQL rate limit table)
+- Edge runtime for middleware and API routes
+- Automated database backups and restore testing
+
+---
+*Last updated: 2026-04-07 — Milestone 1 complete, Milestone 2 defined.*
