@@ -83,11 +83,9 @@ export async function generateDailyBriefing(): Promise<ActionResult<DailyBriefin
       todayEvents: todayEvents.length,
     };
 
-    // Check for Gemini API key
-    const apiKey = getEnvOptional("GEMINI_API_KEY");
-    if (!apiKey) {
-      // Return a non-AI briefing with real data
-      const briefing: DailyBriefing = {
+    // --- Helper function for fallback generation ---
+    const getFallbackBriefing = (): DailyBriefing => {
+      return {
         greeting: `Good ${getTimeOfDay()}! Here's your day at a glance.`,
         priorities: todayTasks.length > 0
           ? todayTasks.slice(0, 3).map((t) => t.title)
@@ -104,7 +102,12 @@ export async function generateDailyBriefing(): Promise<ActionResult<DailyBriefin
         motivationalNote: "Focus on progress, not perfection. Every task completed is a step forward.",
         stats,
       };
-      return createSuccessResult(briefing);
+    };
+
+    // Check for Gemini API key
+    const apiKey = getEnvOptional("GEMINI_API_KEY");
+    if (!apiKey) {
+      return createSuccessResult(getFallbackBriefing());
     }
 
     // Use Gemini for AI-powered briefing
@@ -139,34 +142,36 @@ Return ONLY a JSON object:
   "motivationalNote": "a brief motivational closing"
 }`;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text();
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    const aiData = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+    try {
+      const result = await model.generateContent(prompt);
+      const text = result.response.text();
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      const aiData = jsonMatch ? JSON.parse(jsonMatch[0]) : null;
 
-    if (aiData) {
-      const briefing: DailyBriefing = {
-        ...aiData,
-        stats,
-      };
-      return createSuccessResult(briefing);
+      if (aiData) {
+        const briefing: DailyBriefing = {
+          ...aiData,
+          stats,
+        };
+        return createSuccessResult(briefing);
+      }
+    } catch (apiError) {
+      // If Gemini fails (e.g. 429 Quota Exceeded), log it but don't crash
+      logger.warn("Gemini API failed during briefing generation, using fallback", { 
+        error: apiError instanceof Error ? apiError.message : "Unknown error",
+        action: "daily_briefing_api_error" 
+      });
     }
 
-    // Fallback if AI response parsing fails
-    return createSuccessResult({
-      greeting: `Good ${getTimeOfDay()}!`,
-      priorities: todayTasks.slice(0, 3).map((t) => t.title),
-      scheduleOverview: `${todayEvents.length} events today.`,
-      suggestions: ["Review your task priorities for the day."],
-      motivationalNote: "Make today count!",
-      stats,
-    });
+    // Fallback if AI response parsing fails or API throws 429 quota error
+    return createSuccessResult(getFallbackBriefing());
+    
   } catch (error) {
-    logger.error("Daily briefing generation failed", error as Error, { action: "daily_briefing" });
+    // Only return an actual error result if the database fetching or core auth logic fails
+    logger.error("Core daily briefing fetch failed", error as Error, { action: "daily_briefing" });
     return createErrorResult(error);
   }
 }
-
 function getTimeOfDay(): string {
   const hour = new Date().getHours();
   if (hour < 12) return "morning";
