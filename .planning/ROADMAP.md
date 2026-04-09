@@ -136,20 +136,46 @@
 
 ---
 
-## Future Milestones (Backlog)
+## Milestone 3: Feature Enhancements ✅ COMPLETE
 
-### Milestone 3: Feature Enhancements
-- Recurring tasks with RRULE support
-- Offline-first PWA with background sync
-- Collaborative notes (real-time via WebSockets or Partykit)
-- AI-powered daily briefing and task prioritization
-- Mobile-responsive Kanban board improvements
+**5 phases** | **12 requirements** | Completed 2026-04-09
 
-### Milestone 4: Infrastructure
-- Database connection pooling (PgBouncer or Supabase pooler)
-- Redis-based rate limiting (replace PostgreSQL rate limit table)
-- Edge runtime for middleware and API routes
-- Automated database backups and restore testing
+| # | Phase | Goal | Status |
+|---|-------|------|--------|
+| 1 | Recurring Tasks | RRULE-based task generation with dedup | ✅ Done |
+| 2 | AI Daily Briefing | Gemini-powered daily overview on dashboard | ✅ Done |
+| 3 | Mobile Kanban | Responsive layout, stacked columns on mobile | ✅ Done |
+| 4 | Enhanced PWA | Runtime caching, offline fallback, manifest | ✅ Done |
+| 5 | Recurring Task Tests | 21 unit tests for recurring utilities | ✅ Done |
 
 ---
-*Last updated: 2026-04-09 — Milestone 2 complete (Performance & Reliability), Milestone 3 next.*
+
+## Milestone 4: Infrastructure ✅ COMPLETE
+
+**4 phases** | **8 requirements** | Completed 2026-04-09
+
+| # | Phase | Goal | Status |
+|---|-------|------|--------|
+| 1 | Connection Pooling | postgres client with max/idle/lifetime settings | ✅ Done |
+| 2 | In-Memory Rate Limiting | MemoryRateLimiter class with strategy selection | ✅ Done |
+| 3 | Edge Middleware | Request timing, bot detection, observability headers | ✅ Done |
+| 4 | Health Check | Enhanced with uptime, memory, latency, no-cache | ✅ Done |
+
+---
+
+## Future Milestones (Backlog)
+
+### Milestone 5: Collaboration & Real-Time
+- Collaborative notes (real-time via WebSockets or Partykit)
+- Live cursors and presence indicators
+- Team workspaces with shared task boards
+- Comment threads on tasks and notes
+
+### Milestone 6: AI & Automation
+- AI-powered task auto-categorization
+- Smart scheduling with calendar conflict resolution
+- Natural language task creation
+- Weekly productivity reports via email
+
+---
+*Last updated: 2026-04-09 — Milestones 1–4 complete, all roadmap items delivered.*

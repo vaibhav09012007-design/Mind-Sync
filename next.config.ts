@@ -8,8 +8,37 @@ const withPWA = withPWAInit({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === "development",
+  fallbacks: {
+    document: "/offline",
+  },
   workboxOptions: {
     disableDevLogs: true,
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
+        handler: "CacheFirst",
+        options: {
+          cacheName: "google-fonts",
+          expiration: { maxEntries: 20, maxAgeSeconds: 365 * 24 * 60 * 60 },
+        },
+      },
+      {
+        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico)$/i,
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "static-images",
+          expiration: { maxEntries: 64, maxAgeSeconds: 30 * 24 * 60 * 60 },
+        },
+      },
+      {
+        urlPattern: /^https?:\/\/.*\/api\/health$/,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "api-health",
+          networkTimeoutSeconds: 5,
+        },
+      },
+    ],
   },
 });
 

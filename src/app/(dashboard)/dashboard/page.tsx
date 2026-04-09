@@ -29,6 +29,12 @@ import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
 import { format, subDays, startOfWeek, endOfWeek, isWithinInterval, isSameDay } from "date-fns";
 import { Confetti } from "@/components/ui/confetti";
+import dynamic from "next/dynamic";
+
+const DailyBriefingCard = dynamic(
+  () => import("@/components/dashboard/DailyBriefing").then((mod) => ({ default: mod.DailyBriefingCard })),
+  { ssr: false }
+);
 
 // Helper for animations
 const container = {
@@ -309,6 +315,11 @@ export default function DashboardPage() {
             </motion.div>
           ))}
         </div>
+
+        {/* AI Daily Briefing */}
+        <motion.div variants={item}>
+          <DailyBriefingCard />
+        </motion.div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           {/* Quick Actions */}

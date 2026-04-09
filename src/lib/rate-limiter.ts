@@ -2,6 +2,9 @@
  * Database-backed rate limiter for AI endpoints
  * Uses sliding window algorithm with PostgreSQL for distributed rate limiting
  * Works correctly across serverless instances (Vercel, Netlify, etc.)
+ *
+ * Also includes an in-memory rate limiter for development/single-instance setups.
+ * Controlled by RATE_LIMIT_STRATEGY env var: "memory" | "database" (default: "database")
  */
 
 import { db } from "@/db";
@@ -14,6 +17,76 @@ export interface RateLimitResult {
   remaining: number;
   retryAfter: number;
 }
+
+// --- In-Memory Rate Limiter ---
+
+interface MemoryEntry {
+  count: number;
+  windowStart: number;
+  windowMs: number;
+}
+
+class MemoryRateLimiter {
+  private entries = new Map<string, MemoryEntry>();
+  private cleanupInterval: ReturnType<typeof setInterval> | null = null;
+
+  constructor() {
+    // Cleanup expired entries every 60 seconds
+    if (typeof setInterval !== "undefined") {
+      this.cleanupInterval = setInterval(() => this.cleanup(), 60_000);
+    }
+  }
+
+  check(key: string, maxRequests: number, windowSeconds: number): RateLimitResult {
+    const now = Date.now();
+    const windowMs = windowSeconds * 1000;
+    const entry = this.entries.get(key);
+
+    if (!entry || now - entry.windowStart >= entry.windowMs) {
+      // New window
+      this.entries.set(key, { count: 1, windowStart: now, windowMs });
+      return { allowed: true, remaining: maxRequests - 1, retryAfter: 0 };
+    }
+
+    const newCount = entry.count + 1;
+    entry.count = newCount;
+
+    if (newCount > maxRequests) {
+      const retryAfter = Math.ceil((entry.windowStart + entry.windowMs - now) / 1000);
+      return { allowed: false, remaining: 0, retryAfter };
+    }
+
+    return { allowed: true, remaining: maxRequests - newCount, retryAfter: 0 };
+  }
+
+  clear(key: string): void {
+    this.entries.delete(key);
+  }
+
+  private cleanup(): void {
+    const now = Date.now();
+    for (const [key, entry] of this.entries) {
+      if (now - entry.windowStart >= entry.windowMs) {
+        this.entries.delete(key);
+      }
+    }
+  }
+
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.entries.clear();
+  }
+}
+
+// Singleton for in-memory rate limiter
+const memoryLimiter = new MemoryRateLimiter();
+
+const useMemoryStrategy = process.env.RATE_LIMIT_STRATEGY === "memory" ||
+  process.env.NODE_ENV === "development" ||
+  process.env.NODE_ENV === "test";
 
 /**
  * Check if a user has exceeded their rate limit for a specific action
@@ -31,6 +104,12 @@ export async function checkRateLimit(
   windowSeconds: number = 60
 ): Promise<RateLimitResult> {
   const key = `${userId}:${action}`;
+
+  // Use in-memory rate limiter in dev/test or when explicitly configured
+  if (useMemoryStrategy) {
+    return memoryLimiter.check(key, maxRequests, windowSeconds);
+  }
+
   const now = new Date();
   const windowMs = windowSeconds * 1000;
   const expiresAt = new Date(now.getTime() + windowMs);

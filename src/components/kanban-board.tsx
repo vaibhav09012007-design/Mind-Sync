@@ -319,7 +319,9 @@ const KanbanColumn = memo(function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex max-h-[calc(100vh-12rem)] max-w-[360px] min-w-[280px] flex-1 flex-col rounded-xl p-4",
+        "flex flex-col rounded-xl p-4",
+        "max-h-[50vh] md:max-h-[calc(100vh-12rem)]",
+        "w-full md:max-w-[360px] md:min-w-[280px] md:flex-1",
         "bg-black/5 dark:bg-white/5 backdrop-blur-md border-black/5 dark:border-white/10 border",
         isOverLimit && "bg-destructive/10 ring-destructive/20 ring-2",
         isOver && "ring-primary ring-2 ring-inset"
@@ -491,7 +493,7 @@ export function KanbanBoard() {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex h-full gap-4 overflow-x-auto pb-4">
+        <div className="flex flex-col gap-4 md:flex-row h-full overflow-x-hidden md:overflow-x-auto pb-4">
           {columns.map((column) => (
             <KanbanColumn
               key={column.id}

@@ -435,3 +435,104 @@ export async function bulkImportTasks(
     return createErrorResult(error);
   }
 }
+
+// --- Recurring Tasks ---
+
+import { recurringTaskInstances } from "@/db/schema";
+import { isNotNull } from "drizzle-orm";
+import { generateRecurringDates, shouldCreateInstance } from "@/lib/recurring-tasks";
+import { addDays, startOfDay } from "date-fns";
+
+/**
+ * Process all recurring tasks for a user and generate instances for the next 7 days.
+ * Called by cron endpoint or manually from settings.
+ */
+export async function processRecurringTasks(): Promise<ActionResult<{ created: number }>> {
+  try {
+    const { userId } = await requireAuth();
+    await ensureUserExists();
+
+    // 1. Fetch all tasks with recurrence config
+    const recurringTasks = await db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.userId, userId), isNotNull(tasks.recurrence)));
+
+    if (recurringTasks.length === 0) {
+      return createSuccessResult({ created: 0 });
+    }
+
+    const today = startOfDay(new Date());
+    const rangeEnd = addDays(today, 7);
+
+    let totalCreated = 0;
+
+    for (const task of recurringTasks) {
+      const recurrence = task.recurrence as { type: "daily" | "weekly" | "monthly"; interval: number } | null;
+      if (!recurrence) continue;
+
+      // Get the starting date for generation
+      const taskStart = task.dueDate ? new Date(task.dueDate) : new Date(task.createdAt!);
+
+      // Generate upcoming dates
+      const dates = generateRecurringDates(taskStart, recurrence, today, rangeEnd);
+
+      if (dates.length === 0) continue;
+
+      // Fetch existing instances for this template
+      const existingInstances = await db
+        .select()
+        .from(recurringTaskInstances)
+        .where(eq(recurringTaskInstances.templateTaskId, task.id));
+
+      const existingDates = existingInstances.map((i) => new Date(i.instanceDate));
+
+      // Filter to only dates that need new instances
+      const newDates = dates.filter((d) => shouldCreateInstance(d, existingDates));
+
+      if (newDates.length === 0) continue;
+
+      // Batch create task instances and tracking records
+      const newTaskValues = newDates.map((date) => ({
+        id: crypto.randomUUID(),
+        userId,
+        title: task.title,
+        description: task.description,
+        priority: task.priority,
+        estimatedMinutes: task.estimatedMinutes,
+        tags: task.tags,
+        dueDate: date,
+        status: "Todo" as const,
+      }));
+
+      const insertedTasks = await db.insert(tasks).values(newTaskValues).returning({ id: tasks.id });
+
+      // Track instances to prevent duplicates
+      const instanceValues = newDates.map((date, i) => ({
+        templateTaskId: task.id,
+        instanceDate: date,
+        taskId: insertedTasks[i]?.id,
+      }));
+
+      await db.insert(recurringTaskInstances).values(instanceValues);
+      totalCreated += newDates.length;
+    }
+
+    if (totalCreated > 0) {
+      revalidatePath("/dashboard");
+      revalidatePath("/kanban");
+      revalidateTag(CACHE_TAGS.tasks(userId), "default");
+    }
+
+    logger.info("Processed recurring tasks", {
+      action: "process_recurring",
+      created: totalCreated,
+      templates: recurringTasks.length,
+    });
+
+    return createSuccessResult({ created: totalCreated });
+  } catch (error) {
+    logger.error("Failed to process recurring tasks", error as Error, { action: "process_recurring" });
+    return createErrorResult(error);
+  }
+}
