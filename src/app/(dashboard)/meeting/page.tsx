@@ -2,7 +2,20 @@
 
 import { Button } from "@/components/ui/button";
 import { Pause, Square, Play, Link as LinkIcon, FileText, Mic } from "lucide-react";
-import { Editor } from "@/features/notes/components/Editor";
+import dynamic from "next/dynamic";
+
+// Lazy-load the Tiptap editor to reduce initial bundle size
+const Editor = dynamic(
+  () => import("@/features/notes/components/Editor").then((mod) => mod.Editor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="text-muted-foreground animate-pulse">Loading editor...</div>
+      </div>
+    ),
+  }
+);
 import { AudioVisualizer } from "@/features/meeting-mode/components/AudioVisualizer";
 import { TranscriptionSidebar } from "@/features/meeting-mode/components/TranscriptionSidebar";
 import { useState, useEffect, useRef, useCallback } from "react";

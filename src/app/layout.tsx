@@ -23,8 +23,7 @@ export const viewport: Viewport = {
   themeColor: "#a855f7",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false, // Prevent zooming on inputs
+  maximumScale: 5, // Allow pinch-to-zoom for accessibility (WCAG 2.1)
 };
 
 export const metadata: Metadata = {
@@ -32,6 +31,20 @@ export const metadata: Metadata = {
   description:
     "Bridge the gap between planning and execution with intelligent meeting notes and smart calendar integration.",
   manifest: "/manifest.json",
+  openGraph: {
+    title: "MindSync | AI-Powered Productivity Workspace",
+    description:
+      "Bridge the gap between planning and execution with intelligent meeting notes, smart calendar integration, and AI-powered task management.",
+    type: "website",
+    siteName: "MindSync",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MindSync | AI-Powered Productivity Workspace",
+    description:
+      "Bridge the gap between planning and execution with intelligent meeting notes and smart calendar integration.",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

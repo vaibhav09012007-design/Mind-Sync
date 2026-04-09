@@ -1,6 +1,19 @@
 "use client";
 
-import { Editor } from "@/features/notes/components/Editor";
+import dynamic from "next/dynamic";
+
+// Lazy-load the Tiptap editor — only loads when user opens a note
+const Editor = dynamic(
+  () => import("@/features/notes/components/Editor").then((mod) => mod.Editor),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-full items-center justify-center p-8">
+        <div className="text-muted-foreground animate-pulse">Loading editor...</div>
+      </div>
+    ),
+  }
+);
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, Share, Trash2, Download } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
@@ -60,7 +73,7 @@ export default function NoteEditorPage() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Note actions">
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

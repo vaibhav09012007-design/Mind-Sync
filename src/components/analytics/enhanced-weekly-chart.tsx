@@ -160,6 +160,7 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
               size="icon"
               className="h-8 w-8"
               onClick={() => setChartType("bar")}
+              aria-label="Bar chart view"
             >
               <BarChart2 className="h-4 w-4" />
             </Button>
@@ -168,6 +169,7 @@ export function EnhancedWeeklyChart({ data, previousPeriodData }: EnhancedWeekly
               size="icon"
               className="h-8 w-8"
               onClick={() => setChartType("line")}
+              aria-label="Line chart view"
             >
               <LineChartIcon className="h-4 w-4" />
             </Button>

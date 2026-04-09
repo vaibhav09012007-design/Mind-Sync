@@ -42,11 +42,15 @@ export const useStore = create<AppState>()(
     {
       name: "mindsync-storage",
       storage: createJSONStorage(() => localStorage),
+      version: 1,
+      migrate: (persistedState: unknown, _version: number) => {
+        // Future migrations go here
+        // if (version === 0) { ... }
+        return persistedState as AppState;
+      },
       partialize: (state) => ({
-        tasks: state.tasks,
-        events: state.events,
-        notes: state.notes,
-        notifications: state.notifications,
+        // Only persist UI preferences — NOT data arrays (tasks, events, notes).
+        // Data is server-fetched via StoreHydrator on each load.
         columns: state.columns,
         viewSettings: state.viewSettings,
         selectedDate: state.selectedDate,
@@ -55,7 +59,7 @@ export const useStore = create<AppState>()(
         completedSessions: state.completedSessions,
         timerSettings: state.timerSettings,
         activeTaskId: state.activeTaskId,
-        // Don't persist history or isTimerRunning (reset on load)
+        // Don't persist: tasks, events, notes, notifications, history, isTimerRunning
       }),
     }
   )

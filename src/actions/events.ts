@@ -265,20 +265,32 @@ export async function syncGoogleCalendar(): Promise<
 
     await ensureUserExists();
 
-    let syncedCount = 0;
+    // Fetch all existing events for this user in one query
+    const existingEvents = await db
+      .select()
+      .from(events)
+      .where(eq(events.userId, userId));
+
+    const existingByGoogleId = new Map(
+      existingEvents
+        .filter((e) => e.googleEventId)
+        .map((e) => [e.googleEventId, e])
+    );
+
+    // Collect batch operations
+    const newEventValues: Array<typeof events.$inferInsert> = [];
+    const updatePromises: Promise<unknown>[] = [];
+
     for (const gEvent of googleEvents) {
       if (!gEvent.start || !gEvent.end) continue;
 
       const start = gEvent.start.dateTime || gEvent.start.date;
       const end = gEvent.end.dateTime || gEvent.end.date;
 
-      const existing = await db
-        .select()
-        .from(events)
-        .where(and(eq(events.userId, userId), eq(events.googleEventId, gEvent.id)));
+      const existing = existingByGoogleId.get(gEvent.id);
 
-      if (existing.length === 0) {
-        await db.insert(events).values({
+      if (!existing) {
+        newEventValues.push({
           userId,
           googleEventId: gEvent.id,
           title: gEvent.summary || "(No Title)",
@@ -287,20 +299,33 @@ export async function syncGoogleCalendar(): Promise<
           meetingUrl: gEvent.hangoutLink || gEvent.htmlLink,
           type: gEvent.hangoutLink ? "meeting" : "work",
         });
-        syncedCount++;
       } else {
-        await db
-          .update(events)
-          .set({
-            title: gEvent.summary || "(No Title)",
-            startTime: new Date(start),
-            endTime: new Date(end),
-            meetingUrl: gEvent.hangoutLink || gEvent.htmlLink,
-            type: gEvent.hangoutLink ? "meeting" : "work",
-          })
-          .where(eq(events.id, existing[0].id));
+        updatePromises.push(
+          db
+            .update(events)
+            .set({
+              title: gEvent.summary || "(No Title)",
+              startTime: new Date(start),
+              endTime: new Date(end),
+              meetingUrl: gEvent.hangoutLink || gEvent.htmlLink,
+              type: gEvent.hangoutLink ? "meeting" : "work",
+            })
+            .where(eq(events.id, existing.id))
+        );
       }
     }
+
+    // Execute batch insert for new events (1 DB call)
+    if (newEventValues.length > 0) {
+      await db.insert(events).values(newEventValues);
+    }
+
+    // Execute all updates in parallel
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
+    }
+
+    const syncedCount = newEventValues.length;
 
     revalidatePath("/calendar");
     revalidatePath("/dashboard");

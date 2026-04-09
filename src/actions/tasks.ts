@@ -363,17 +363,16 @@ export async function cloneTaskToDb(data: {
       status: "Todo",
     });
 
-    // Create subtasks
+    // Batch-insert subtasks in a single DB call
     if (data.subtasks && data.subtasks.length > 0) {
-      for (const st of data.subtasks) {
-        await db.insert(tasks).values({
-          id: st.id,
-          userId,
-          parentId: data.id,
-          title: st.title,
-          status: st.completed ? "Done" : "Todo",
-        });
-      }
+      const subtaskValues = data.subtasks.map((st) => ({
+        id: st.id,
+        userId,
+        parentId: data.id,
+        title: st.title,
+        status: (st.completed ? "Done" : "Todo") as "Todo" | "InProgress" | "Done",
+      }));
+      await db.insert(tasks).values(subtaskValues);
     }
 
     revalidatePath("/dashboard");
@@ -411,21 +410,20 @@ export async function bulkImportTasks(
 
     await ensureUserExists();
 
-    let imported = 0;
-    for (const task of tasksData) {
-      await db.insert(tasks).values({
-        id: task.id,
-        userId,
-        title: task.title,
-        description: task.description,
-        dueDate: task.dueDate ? new Date(task.dueDate) : null,
-        priority: (task.priority as "P0" | "P1" | "P2" | "P3") || "P2",
-        estimatedMinutes: task.estimatedMinutes,
-        tags: task.tags,
-        status: "Todo",
-      });
-      imported++;
-    }
+    // Batch-insert all tasks in a single DB call
+    const taskValues = tasksData.map((task) => ({
+      id: task.id,
+      userId,
+      title: task.title,
+      description: task.description,
+      dueDate: task.dueDate ? new Date(task.dueDate) : null,
+      priority: (task.priority as "P0" | "P1" | "P2" | "P3") || "P2",
+      estimatedMinutes: task.estimatedMinutes,
+      tags: task.tags,
+      status: "Todo" as const,
+    }));
+    await db.insert(tasks).values(taskValues);
+    const imported = taskValues.length;
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");

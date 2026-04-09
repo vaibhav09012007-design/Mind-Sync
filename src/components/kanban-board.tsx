@@ -168,7 +168,7 @@ const SortableTaskCard = memo(function SortableTaskCard({
 
       <div className="flex items-start gap-3">
         {!isCompact && (
-          <GripVertical className="text-muted-foreground/50 mt-1 h-4 w-4 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+          <GripVertical className="text-muted-foreground/50 mt-1 h-4 w-4 flex-shrink-0 opacity-0 transition-opacity group-hover:opacity-100" aria-hidden="true" />
         )}
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
@@ -338,6 +338,7 @@ const KanbanColumn = memo(function KanbanColumn({
           size="icon"
           className="h-6 w-6"
           onClick={() => onAddTask(column.id)}
+          aria-label={`Add task to ${column.title}`}
         >
           <Plus className="h-4 w-4" />
         </Button>
