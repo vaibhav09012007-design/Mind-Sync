@@ -163,19 +163,95 @@
 
 ---
 
-## Future Milestones (Backlog)
+## Milestone 5 & 6 (Collaboration & AI)
 
-### Milestone 5: Collaboration & Real-Time
-- Collaborative notes (real-time via WebSockets or Partykit)
-- Live cursors and presence indicators
-- Team workspaces with shared task boards
-- Comment threads on tasks and notes
+**8 phases**
 
-### Milestone 6: AI & Automation
-- AI-powered task auto-categorization
-- Smart scheduling with calendar conflict resolution
-- Natural language task creation
-- Weekly productivity reports via email
+### Phase 1: Workspace Abstraction
+**Goal:** Transition data ownership from individual users to shared Workspaces.
+**Requirements:** COLLAB-01, COLLAB-02
+**Depends on:** None
+**What to do:**
+- Create `workspaces` and `workspace_members` tables in `schema.ts`.
+- Add `workspaceId` to `tasks`, `notes`, `events`.
+- Update Server Actions to fetch items by `workspaceId` instead of `userId`.
+**Success Criteria:**
+1. Users can create a workspace and switch between them.
+2. Data fetches correctly without bleeding across workspaces.
+
+### Phase 2: PartyKit Real-time Infrastructure
+**Goal:** Set up presence channels for active users in a workspace.
+**Requirements:** COLLAB-03, COLLAB-04
+**Depends on:** Phase 1
+**What to do:**
+- Install and configure `partykit`.
+- Create a presence room based on `workspaceId`.
+- Add "live avatar" bubbles across the Kanban board.
+**Success Criteria:**
+1. Opening the app in two browsers shows both users in the Kanban header.
+
+### Phase 3: Yjs Collaborative Notes
+**Goal:** Multiplayer text editing.
+**Requirements:** COLLAB-05
+**Depends on:** Phase 2
+**What to do:**
+- Add `yjs`, `y-partykit`, and `@tiptap/extension-collaboration` dependencies.
+- Re-configure the Tiptap editor to sync via websocket instead of direct database patches.
+- Sync CRDT state to Postgres periodically.
+**Success Criteria:**
+1. Two users can type in the same note simultaneously without overwriting each other.
+
+### Phase 4: Comments and Threads
+**Goal:** Communication layer on tasks and notes.
+**Requirements:** COLLAB-06
+**Depends on:** Phase 1, Phase 2
+**What to do:**
+- Add `comments` table with polymorphic references.
+- Create UI component `<CommentThread />` attached to Task details and Note margins.
+- Broadcast new comments via PartyKit.
+**Success Criteria:**
+1. Users can leave a comment and it appears instantly for other active users.
+
+### Phase 5: Natural Language Task Creation
+**Goal:** Command-K interface for task creation.
+**Requirements:** AUTO-01, AUTO-02
+**Depends on:** None
+**What to do:**
+- Build a generic chat-like input bar using Gemini 2.0 Flash in `actions/ai.ts` to parse intent.
+- Extract intent JSON (e.g., `{ "action": "CREATE_EVENT", "date": "..." }`).
+**Success Criteria:**
+1. "Schedule gym for tomorrow at 5pm" creates a valid Google Calendar event.
+
+### Phase 6: AI Auto-categorization
+**Goal:** Eliminate manual tagging.
+**Requirements:** AUTO-03
+**Depends on:** Phase 5
+**What to do:**
+- Add background AI processing to `createTask` server action for unstructured input.
+- Update task priority and tags automatically based on descriptions.
+**Success Criteria:**
+1. Creating a task called "Fix critical prod bug" automatically assigns `P0` and `bug` tag.
+
+### Phase 7: Smart Conflict Resolution
+**Goal:** Protect the calendar using AI intelligence.
+**Requirements:** AUTO-04
+**Depends on:** Phase 6
+**What to do:**
+- Expand the `generateSchedule` logic to read existing events array.
+- Implement constraint solvers to shift flexible tasks.
+**Success Criteria:**
+1. Attempting to schedule over a Google Event suggests an alternate slot.
+
+### Phase 8: Weekly Productivity Reports
+**Goal:** Email delivery of stats.
+**Requirements:** AUTO-05
+**Depends on:** None
+**What to do:**
+- Setup Vercel Cron endpoint pointing to `api/cron/weekly`.
+- Calculate streak, tasks completed, time focused using Drizzle queries.
+- Connect Resend API or SMTP to mail user.
+**Success Criteria:**
+1. Triggering cron locally sends a visually formatted HTML summary.
 
 ---
-*Last updated: 2026-04-09 — Milestones 1–4 complete, all roadmap items delivered.*
+*Last updated: 2026-04-10 — Initiating Milestones 5 and 6 execution.*
