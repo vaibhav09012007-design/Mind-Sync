@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { ViewSettings } from "@/components/kanban/view-settings";
+import { LivePresence } from "@/components/kanban/live-presence";
 import { Header } from "@/components/layout/Header";
 import { CreateTaskDialog } from "@/components/tasks/create-task-dialog";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,9 @@ export default function KanbanPage() {
           title="Kanban Board"
           subtitle="Drag and drop tasks between columns to update their status"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            <LivePresence room="kanban-main" />
+            <div className="h-6 w-[1px] bg-border" />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2 bg-background/50 backdrop-blur-sm">

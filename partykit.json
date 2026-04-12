@@ -1,0 +1,5 @@
+{
+  "name": "mind-sync-party",
+  "main": "party/server.ts",
+  "serve": "public"
+}
