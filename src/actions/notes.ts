@@ -16,7 +16,7 @@ import {
   APIError,
 } from "@/lib/errors";
 import { createNoteSchema } from "@/lib/validation";
-import { requireAuth, ensureUserExists } from "./shared";
+import { requireWorkspaceAuth, ensureUserExists } from "./shared";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { getCachedNotes, CACHE_TAGS } from "@/lib/data-fetchers";
 import { logger } from "@/lib/logger";
@@ -25,9 +25,9 @@ import { logger } from "@/lib/logger";
 
 export async function getNotes(): Promise<ActionResult<(typeof notes.$inferSelect)[]>> {
   try {
-    const { userId } = await requireAuth();
+    const { workspaceId } = await requireWorkspaceAuth();
     // Use cached fetcher
-    const result = await getCachedNotes(userId);
+    const result = await getCachedNotes(workspaceId);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error);
@@ -47,7 +47,7 @@ export async function createNote(data: {
   eventId?: string;
 }): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 60 requests per minute
     const rateLimit = await checkRateLimit(userId, "create-note", 60, 60);
@@ -67,6 +67,7 @@ export async function createNote(data: {
     await db.insert(notes).values({
       id: data.id,
       userId,
+      workspaceId,
       title: data.title,
       content: JSON.stringify(data.content),
       preview: data.preview,
@@ -79,7 +80,7 @@ export async function createNote(data: {
     });
 
     revalidatePath("/notes");
-    revalidateTag(CACHE_TAGS.notes(userId), "default");
+    revalidateTag(CACHE_TAGS.notes(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -102,7 +103,7 @@ export async function updateNote(
   }
 ): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 100 requests per minute
     const rateLimit = await checkRateLimit(userId, "update-note", 100, 60);
@@ -128,10 +129,10 @@ export async function updateNote(
     await db
       .update(notes)
       .set(updates)
-      .where(and(eq(notes.id, id), eq(notes.userId, userId)));
+      .where(and(eq(notes.id, id), eq(notes.workspaceId, workspaceId)));
 
     revalidatePath("/notes");
-    revalidateTag(CACHE_TAGS.notes(userId), "default");
+    revalidateTag(CACHE_TAGS.notes(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -141,7 +142,7 @@ export async function updateNote(
 
 export async function deleteNote(id: string): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 100 requests per minute
     const rateLimit = await checkRateLimit(userId, "delete-note", 100, 60);
@@ -154,7 +155,7 @@ export async function deleteNote(id: string): Promise<ActionResult<void>> {
     }
 
     try {
-      await db.delete(notes).where(and(eq(notes.id, id), eq(notes.userId, userId)));
+      await db.delete(notes).where(and(eq(notes.id, id), eq(notes.workspaceId, workspaceId)));
     } catch (dbError: unknown) {
       // If code is "22P02" (invalid_text_representation for uuid), it means the ID
       // provided was not a valid UUID (e.g. "9efxvmn1m").
@@ -168,7 +169,7 @@ export async function deleteNote(id: string): Promise<ActionResult<void>> {
     }
 
     revalidatePath("/notes");
-    revalidateTag(CACHE_TAGS.notes(userId), "default");
+    revalidateTag(CACHE_TAGS.notes(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {

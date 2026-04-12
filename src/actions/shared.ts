@@ -6,7 +6,7 @@
  */
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { users, workspaces, workspaceMembers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import {
@@ -24,6 +24,13 @@ export async function requireAuth() {
   const { userId, getToken } = await auth();
   if (!userId) throw new AuthError();
   return { userId, getToken };
+}
+
+export async function requireWorkspaceAuth() {
+  const authRecord = await requireAuth();
+  await ensureUserExists();
+  const workspaceId = await getDefaultWorkspaceId(authRecord.userId);
+  return { ...authRecord, workspaceId };
 }
 
 // --- User Sync ---
@@ -99,4 +106,36 @@ export async function ensureUserExists(): Promise<void> {
   if (!result.success) {
     throw new AuthError("Failed to sync user to database");
   }
+}
+
+/**
+ * Gets the default workspace for a user.
+ * If none exists, creates a "Personal Workspace" automatically.
+ */
+export async function getDefaultWorkspaceId(userId: string): Promise<string> {
+  const memberRecords = await db
+    .select({ workspaceId: workspaceMembers.workspaceId })
+    .from(workspaceMembers)
+    .where(eq(workspaceMembers.userId, userId))
+    .limit(1);
+
+  if (memberRecords.length > 0) {
+    return memberRecords[0].workspaceId;
+  }
+
+  // Auto-create a personal workspace if they have none
+  const newWorkspaceIds = await db.insert(workspaces).values({
+    name: "Personal Workspace",
+    ownerId: userId,
+  }).returning({ id: workspaces.id });
+
+  const workspaceId = newWorkspaceIds[0].id;
+
+  await db.insert(workspaceMembers).values({
+    workspaceId,
+    userId,
+    role: "admin",
+  });
+
+  return workspaceId;
 }

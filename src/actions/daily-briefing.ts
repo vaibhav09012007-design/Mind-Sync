@@ -16,7 +16,7 @@ import {
   APIError,
 } from "@/lib/errors";
 import { checkRateLimit } from "@/lib/rate-limiter";
-import { requireAuth, ensureUserExists } from "./shared";
+import { requireWorkspaceAuth, ensureUserExists } from "./shared";
 import { getEnvOptional } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { startOfDay, endOfDay, format, isPast } from "date-fns";
@@ -36,7 +36,7 @@ export interface DailyBriefing {
 
 export async function generateDailyBriefing(): Promise<ActionResult<DailyBriefing>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
     await ensureUserExists();
 
     // Rate limit: 3 briefings per hour
@@ -54,13 +54,13 @@ export async function generateDailyBriefing(): Promise<ActionResult<DailyBriefin
       db
         .select()
         .from(tasks)
-        .where(and(eq(tasks.userId, userId), eq(tasks.status, "Todo"))),
+        .where(and(eq(tasks.workspaceId, workspaceId), eq(tasks.status, "Todo"))),
       db
         .select()
         .from(events)
         .where(
           and(
-            eq(events.userId, userId),
+            eq(events.workspaceId, workspaceId),
             gte(events.startTime, dayStart),
             lte(events.startTime, dayEnd)
           )

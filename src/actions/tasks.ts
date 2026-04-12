@@ -16,7 +16,7 @@ import {
   APIError,
 } from "@/lib/errors";
 import { createTaskSchema, updateTaskSchema } from "@/lib/validation";
-import { requireAuth, ensureUserExists } from "./shared";
+import { requireWorkspaceAuth, ensureUserExists } from "./shared";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { getCachedTasks, CACHE_TAGS } from "@/lib/data-fetchers";
 import { logger } from "@/lib/logger";
@@ -25,9 +25,9 @@ import { logger } from "@/lib/logger";
 
 export async function getTasks(): Promise<ActionResult<(typeof tasks.$inferSelect)[]>> {
   try {
-    const { userId } = await requireAuth();
+    const { workspaceId } = await requireWorkspaceAuth();
     // Use cached fetcher
-    const result = await getCachedTasks(userId);
+    const result = await getCachedTasks(workspaceId);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error);
@@ -40,7 +40,7 @@ export async function createTask(data: {
   dueDate?: string;
 }): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 50 requests per minute
     const rateLimit = await checkRateLimit(userId, "create-task", 50, 60);
@@ -61,6 +61,7 @@ export async function createTask(data: {
     await db.insert(tasks).values({
       id: data.id,
       userId,
+      workspaceId,
       title: data.title,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
       status: "Todo",
@@ -68,8 +69,8 @@ export async function createTask(data: {
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
-    revalidateTag(CACHE_TAGS.tasks(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.tasks(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -89,7 +90,7 @@ export async function updateTask(data: {
   columnId?: string;
 }): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 100 requests per minute
     const rateLimit = await checkRateLimit(userId, "update-task", 100, 60);
@@ -136,12 +137,12 @@ export async function updateTask(data: {
     await db
       .update(tasks)
       .set(updates)
-      .where(and(eq(tasks.id, data.id), eq(tasks.userId, userId)));
+      .where(and(eq(tasks.id, data.id), eq(tasks.workspaceId, workspaceId)));
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
-    revalidateTag(CACHE_TAGS.tasks(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.tasks(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -154,7 +155,7 @@ export async function toggleTaskStatus(
   completed: boolean
 ): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 100 requests per minute
     const rateLimit = await checkRateLimit(userId, "toggle-task", 100, 60);
@@ -172,7 +173,7 @@ export async function toggleTaskStatus(
     const existingTask = await db
       .select()
       .from(tasks)
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+      .where(and(eq(tasks.id, id), eq(tasks.workspaceId, workspaceId)));
 
     if (existingTask.length === 0) {
       logger.warn("Task not found for toggle", { action: "toggleTaskStatus", taskId: id });
@@ -187,12 +188,12 @@ export async function toggleTaskStatus(
         status: completed ? "Done" : "Todo",
         completedAt: completed ? new Date() : null,
       })
-      .where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+      .where(and(eq(tasks.id, id), eq(tasks.workspaceId, workspaceId)));
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
-    revalidateTag(CACHE_TAGS.tasks(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.tasks(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -203,7 +204,7 @@ export async function toggleTaskStatus(
 
 export async function deleteTask(id: string): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 100 requests per minute
     const rateLimit = await checkRateLimit(userId, "delete-task", 100, 60);
@@ -215,12 +216,12 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
       throw new ValidationError({ id: ["Invalid task ID"] });
     }
 
-    await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+    await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.workspaceId, workspaceId)));
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
-    revalidateTag(CACHE_TAGS.tasks(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.tasks(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -230,7 +231,7 @@ export async function deleteTask(id: string): Promise<ActionResult<void>> {
 
 export async function deleteCompletedTasks(): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 10 requests per minute
     const rateLimit = await checkRateLimit(userId, "delete-completed-tasks", 10, 60);
@@ -238,12 +239,12 @@ export async function deleteCompletedTasks(): Promise<ActionResult<void>> {
       throw new APIError("Too Many Requests", "Please wait before deleting tasks.");
     }
 
-    await db.delete(tasks).where(and(eq(tasks.status, "Done"), eq(tasks.userId, userId)));
+    await db.delete(tasks).where(and(eq(tasks.status, "Done"), eq(tasks.workspaceId, workspaceId)));
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
-    revalidateTag(CACHE_TAGS.tasks(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.tasks(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -260,7 +261,7 @@ export async function syncSubtask(data: {
   completed: boolean;
 }): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 100 requests per minute
     const rateLimit = await checkRateLimit(userId, "sync-subtask", 100, 60);
@@ -272,13 +273,14 @@ export async function syncSubtask(data: {
     const existing = await db
       .select()
       .from(tasks)
-      .where(and(eq(tasks.id, data.id), eq(tasks.userId, userId)));
+      .where(and(eq(tasks.id, data.id), eq(tasks.workspaceId, workspaceId)));
 
     if (existing.length === 0) {
       // Create new subtask
       await db.insert(tasks).values({
         id: data.id,
         userId,
+        workspaceId,
         parentId: data.parentId,
         title: data.title,
         status: data.completed ? "Done" : "Todo",
@@ -292,12 +294,12 @@ export async function syncSubtask(data: {
           status: data.completed ? "Done" : "Todo",
           completedAt: data.completed ? new Date() : null,
         })
-        .where(and(eq(tasks.id, data.id), eq(tasks.userId, userId)));
+        .where(and(eq(tasks.id, data.id), eq(tasks.workspaceId, workspaceId)));
     }
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
-    // revalidateTag(CACHE_TAGS.tasks(userId));
+    // revalidateTag(CACHE_TAGS.tasks(workspaceId));
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -307,7 +309,7 @@ export async function syncSubtask(data: {
 
 export async function deleteSubtask(id: string): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 100 requests per minute
     const rateLimit = await checkRateLimit(userId, "delete-subtask", 100, 60);
@@ -315,11 +317,11 @@ export async function deleteSubtask(id: string): Promise<ActionResult<void>> {
       throw new APIError("Too Many Requests", "Please wait before deleting subtasks.");
     }
 
-    await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.userId, userId)));
+    await db.delete(tasks).where(and(eq(tasks.id, id), eq(tasks.workspaceId, workspaceId)));
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
-    // revalidateTag(CACHE_TAGS.tasks(userId));
+    // revalidateTag(CACHE_TAGS.tasks(workspaceId));
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -340,7 +342,7 @@ export async function cloneTaskToDb(data: {
   subtasks?: Array<{ id: string; title: string; completed: boolean }>;
 }): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 20 requests per minute
     const rateLimit = await checkRateLimit(userId, "clone-task", 20, 60);
@@ -354,6 +356,7 @@ export async function cloneTaskToDb(data: {
     await db.insert(tasks).values({
       id: data.id,
       userId,
+      workspaceId,
       title: data.title,
       description: data.description,
       dueDate: data.dueDate ? new Date(data.dueDate) : null,
@@ -368,6 +371,7 @@ export async function cloneTaskToDb(data: {
       const subtaskValues = data.subtasks.map((st) => ({
         id: st.id,
         userId,
+        workspaceId,
         parentId: data.id,
         title: st.title,
         status: (st.completed ? "Done" : "Todo") as "Todo" | "InProgress" | "Done",
@@ -377,8 +381,8 @@ export async function cloneTaskToDb(data: {
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
-    revalidateTag(CACHE_TAGS.tasks(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.tasks(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -400,7 +404,7 @@ export async function bulkImportTasks(
   }>
 ): Promise<ActionResult<{ imported: number }>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 5 requests per minute (heavy operation)
     const rateLimit = await checkRateLimit(userId, "bulk-import-tasks", 5, 60);
@@ -414,6 +418,7 @@ export async function bulkImportTasks(
     const taskValues = tasksData.map((task) => ({
       id: task.id,
       userId,
+      workspaceId,
       title: task.title,
       description: task.description,
       dueDate: task.dueDate ? new Date(task.dueDate) : null,
@@ -427,8 +432,8 @@ export async function bulkImportTasks(
 
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
-    revalidateTag(CACHE_TAGS.tasks(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.tasks(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult({ imported });
   } catch (error) {
@@ -449,14 +454,14 @@ import { addDays, startOfDay } from "date-fns";
  */
 export async function processRecurringTasks(): Promise<ActionResult<{ created: number }>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
     await ensureUserExists();
 
     // 1. Fetch all tasks with recurrence config
     const recurringTasks = await db
       .select()
       .from(tasks)
-      .where(and(eq(tasks.userId, userId), isNotNull(tasks.recurrence)));
+      .where(and(eq(tasks.workspaceId, workspaceId), isNotNull(tasks.recurrence)));
 
     if (recurringTasks.length === 0) {
       return createSuccessResult({ created: 0 });
@@ -496,6 +501,7 @@ export async function processRecurringTasks(): Promise<ActionResult<{ created: n
       const newTaskValues = newDates.map((date) => ({
         id: crypto.randomUUID(),
         userId,
+        workspaceId,
         title: task.title,
         description: task.description,
         priority: task.priority,
@@ -521,7 +527,7 @@ export async function processRecurringTasks(): Promise<ActionResult<{ created: n
     if (totalCreated > 0) {
       revalidatePath("/dashboard");
       revalidatePath("/kanban");
-      revalidateTag(CACHE_TAGS.tasks(userId), "default");
+      revalidateTag(CACHE_TAGS.tasks(workspaceId), "default");
     }
 
     logger.info("Processed recurring tasks", {

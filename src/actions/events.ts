@@ -17,7 +17,7 @@ import {
 } from "@/lib/errors";
 import { createEventSchema, updateEventSchema } from "@/lib/validation";
 import { GoogleCalendarService } from "@/lib/google-calendar";
-import { requireAuth, ensureUserExists } from "./shared";
+import { requireWorkspaceAuth, ensureUserExists } from "./shared";
 import { reportError } from "@/lib/error-reporting";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { getCachedEvents, CACHE_TAGS } from "@/lib/data-fetchers";
@@ -27,9 +27,9 @@ import { logger } from "@/lib/logger";
 
 export async function getEvents(): Promise<ActionResult<(typeof events.$inferSelect)[]>> {
   try {
-    const { userId } = await requireAuth();
+    const { workspaceId } = await requireWorkspaceAuth();
     // Use cached fetcher
-    const result = await getCachedEvents(userId);
+    const result = await getCachedEvents(workspaceId);
     return createSuccessResult(result);
   } catch (error) {
     return createErrorResult(error);
@@ -44,7 +44,7 @@ export async function createEvent(data: {
   type: string;
 }): Promise<ActionResult<void>> {
   try {
-    const { userId, getToken } = await requireAuth();
+    const { userId, getToken, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 50 requests per minute
     const rateLimit = await checkRateLimit(userId, "create-event", 50, 60);
@@ -81,6 +81,7 @@ export async function createEvent(data: {
     await db.insert(events).values({
       id: data.id,
       userId,
+      workspaceId,
       title: data.title,
       startTime: new Date(data.start),
       endTime: new Date(data.end),
@@ -90,8 +91,8 @@ export async function createEvent(data: {
 
     revalidatePath("/calendar");
     revalidatePath("/dashboard");
-    revalidateTag(CACHE_TAGS.events(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.events(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -101,7 +102,7 @@ export async function createEvent(data: {
 
 export async function deleteEvent(id: string): Promise<ActionResult<void>> {
   try {
-    const { userId, getToken } = await requireAuth();
+    const { userId, getToken, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 100 requests per minute
     const rateLimit = await checkRateLimit(userId, "delete-event", 100, 60);
@@ -116,7 +117,7 @@ export async function deleteEvent(id: string): Promise<ActionResult<void>> {
     const [eventToDelete] = await db
       .select()
       .from(events)
-      .where(and(eq(events.id, id), eq(events.userId, userId)));
+      .where(and(eq(events.id, id), eq(events.workspaceId, workspaceId)));
 
     if (
       eventToDelete &&
@@ -133,12 +134,12 @@ export async function deleteEvent(id: string): Promise<ActionResult<void>> {
       }
     }
 
-    await db.delete(events).where(and(eq(events.id, id), eq(events.userId, userId)));
+    await db.delete(events).where(and(eq(events.id, id), eq(events.workspaceId, workspaceId)));
 
     revalidatePath("/calendar");
     revalidatePath("/dashboard");
-    revalidateTag(CACHE_TAGS.events(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.events(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -151,7 +152,7 @@ export async function updateEvent(
   data: { title?: string; start?: string; end?: string; type?: string }
 ): Promise<ActionResult<void>> {
   try {
-    const { userId, getToken } = await requireAuth();
+    const { userId, getToken, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 100 requests per minute
     const rateLimit = await checkRateLimit(userId, "update-event", 100, 60);
@@ -178,7 +179,7 @@ export async function updateEvent(
     const [eventToUpdate] = await db
       .select()
       .from(events)
-      .where(and(eq(events.id, id), eq(events.userId, userId)));
+      .where(and(eq(events.id, id), eq(events.workspaceId, workspaceId)));
 
     if (
       eventToUpdate &&
@@ -202,12 +203,12 @@ export async function updateEvent(
     await db
       .update(events)
       .set(updates)
-      .where(and(eq(events.id, id), eq(events.userId, userId)));
+      .where(and(eq(events.id, id), eq(events.workspaceId, workspaceId)));
 
     revalidatePath("/calendar");
     revalidatePath("/dashboard");
-    revalidateTag(CACHE_TAGS.events(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.events(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -221,7 +222,7 @@ export async function syncGoogleCalendar(): Promise<
   ActionResult<{ count: number; total: number }>
 > {
   try {
-    const { userId, getToken } = await requireAuth();
+    const { userId, getToken, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 10 requests per minute (stricter for external API)
     const rateLimit = await checkRateLimit(userId, "sync-calendar", 10, 60);
@@ -269,7 +270,7 @@ export async function syncGoogleCalendar(): Promise<
     const existingEvents = await db
       .select()
       .from(events)
-      .where(eq(events.userId, userId));
+      .where(eq(events.workspaceId, workspaceId));
 
     const existingByGoogleId = new Map(
       existingEvents
@@ -292,6 +293,7 @@ export async function syncGoogleCalendar(): Promise<
       if (!existing) {
         newEventValues.push({
           userId,
+          workspaceId,
           googleEventId: gEvent.id,
           title: gEvent.summary || "(No Title)",
           startTime: new Date(start),

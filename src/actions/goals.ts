@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { goals } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { requireAuth, ensureUserExists } from "./shared";
+import { requireWorkspaceAuth, ensureUserExists } from "./shared";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { getCachedGoals, CACHE_TAGS } from "@/lib/data-fetchers";
 import {
@@ -16,11 +16,11 @@ import {
 
 export async function getGoals(): Promise<ActionResult<(typeof goals.$inferSelect)[]>> {
   try {
-    const { userId } = await requireAuth();
-    if (!userId) return createSuccessResult([]);
+    const { workspaceId } = await requireWorkspaceAuth();
+    if (!workspaceId) return createSuccessResult([]);
 
     // Use cached fetcher
-    const result = await getCachedGoals(userId);
+    const result = await getCachedGoals(workspaceId);
 
     return createSuccessResult(result);
   } catch (error) {
@@ -38,7 +38,7 @@ export async function createGoal(data: {
   endDate: Date;
 }): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 20 requests per minute for goal creation
     const rateLimit = await checkRateLimit(userId, "create-goal", 20, 60);
@@ -55,12 +55,13 @@ export async function createGoal(data: {
     await db.insert(goals).values({
       ...data,
       userId, // Force userId from auth
+      workspaceId,
     });
 
     revalidatePath("/dashboard");
     revalidatePath("/analytics");
-    revalidateTag(CACHE_TAGS.goals(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.goals(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -70,7 +71,7 @@ export async function createGoal(data: {
 
 export async function updateGoalProgress(id: string, currentValue: number): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate Limit: 60 requests per minute for updates
     const rateLimit = await checkRateLimit(userId, "update-goal", 60, 60);
@@ -81,12 +82,12 @@ export async function updateGoalProgress(id: string, currentValue: number): Prom
     await db
       .update(goals)
       .set({ currentValue, updatedAt: new Date() })
-      .where(and(eq(goals.id, id), eq(goals.userId, userId)));
+      .where(and(eq(goals.id, id), eq(goals.workspaceId, workspaceId)));
 
     revalidatePath("/dashboard");
     revalidatePath("/analytics");
-    revalidateTag(CACHE_TAGS.goals(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.goals(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {
@@ -96,14 +97,14 @@ export async function updateGoalProgress(id: string, currentValue: number): Prom
 
 export async function deleteGoal(id: string): Promise<ActionResult<void>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
-    await db.delete(goals).where(and(eq(goals.id, id), eq(goals.userId, userId)));
+    await db.delete(goals).where(and(eq(goals.id, id), eq(goals.workspaceId, workspaceId)));
 
     revalidatePath("/dashboard");
     revalidatePath("/analytics");
-    revalidateTag(CACHE_TAGS.goals(userId), "default");
-    revalidateTag(CACHE_TAGS.dashboard(userId), "default");
+    revalidateTag(CACHE_TAGS.goals(workspaceId), "default");
+    revalidateTag(CACHE_TAGS.dashboard(workspaceId), "default");
 
     return createSuccessResult(undefined);
   } catch (error) {

@@ -6,82 +6,82 @@ import { cache } from "react";
 
 // --- Tags for Cache Invalidation ---
 export const CACHE_TAGS = {
-  tasks: (userId: string) => `tasks-${userId}`,
-  events: (userId: string) => `events-${userId}`,
-  notes: (userId: string) => `notes-${userId}`,
-  goals: (userId: string) => `goals-${userId}`,
+  tasks: (workspaceId: string) => `tasks-${workspaceId}`,
+  events: (workspaceId: string) => `events-${workspaceId}`,
+  notes: (workspaceId: string) => `notes-${workspaceId}`,
+  goals: (workspaceId: string) => `goals-${workspaceId}`,
   habits: (userId: string) => `habits-${userId}`,
   habitLogs: (userId: string) => `habit-logs-${userId}`,
-  dashboard: (userId: string) => `dashboard-${userId}`,
+  dashboard: (workspaceId: string) => `dashboard-${workspaceId}`,
 };
 
 // --- Tasks Fetcher ---
-export const getCachedTasks = cache(async (userId: string) => {
+export const getCachedTasks = cache(async (workspaceId: string) => {
   return unstable_cache(
     async () => {
       return await db
         .select()
         .from(tasks)
-        .where(eq(tasks.userId, userId))
+        .where(eq(tasks.workspaceId, workspaceId))
         .orderBy(desc(tasks.createdAt));
     },
-    [CACHE_TAGS.tasks(userId)],
+    [CACHE_TAGS.tasks(workspaceId)],
     {
-      tags: [CACHE_TAGS.tasks(userId)],
+      tags: [CACHE_TAGS.tasks(workspaceId)],
       revalidate: 3600, // 1 hour default (invalidated by actions)
     }
   )();
 });
 
 // --- Events Fetcher ---
-export const getCachedEvents = cache(async (userId: string) => {
+export const getCachedEvents = cache(async (workspaceId: string) => {
   return unstable_cache(
     async () => {
       return await db
         .select()
         .from(events)
-        .where(eq(events.userId, userId))
+        .where(eq(events.workspaceId, workspaceId))
         .orderBy(asc(events.startTime));
     },
-    [CACHE_TAGS.events(userId)],
+    [CACHE_TAGS.events(workspaceId)],
     {
-      tags: [CACHE_TAGS.events(userId)],
+      tags: [CACHE_TAGS.events(workspaceId)],
       revalidate: 3600,
     }
   )();
 });
 
 // --- Notes Fetcher ---
-export const getCachedNotes = cache(async (userId: string) => {
+export const getCachedNotes = cache(async (workspaceId: string) => {
   return unstable_cache(
     async () => {
       return await db
         .select()
         .from(notes)
-        .where(eq(notes.userId, userId))
+        .where(eq(notes.workspaceId, workspaceId))
         .orderBy(desc(notes.updatedAt));
     },
-    [CACHE_TAGS.notes(userId)],
+    [CACHE_TAGS.notes(workspaceId)],
     {
-      tags: [CACHE_TAGS.notes(userId)],
+      tags: [CACHE_TAGS.notes(workspaceId)],
       revalidate: 3600,
     }
   )();
 });
 
 // --- Goals Fetcher ---
-export const getCachedGoals = cache(async (userId: string) => {
+export const getCachedGoals = cache(async (workspaceId: string) => {
   try {
     return await unstable_cache(
       async () => {
         return await db
           .select()
           .from(goals)
-          .where(and(eq(goals.userId, userId), eq(goals.status, "active")));
+          .where(and(eq(goals.workspaceId, workspaceId), eq(goals.status, "active")));
       },
-      [CACHE_TAGS.goals(userId)],
+      [CACHE_TAGS.goals(workspaceId)],
       {
-        tags: [CACHE_TAGS.goals(userId)],
+        tags: [CACHE_TAGS.goals(workspaceId)],
         revalidate: 3600,
       }
     )();
@@ -143,12 +143,12 @@ export const getCachedHabitLogs = cache(async (userId: string) => {
 
 // --- Aggregated Dashboard Stats (Expensive Calculation) ---
 // This serves as an example of server-side aggregation caching
-export const getDashboardStats = cache(async (userId: string) => {
+export const getDashboardStats = cache(async (workspaceId: string) => {
   return unstable_cache(
     async () => {
       const [userTasks, userEvents] = await Promise.all([
-        db.select().from(tasks).where(eq(tasks.userId, userId)),
-        db.select().from(events).where(eq(events.userId, userId)),
+        db.select().from(tasks).where(eq(tasks.workspaceId, workspaceId)),
+        db.select().from(events).where(eq(events.workspaceId, workspaceId)),
       ]);
 
       const completedTasks = userTasks.filter((t) => t.status === "Done");
@@ -162,9 +162,9 @@ export const getDashboardStats = cache(async (userId: string) => {
         lastUpdated: new Date().toISOString(),
       };
     },
-    [CACHE_TAGS.dashboard(userId)],
+    [CACHE_TAGS.dashboard(workspaceId)],
     {
-      tags: [CACHE_TAGS.tasks(userId), CACHE_TAGS.events(userId), CACHE_TAGS.dashboard(userId)],
+      tags: [CACHE_TAGS.tasks(workspaceId), CACHE_TAGS.events(workspaceId), CACHE_TAGS.dashboard(workspaceId)],
       revalidate: 1800, // 30 mins
     }
   )();

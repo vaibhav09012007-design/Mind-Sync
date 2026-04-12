@@ -9,6 +9,7 @@ export const goalStatusEnum = pgEnum("goal_status", ["active", "completed", "fai
 export const habitFrequencyEnum = pgEnum("habit_frequency", ["daily", "weekly", "custom"]);
 export const habitTimeOfDayEnum = pgEnum("habit_time_of_day", ["morning", "afternoon", "evening", "anytime"]);
 export const eventTypeEnum = pgEnum("event_type", ["work", "personal", "meeting"]);
+export const workspaceRoleEnum = pgEnum("workspace_role", ["admin", "editor", "viewer"]);
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk User ID
@@ -19,11 +20,44 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const workspaces = pgTable("workspaces", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  ownerId: text("owner_id").references(() => users.id).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const workspaceMembers = pgTable("workspace_members", {
+  workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }).notNull(),
+  userId: text("user_id").references(() => users.id).notNull(),
+  role: workspaceRoleEnum("role").default("editor").notNull(),
+  joinedAt: timestamp("joined_at").defaultNow(),
+}, (table) => [
+  index("idx_workspace_members_workspace").on(table.workspaceId),
+  index("idx_workspace_members_user").on(table.userId),
+]);
+
+export const comments = pgTable("comments", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
+  entityId: uuid("entity_id").notNull(),
+  entityType: text("entity_type").notNull(), // "task" | "note"
+  userId: text("user_id").references(() => users.id).notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_comments_entity").on(table.entityType, table.entityId),
+  index("idx_comments_workspace").on(table.workspaceId),
+]);
+
 export const tasks = pgTable("tasks", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: text("user_id")
     .references(() => users.id)
     .notNull(),
+  workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   parentId: uuid("parent_id"), // Self-reference for subtasks
   dependsOn: uuid("depends_on"), // Task dependency - blocked by another task
   title: text("title").notNull(),
@@ -52,6 +86,7 @@ export const events = pgTable("events", {
   userId: text("user_id")
     .references(() => users.id)
     .notNull(),
+  workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   googleEventId: text("google_event_id").notNull(),
   title: text("title").notNull(),
   description: text("description"),
@@ -73,6 +108,7 @@ export const notes = pgTable("notes", {
   userId: text("user_id")
     .references(() => users.id)
     .notNull(),
+  workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   eventId: uuid("event_id").references(() => events.id),
   title: text("title").notNull().default("Untitled"),
   content: jsonb("content"), // Tiptap JSON content
@@ -137,6 +173,7 @@ export const goals = pgTable("goals", {
   userId: text("user_id")
     .references(() => users.id)
     .notNull(),
+  workspaceId: uuid("workspace_id").references(() => workspaces.id, { onDelete: "cascade" }),
   title: text("title").notNull(),
   targetValue: integer("target_value").notNull(),
   currentValue: integer("current_value").default(0).notNull(),

@@ -20,7 +20,7 @@ import {
 } from "@/lib/errors";
 import { summarizeMeetingSchema } from "@/lib/validation";
 import { checkRateLimit } from "@/lib/rate-limiter";
-import { requireAuth, ensureUserExists } from "./shared";
+import { requireWorkspaceAuth, ensureUserExists } from "./shared";
 import { getEnv, getEnvOptional } from "@/lib/env";
 import { reportError } from "@/lib/error-reporting";
 import { logger } from "@/lib/logger";
@@ -46,7 +46,7 @@ export async function summarizeMeeting(
   transcript: string
 ): Promise<ActionResult<{ summary: string; decisions: string[]; actionItems: string[] }>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate limit check - 10 requests per minute
     const rateLimitResult = await checkRateLimit(userId, "ai-summarize", 10, 60);
@@ -82,7 +82,7 @@ export async function summarizeMeeting(
           actionItems: mockData.actionItems,
           rawTranscript: transcript,
         })
-        .where(and(eq(notes.id, noteId), eq(notes.userId, userId)));
+        .where(and(eq(notes.id, noteId), eq(notes.workspaceId, workspaceId)));
 
       revalidatePath(`/notes/${noteId}`);
       return createSuccessResult(mockData);
@@ -137,7 +137,7 @@ Remember: Only output the JSON object, nothing else.
         actionItems: data.actionItems,
         rawTranscript: transcript,
       })
-      .where(and(eq(notes.id, noteId), eq(notes.userId, userId)));
+      .where(and(eq(notes.id, noteId), eq(notes.workspaceId, workspaceId)));
 
     revalidatePath(`/notes/${noteId}`);
     return createSuccessResult(data);
@@ -164,7 +164,7 @@ Remember: Only output the JSON object, nothing else.
 
 export async function generateSchedule(): Promise<ActionResult<{ count: number }>> {
   try {
-    const { userId } = await requireAuth();
+    const { userId, workspaceId } = await requireWorkspaceAuth();
 
     // Rate limit check - 5 requests per minute for scheduling
     const rateLimitResult = await checkRateLimit(userId, "ai-schedule", 5, 60);
@@ -192,8 +192,8 @@ export async function generateSchedule(): Promise<ActionResult<{ count: number }
       db
         .select()
         .from(tasks)
-        .where(and(eq(tasks.userId, userId), eq(tasks.status, "Todo"))),
-      db.select().from(events).where(eq(events.userId, userId)),
+        .where(and(eq(tasks.workspaceId, workspaceId), eq(tasks.status, "Todo"))),
+      db.select().from(events).where(eq(events.workspaceId, workspaceId)),
     ]);
 
     const todaysEvents = dayEvents.filter((e) => {
@@ -290,6 +290,7 @@ Format:
       await db.insert(events).values({
         id: eventId,
         userId,
+        workspaceId,
         title: item.title,
         startTime: new Date(item.start),
         endTime: new Date(item.end),
