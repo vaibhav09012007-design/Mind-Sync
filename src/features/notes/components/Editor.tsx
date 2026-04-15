@@ -77,6 +77,7 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
+        // @ts-expect-error - history exists in StarterKit but types may be missing
         history: false, // History is handled by Yjs
       }),
       Placeholder.configure({

@@ -30,7 +30,7 @@ describe("getInitialData", () => {
 
   it("should return null when user is not authenticated", async () => {
     const { auth } = await import("@clerk/nextjs/server");
-    (auth as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
+    ((auth as any) as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: null });
 
     const { getInitialData } = await import("../get-initial-data");
     const result = await getInitialData();
@@ -40,7 +40,7 @@ describe("getInitialData", () => {
 
   it("should return initial data structure when authenticated", async () => {
     const { auth } = await import("@clerk/nextjs/server");
-    (auth as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: "user_123" });
+    ((auth as any) as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: "user_123" });
 
     const { db } = await import("@/db");
     const mockWhere = vi.fn();
@@ -100,7 +100,7 @@ describe("getInitialData", () => {
 
   it("should handle database errors gracefully", async () => {
     const { auth } = await import("@clerk/nextjs/server");
-    (auth as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: "user_123" });
+    ((auth as any) as ReturnType<typeof vi.fn>).mockResolvedValue({ userId: "user_123" });
 
     const { db } = await import("@/db");
     (db.select as ReturnType<typeof vi.fn>).mockImplementation(() => {
