@@ -17,6 +17,7 @@ import {
 import { motion } from "framer-motion";
 import { UserButton, useUser } from "@clerk/nextjs";
 import { Logo } from "@/components/ui/Logo";
+import { WorkspaceSwitcher } from "@/components/workspace/workspace-switcher";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -37,6 +38,11 @@ export function AppSidebar() {
       {/* Logo */}
       <div className="border-b border-border/30 p-4 flex items-center justify-between">
         <Logo size="sm" />
+      </div>
+
+      {/* Workspace Switcher */}
+      <div className="border-b border-border/30 px-2 py-2">
+        <WorkspaceSwitcher />
       </div>
 
       {/* Quick Search */}

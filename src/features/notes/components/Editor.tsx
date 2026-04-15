@@ -1,27 +1,21 @@
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
-
 import StarterKit from "@tiptap/starter-kit";
-
 import Placeholder from "@tiptap/extension-placeholder";
+import Collaboration from "@tiptap/extension-collaboration";
+import * as Y from "yjs";
+import YPartyKitProvider from "y-partykit/provider";
 
 import { Separator } from "@/components/ui/separator";
-
-import { useState, useEffect, useCallback } from "react";
-
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Note } from "@/store/useStore";
 import { useNoteActions, useTaskActions } from "@/store/selectors";
-
 import { toast } from "sonner";
-
 import { format } from "date-fns";
-
 import { Toggle } from "@/components/ui/toggle";
-
 import { analyzeSentiment } from "@/features/ai/advanced-ai";
 import { Badge } from "@/components/ui/badge";
-
 import { Bold, Italic, List, ListOrdered, Heading1, Heading2, Quote, Sparkles } from "lucide-react";
 
 export function Editor({ note, initialContent }: { note?: Note; initialContent?: string }) {
@@ -34,8 +28,24 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
   );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
-  // Debounce title updates
+  // Set up Yjs document and PartyKit provider
+  const { ydoc, provider } = useMemo(() => {
+    if (!note?.id) return { ydoc: null, provider: null };
+    
+    const ydoc = new Y.Doc();
+    const host = process.env.NEXT_PUBLIC_PARTYKIT_HOST || "localhost:1999";
+    const provider = new YPartyKitProvider(host, `note-${note.id}`, ydoc);
+    
+    return { ydoc, provider };
+  }, [note?.id]);
 
+  useEffect(() => {
+    return () => {
+      provider?.destroy();
+    };
+  }, [provider]);
+
+  // Debounce title updates
   useEffect(() => {
     if (note && title !== note.title) {
       const timer = setTimeout(() => {
@@ -66,16 +76,17 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
 
   const editor = useEditor({
     extensions: [
-      StarterKit,
-
+      StarterKit.configure({
+        history: false, // History is handled by Yjs
+      }),
       Placeholder.configure({
         placeholder: 'Start writing, or press "/" for commands...',
       }),
+      ...(ydoc ? [Collaboration.configure({ document: ydoc })] : []),
     ],
 
     immediatelyRender: false,
-
-    content: note?.content || initialContent || "",
+    content: ydoc ? undefined : note?.content || initialContent || "",
 
     editorProps: {
       attributes: {
@@ -85,26 +96,17 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
     },
 
     onUpdate: ({ editor }) => {
-      // Check for Action Items in the current line
       const { selection } = editor.state;
       const { $from } = selection;
       const currentLineText = $from.parent.textContent;
 
-      // Simple regex for 'TODO:' at start of line
       const actionItemMatch = currentLineText.match(/^(TODO:|Action Item:)\s+(.+)$/i);
 
       if (actionItemMatch) {
         const taskTitle = actionItemMatch[2].trim();
-        // Only toast if we haven't just toasted for this specific text (simple debounce/dedupe)
-        // Storing last toasted in a ref would be better but for now rely on user interaction
-        // Actually, to avoid spamming, we might want to check if the user is *still typing*.
-        // But let's just use a toast with a unique ID based on the content so it updates/doesn't duplicate?
-        // "sonner" handles duplicates if we give it an id.
-
-        // Only show if length > 3 to avoid early triggers
         if (taskTitle.length > 3) {
           toast(`Action Item detected: "${taskTitle}"`, {
-            id: `action-item-${taskTitle.slice(0, 10)}`, // dedup based on start of text
+            id: `action-item-${taskTitle.slice(0, 10)}`,
             action: {
               label: "Create Task",
               onClick: () => {
@@ -117,18 +119,11 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
         }
       }
 
-      // Save content to store if note exists
       if (note) {
         const content = editor.getHTML();
-
         const text = editor.getText();
-
         const preview = text.slice(0, 150) + (text.length > 150 ? "..." : "");
 
-        // Run sentiment analysis if enough text and is journal
-        // Debounce this separately or just run it periodically?
-        // Let's run it here but with a randomized check or length check to avoid every keystroke spamming
-        // For simulated AI, it's cheap.
         if (note.type === "journal" && text.length > 20 && Math.random() > 0.7) {
            runSentimentAnalysis(text);
         }
@@ -137,7 +132,7 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
           content,
           preview,
           date: new Date().toISOString(),
-          sentiment: sentiment || undefined, // Include current sentiment in update
+          sentiment: sentiment || undefined,
         });
       }
     },
@@ -154,7 +149,7 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
             className="placeholder:text-muted-foreground/40 w-full border-none bg-transparent text-4xl font-bold focus:outline-none flex-1"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            readOnly={!note} // Only editable if it's a real note
+            readOnly={!note}
         />
         {note?.type === "journal" && (
             <div className="flex items-center gap-2">
@@ -178,73 +173,33 @@ export function Editor({ note, initialContent }: { note?: Note; initialContent?:
         <span>
           {note ? format(new Date(note.date), "MMM d, yyyy") : format(new Date(), "MMM d, yyyy")}
         </span>
-
         <Separator orientation="vertical" className="h-4" />
-
         <span>{note?.type || "Draft"} Note</span>
       </div>
 
-      {/* Toolbar */}
-
       {note && (
         <div className="bg-background/95 sticky top-0 z-10 mb-4 flex items-center gap-1 border-b pb-2 backdrop-blur">
-          <Toggle
-            size="sm"
-            pressed={editor.isActive("bold")}
-            onPressedChange={() => editor.chain().focus().toggleBold().run()}
-          >
+          <Toggle size="sm" pressed={editor.isActive("bold")} onPressedChange={() => editor.chain().focus().toggleBold().run()}>
             <Bold className="h-4 w-4" />
           </Toggle>
-
-          <Toggle
-            size="sm"
-            pressed={editor.isActive("italic")}
-            onPressedChange={() => editor.chain().focus().toggleItalic().run()}
-          >
+          <Toggle size="sm" pressed={editor.isActive("italic")} onPressedChange={() => editor.chain().focus().toggleItalic().run()}>
             <Italic className="h-4 w-4" />
           </Toggle>
-
           <Separator orientation="vertical" className="mx-1 h-6" />
-
-          <Toggle
-            size="sm"
-            pressed={editor.isActive("heading", { level: 1 })}
-            onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          >
+          <Toggle size="sm" pressed={editor.isActive("heading", { level: 1 })} onPressedChange={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
             <Heading1 className="h-4 w-4" />
           </Toggle>
-
-          <Toggle
-            size="sm"
-            pressed={editor.isActive("heading", { level: 2 })}
-            onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          >
+          <Toggle size="sm" pressed={editor.isActive("heading", { level: 2 })} onPressedChange={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
             <Heading2 className="h-4 w-4" />
           </Toggle>
-
           <Separator orientation="vertical" className="mx-1 h-6" />
-
-          <Toggle
-            size="sm"
-            pressed={editor.isActive("bulletList")}
-            onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
-          >
+          <Toggle size="sm" pressed={editor.isActive("bulletList")} onPressedChange={() => editor.chain().focus().toggleBulletList().run()}>
             <List className="h-4 w-4" />
           </Toggle>
-
-          <Toggle
-            size="sm"
-            pressed={editor.isActive("orderedList")}
-            onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}
-          >
+          <Toggle size="sm" pressed={editor.isActive("orderedList")} onPressedChange={() => editor.chain().focus().toggleOrderedList().run()}>
             <ListOrdered className="h-4 w-4" />
           </Toggle>
-
-          <Toggle
-            size="sm"
-            pressed={editor.isActive("blockquote")}
-            onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}
-          >
+          <Toggle size="sm" pressed={editor.isActive("blockquote")} onPressedChange={() => editor.chain().focus().toggleBlockquote().run()}>
             <Quote className="h-4 w-4" />
           </Toggle>
         </div>

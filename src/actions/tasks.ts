@@ -67,6 +67,13 @@ export async function createTask(data: {
       status: "Todo",
     });
 
+    // Fire-and-forget AI auto-categorization (non-blocking)
+    import("./ai-categorize").then(({ autoCategorizeTask }) => {
+      autoCategorizeTask(data.id).catch(() => {
+        // Silently ignore — categorization is a nice-to-have enhancement
+      });
+    });
+
     revalidatePath("/dashboard");
     revalidatePath("/kanban");
     revalidateTag(CACHE_TAGS.tasks(workspaceId), "default");
