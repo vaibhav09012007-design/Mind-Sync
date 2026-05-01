@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { createClient } from "@deepgram/sdk";
 import { checkRateLimit } from "@/lib/rate-limiter";
 import { logger } from "@/lib/logger";
 
@@ -11,8 +12,8 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Rate limit: 10 requests per minute per user (generous for session initiation)
-    const rateLimit = await checkRateLimit(userId, "deepgram-token", 10, 60);
+    // Rate limit: 5 requests per minute (generating tokens is sensitive)
+    const rateLimit = await checkRateLimit(userId, "deepgram-token", 5, 60);
 
     if (!rateLimit.allowed) {
       return NextResponse.json(
@@ -24,21 +25,42 @@ export async function GET() {
       );
     }
 
-    const deepgramApiKey = process.env.DEEPGRAM_API_KEY;
+    const apiKey = process.env.DEEPGRAM_API_KEY;
 
-    if (!deepgramApiKey) {
-      // Return a mock key for testing UI components without crashing
+    if (!apiKey) {
       logger.warn("DEEPGRAM_API_KEY missing, returning mock key", { action: "getDeepgramToken" });
       return NextResponse.json({ key: "mock-deepgram-key" });
     }
 
-    // In a real production environment, you should generate a temporary scoped key
-    // or proxy the websocket connection. For this implementation, we ensure
-    // the user is authenticated and rate-limited before providing the key.
+    const deepgram = createClient(apiKey);
 
-    return NextResponse.json({ key: deepgramApiKey });
+    // 1. Get the project ID (needed to create scoped keys)
+    const { result: projects, error: projectError } = await deepgram.manage.getProjects();
+    
+    if (projectError || !projects || projects.projects.length === 0) {
+      logger.error("Failed to fetch Deepgram projects", projectError as any, { action: "getDeepgramToken" });
+      return NextResponse.json({ error: "Configuration Error" }, { status: 500 });
+    }
+
+    const projectId = projects.projects[0].project_id;
+
+    // 2. Generate a short-lived (60s) scoped key
+    const { result: newKey, error: keyError } = await deepgram.manage.createProjectKey(projectId, {
+      comment: `Temporary key for user ${userId}`,
+      scopes: ["usage:write"],
+      time_to_live_in_seconds: 60,
+    });
+
+    if (keyError || !newKey) {
+      logger.error("Failed to create Deepgram temporary key", keyError as any, { action: "getDeepgramToken" });
+      return NextResponse.json({ error: "Failed to generate token" }, { status: 500 });
+    }
+
+    logger.info("Generated temporary Deepgram key", { userId, action: "getDeepgramToken" });
+
+    return NextResponse.json({ key: newKey.key });
   } catch (error) {
-    logger.error("Deepgram API Error", error as Error, { action: "getDeepgramToken" });
+    logger.error("Deepgram Token Generation Error", error as Error, { action: "getDeepgramToken" });
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }

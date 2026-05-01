@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     request.headers.get("authorization")?.replace("Bearer ", "") ??
     url.searchParams.get("secret");
 
-  if (cronSecret && providedSecret !== cronSecret) {
+  if (!cronSecret || providedSecret !== cronSecret) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
