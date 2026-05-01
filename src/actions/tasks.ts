@@ -421,6 +421,11 @@ export async function bulkImportTasks(
 
     await ensureUserExists();
 
+    // SECURITY: Limit bulk import size to prevent OOM and DB write amplification
+    if (tasksData.length > 500) {
+      throw new ValidationError({ tasks: ["Maximum 500 tasks per import"] });
+    }
+
     // Batch-insert all tasks in a single DB call
     const taskValues = tasksData.map((task) => ({
       id: task.id,
