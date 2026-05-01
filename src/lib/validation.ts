@@ -72,9 +72,9 @@ export const updateNoteSchema = z.object({
   tags: z.array(z.string().max(50)).max(20).optional(),
   type: z.enum(["meeting", "personal", "journal"]).optional(),
   sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
-  metadata: z.record(z.unknown()).optional().refine(
+  metadata: z.record(z.string(), z.unknown()).optional().refine(
     (v) => !v || JSON.stringify(v).length < 10000,
-    "Metadata too large (max 10KB)"
+    { message: "Metadata too large (max 10KB)" }
   ),
   eventId: z.string().uuid().nullable().optional(),
 });

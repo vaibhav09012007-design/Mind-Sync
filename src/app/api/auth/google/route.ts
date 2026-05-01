@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { crypto } from 'crypto';
 import { logger } from '@/lib/logger';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;

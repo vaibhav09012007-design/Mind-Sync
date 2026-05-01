@@ -9,7 +9,7 @@
 
 import { db } from "@/db";
 import { rateLimits } from "@/db/schema";
-import { eq, lt } from "drizzle-orm";
+import { eq, lt, sql } from "drizzle-orm";
 import { logger } from "@/lib/logger";
 
 export interface RateLimitResult {
