@@ -1,3 +1,5 @@
+import DOMPurify from "isomorphic-dompurify";
+
 /**
  * Input Sanitization Utilities
  * Prevents XSS and injection attacks in user inputs
@@ -12,7 +14,7 @@ const HTML_ENTITIES: Record<string, string> = {
   ">": "&gt;",
   '"': "&quot;",
   "'": "&#x27;",
-  "/": "&#x2F;",
+  "/": "& #x2F;",
   "`": "&#x60;",
   "=": "&#x3D;",
 };
@@ -30,7 +32,7 @@ export function escapeHtml(str: string): string {
  */
 export function stripHtml(str: string): string {
   if (!str) return "";
-  return str.replace(/<[^>]*>/g, "");
+  return DOMPurify.sanitize(str, { ALLOWED_TAGS: [] });
 }
 
 /**
@@ -115,28 +117,22 @@ export function sanitizeTaskDescription(description: string): string {
 
 /**
  * Sanitize note content (HTML allowed but dangerous tags removed)
+ * Uses industry-standard DOMPurify for robust protection against complex XSS
  */
 export function sanitizeNoteContent(html: string): string {
   if (!html) return "";
 
-  // Remove script tags and their content
-  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
-
-  // Remove style tags and their content
-  sanitized = sanitized.replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, "");
-
-  // Remove onclick and other event handlers
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "");
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, "");
-
-  // Remove javascript: URLs
-  sanitized = sanitized.replace(/href\s*=\s*["']javascript:[^"']*["']/gi, 'href="#"');
-
-  // Remove iframe, embed, object tags
-  sanitized = sanitized.replace(/<(iframe|embed|object|applet|form)[^>]*>.*?<\/\1>/gi, "");
-  sanitized = sanitized.replace(/<(iframe|embed|object|applet|form)[^>]*\/?>/gi, "");
-
-  return sanitized;
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "p", "br", "strong", "em", "u", "s", "h1", "h2", "h3", "h4", "h5", "h6",
+      "ul", "ol", "li", "blockquote", "code", "pre", "a", "img", "div", "span"
+    ],
+    ALLOWED_ATTR: ["href", "src", "alt", "title", "class", "target", "rel"],
+    ALLOW_DATA_ATTR: false,
+    USE_PROFILES: { html: true },
+    FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "form"],
+    FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
+  });
 }
 
 /**
