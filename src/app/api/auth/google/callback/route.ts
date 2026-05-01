@@ -19,12 +19,26 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
+    const state = searchParams.get('state');
     const error = searchParams.get('error');
+    
+    // Get stored state from cookie
+    const cookieStore = await cookies();
+    const storedState = cookieStore.get('oauth_state')?.value;
+
+    // Clear the state cookie immediately
+    cookieStore.delete('oauth_state');
+
+    // 1. Validate state to prevent CSRF
+    if (!state || !storedState || state !== storedState) {
+      logger.error('OAuth state mismatch', new Error('State mismatch'), { action: 'googleAuthCallback' });
+      return NextResponse.redirect(new URL('/dashboard?error=invalid_state', process.env.NEXT_PUBLIC_APP_URL || request.url));
+    }
 
     // Handle user denial or errors
     if (error) {
       logger.error('Google OAuth error', new Error(error), { action: 'googleAuthCallback', error_code: error });
-      return NextResponse.redirect(new URL('/dashboard?error=google_auth_denied', request.url));
+      return NextResponse.redirect(new URL('/dashboard?error=google_auth_denied', process.env.NEXT_PUBLIC_APP_URL || request.url));
     }
 
     if (!code) {
@@ -68,8 +82,6 @@ export async function GET(request: Request) {
     const tokens: GoogleTokenResponse = await tokenResponse.json();
 
     // Set tokens in secure HTTP-only cookies
-    const cookieStore = await cookies();
-
     cookieStore.set('google_access_token', tokens.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -88,8 +100,11 @@ export async function GET(request: Request) {
       });
     }
 
-    // Redirect to calendar page after successful authentication
-    return NextResponse.redirect(new URL('/dashboard/calendar?google_connected=true', request.url));
+    // 2. Use safe absolute redirect to prevent Open Redirect vulnerabilities
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+    const redirectUrl = new URL('/dashboard/calendar?google_connected=true', appUrl || request.url);
+    
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     logger.error('Google OAuth callback error', error as Error, { action: 'googleAuthCallback' });
     return NextResponse.json(

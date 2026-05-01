@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
+import { crypto } from 'crypto';
 import { logger } from '@/lib/logger';
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
@@ -20,12 +22,26 @@ export async function GET() {
       );
     }
 
-    // Build the Google OAuth authorization URL
+    // 1. Generate a random state for CSRF protection
+    const state = crypto.randomUUID();
+
+    // 2. Set the state in a secure HttpOnly cookie
+    const cookieStore = await cookies();
+    cookieStore.set('oauth_state', state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 10, // 10 minutes
+      path: '/',
+    });
+
+    // 3. Build the Google OAuth authorization URL
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
     authUrl.searchParams.set('client_id', GOOGLE_CLIENT_ID);
     authUrl.searchParams.set('redirect_uri', GOOGLE_REDIRECT_URI);
     authUrl.searchParams.set('response_type', 'code');
     authUrl.searchParams.set('scope', SCOPES);
+    authUrl.searchParams.set('state', state); // Pass state to Google
     authUrl.searchParams.set('access_type', 'offline');
     authUrl.searchParams.set('prompt', 'consent'); // Force consent to get refresh_token
     authUrl.searchParams.set('include_granted_scopes', 'true');
