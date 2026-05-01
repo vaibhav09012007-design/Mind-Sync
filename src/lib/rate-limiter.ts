@@ -162,22 +162,23 @@ export async function checkRateLimit(
       };
     }
 
-    // Increment counter
-    const newCount = entry.count + 1;
-    await db
+    // Increment counter using atomic UPDATE with RETURNING to prevent race conditions (TOCTOU)
+    const result = await db
       .update(rateLimits)
       .set({
-        count: newCount,
+        count: sql`${rateLimits.count} + 1`,
         updatedAt: now,
       })
-      .where(eq(rateLimits.key, key));
+      .where(eq(rateLimits.key, key))
+      .returning({ count: rateLimits.count });
 
-    const remaining = Math.max(0, maxRequests - newCount);
+    const updatedCount = result[0]?.count ?? entry.count + 1;
+    const remaining = Math.max(0, maxRequests - updatedCount);
     const retryAfter = Math.ceil(
       (new Date(entry.expiresAt).getTime() - now.getTime()) / 1000
     );
 
-    if (newCount > maxRequests) {
+    if (updatedCount > maxRequests) {
       return {
         allowed: false,
         remaining: 0,
@@ -191,15 +192,14 @@ export async function checkRateLimit(
       retryAfter: 0,
     };
   } catch (error) {
-    // If database fails, allow the request but log the error
-    // This prevents rate limiting failures from blocking legitimate users
-    logger.error("Database error in rate limiter, allowing request", error as Error, { action: "checkRateLimit", key });
+    // SECURITY: Fail-closed for production environments to prevent rate-limit bypass during DB stress
+    logger.error("Rate limiter error, failing closed for security", error as Error, { action: "checkRateLimit", key });
+    
     return {
-      allowed: true,
-      remaining: maxRequests,
-      retryAfter: 0,
-      error: true,
-    } as RateLimitResult;
+      allowed: false, // Fail closed
+      remaining: 0,
+      retryAfter: 60, // Default 1 minute penalty
+    };
   }
 }
 
