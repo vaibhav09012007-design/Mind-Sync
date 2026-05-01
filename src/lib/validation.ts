@@ -20,12 +20,12 @@ export const toggleTaskSchema = z.object({
 export const updateTaskSchema = z.object({
   id: z.string().uuid(),
   title: z.string().min(1).max(500).optional(),
-  description: z.string().optional(),
+  description: z.string().max(10000, "Description too long").optional(),
   dueDate: z.string().datetime().nullable().optional(),
   priority: z.enum(["P0", "P1", "P2", "P3"]).optional(),
   status: z.enum(["Todo", "InProgress", "Done"]).optional(),
   estimatedMinutes: z.number().optional(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string().max(50)).max(20).optional(),
   columnId: z.string().optional(),
 });
 
@@ -67,12 +67,15 @@ export const createNoteSchema = z.object({
 export const updateNoteSchema = z.object({
   id: z.string().uuid(),
   title: z.string().min(1).max(500).optional(),
-  content: z.string().optional(),
+  content: z.string().max(100000, "Note too long").optional(),
   preview: z.string().max(200).optional(),
-  tags: z.array(z.string()).optional(),
+  tags: z.array(z.string().max(50)).max(20).optional(),
   type: z.enum(["meeting", "personal", "journal"]).optional(),
   sentiment: z.enum(["positive", "neutral", "negative"]).optional(),
-  metadata: z.any().optional(),
+  metadata: z.record(z.unknown()).optional().refine(
+    (v) => !v || JSON.stringify(v).length < 10000,
+    "Metadata too large (max 10KB)"
+  ),
   eventId: z.string().uuid().nullable().optional(),
 });
 
