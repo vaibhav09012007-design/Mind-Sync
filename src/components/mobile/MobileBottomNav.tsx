@@ -24,7 +24,7 @@ export function MobileBottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-xl border-t-white/10 md:hidden"
+      className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/80 backdrop-blur-xl border-t-white/10 md:hidden pb-safe"
       role="navigation"
       aria-label="Mobile navigation"
     >
@@ -59,9 +59,6 @@ export function MobileBottomNav() {
           );
         })}
       </div>
-
-      {/* Safe area padding for devices with home indicators */}
-      <div className="h-safe-area-inset-bottom" />
     </nav>
   );
 }

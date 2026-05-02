@@ -34,7 +34,7 @@ export function AppSidebar() {
   const { user, isLoaded } = useUser();
 
   return (
-    <aside className="glass-sidebar h-full w-full flex flex-col transition-all duration-300">
+    <aside className="glass-sidebar h-full w-full flex flex-col transition-all duration-300 pl-safe">
       {/* Logo */}
       <div className="border-b border-border/30 p-4 flex items-center justify-between">
         <Logo size="sm" />

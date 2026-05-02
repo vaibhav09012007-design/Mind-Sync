@@ -51,7 +51,7 @@ export default function DashboardShell({
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden relative z-10">
         {/* Mobile Header (Hidden on Desktop) */}
         <header
-          className="border-border/30 bg-white/60 dark:bg-card/60 backdrop-blur-xl flex h-14 flex-shrink-0 items-center justify-between border-b px-4 md:hidden"
+          className="border-border/30 bg-white/60 dark:bg-card/60 backdrop-blur-xl flex h-14 flex-shrink-0 items-center justify-between border-b px-4 md:hidden pl-safe pr-safe"
           role="banner"
         >
           <div className="flex items-center gap-4">
@@ -90,7 +90,7 @@ export default function DashboardShell({
         {/* Main Content Area */}
         <main
           id="main-content"
-          className="custom-scrollbar flex-1 overflow-y-auto p-4 pb-20 md:p-6 md:pb-6"
+          className="custom-scrollbar flex-1 overflow-y-auto p-4 pb-24 md:p-6 md:pb-6 pb-safe pl-safe pr-safe"
           role="main"
           aria-label="Main content"
         >
