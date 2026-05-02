@@ -170,7 +170,7 @@ export function ProductivityDashboard() {
       </div>
 
       {/* Top Stats Row */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
         <StatCardWithTrend
           title="Current Streak"
           value={streak}
@@ -192,7 +192,9 @@ export function ProductivityDashboard() {
           unit="hours"
           icon={Timer}
         />
-        <CoachWidget data={filteredActivityData} />
+        <div className="col-span-2 md:col-span-1 lg:col-span-1">
+          <CoachWidget data={filteredActivityData} />
+        </div>
       </div>
 
       {/* Main Content Grid */}
@@ -205,11 +207,13 @@ export function ProductivityDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>Activity Heatmap</span>
-                <span className="text-muted-foreground text-sm font-normal">This Year</span>
+                <span className="text-muted-foreground text-sm font-normal hidden sm:inline">This Year</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <EnhancedActivityHeatmap data={fullYearActivityData} />
+            <CardContent className="overflow-x-auto pb-6">
+              <div className="min-w-[600px] lg:min-w-full">
+                <EnhancedActivityHeatmap data={fullYearActivityData} />
+              </div>
             </CardContent>
           </Card>
         </div>
