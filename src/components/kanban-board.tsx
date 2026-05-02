@@ -374,6 +374,9 @@ const KanbanColumn = memo(function KanbanColumn({
 });
 
 import { SwimlaneBoard } from "@/components/kanban/swimlane-board";
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { ChevronLeft, ChevronRight, GripVertical, Calendar, Clock, Plus, Lock } from "lucide-react";
+import { useRef } from "react";
 
 // Main Kanban Board Component
 export function KanbanBoard() {
@@ -381,10 +384,13 @@ export function KanbanBoard() {
   const columns = useColumns();
   const viewSettings = useViewSettings();
   const { toggleTask, updateTask } = useTaskActions();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [activeId, setActiveId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [previewTask, setPreviewTask] = useState<Task | null>(null);
+  const [activeColumnIndex, setActiveColumnIndex] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   // Memoize task map for O(1) lookups
   const taskMap = useMemo(() => new Map(tasks.map((t) => [t.id, t])), [tasks]);
@@ -481,31 +487,119 @@ export function KanbanBoard() {
 
   const activeTask = activeId ? tasks.find((t) => t.id === activeId) : null;
 
+  // Mobile navigation handlers
+  const navigateColumn = (direction: "prev" | "next") => {
+    const newIndex =
+      direction === "next"
+        ? Math.min(activeColumnIndex + 1, columns.length - 1)
+        : Math.max(activeColumnIndex - 1, 0);
+    
+    if (scrollRef.current) {
+      const colWidth = scrollRef.current.offsetWidth * 0.85; // Matches w-[85vw]
+      scrollRef.current.scrollTo({
+        left: newIndex * (colWidth + 16), // 16 is the gap-4
+        behavior: "smooth",
+      });
+      setActiveColumnIndex(newIndex);
+    }
+  };
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!isMobile) return;
+    const scrollLeft = e.currentTarget.scrollLeft;
+    const colWidth = e.currentTarget.offsetWidth * 0.85;
+    const newIndex = Math.round(scrollLeft / (colWidth + 16));
+    if (newIndex !== activeColumnIndex) {
+      setActiveColumnIndex(newIndex);
+    }
+  };
+
   if (viewSettings.mode === "swimlane") {
     return <SwimlaneBoard />;
   }
 
   return (
-    <>
+    <div className="flex h-full flex-col">
+      {/* Mobile Column Navigation UI */}
+      {isMobile && (
+        <div className="mb-4 flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <h2 className={cn("text-lg font-bold transition-colors", columns[activeColumnIndex]?.color)}>
+              {columns[activeColumnIndex]?.title}
+            </h2>
+            <Badge variant="secondary" className="text-[10px]">
+              {(tasksByColumn.get(columns[activeColumnIndex]?.id) || []).length}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => navigateColumn("prev")}
+              disabled={activeColumnIndex === 0}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <div className="flex gap-1.5 px-2">
+              {columns.map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all duration-300",
+                    i === activeColumnIndex ? "w-4 bg-primary" : "w-1.5 bg-muted-foreground/20"
+                  )}
+                />
+              ))}
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => navigateColumn("next")}
+              disabled={activeColumnIndex === columns.length - 1}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex flex-col gap-4 md:flex-row h-full overflow-x-hidden md:overflow-x-auto pb-4">
+        <div 
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className={cn(
+            "flex gap-4 h-full pb-4 scrollbar-none md:scrollbar-thin",
+            isMobile 
+              ? "flex-row overflow-x-auto snap-x snap-mandatory px-4 -mx-4 scroll-smooth" 
+              : "flex-row overflow-x-auto"
+          )}
+        >
           {columns.map((column) => (
-            <KanbanColumn
-              key={column.id}
-              column={column}
-              tasks={tasksByColumn.get(column.id) || []}
-              onToggleTask={toggleTask}
-              onAddTask={handleAddTask}
-              selectedIds={selectedIds}
-              onSelectTask={toggleSelection}
-              viewSettings={viewSettings}
-              taskMap={taskMap}
-            />
+            <div 
+              key={column.id} 
+              className={cn(
+                "flex-shrink-0 transition-all",
+                isMobile ? "w-[85vw] snap-center" : "w-[320px] md:min-w-[300px] md:flex-1"
+              )}
+            >
+              <KanbanColumn
+                column={column}
+                tasks={tasksByColumn.get(column.id) || []}
+                onToggleTask={toggleTask}
+                onAddTask={handleAddTask}
+                selectedIds={selectedIds}
+                onSelectTask={toggleSelection}
+                viewSettings={viewSettings}
+                taskMap={taskMap}
+              />
+            </div>
           ))}
         </div>
 
@@ -519,7 +613,7 @@ export function KanbanBoard() {
         open={!!previewTask}
         onOpenChange={(open) => !open && setPreviewTask(null)}
       />
-    </>
+    </div>
   );
 }
 
