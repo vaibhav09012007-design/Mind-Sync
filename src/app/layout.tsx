@@ -24,6 +24,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5, // Allow pinch-to-zoom for accessibility (WCAG 2.1)
+  viewportFit: "cover",
 };
 
 export const metadata: Metadata = {
