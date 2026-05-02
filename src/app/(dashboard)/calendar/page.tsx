@@ -56,6 +56,9 @@ import { EVENT_STYLES } from "@/features/calendar/components/calendar-utils";
 import { CalendarSyncStatus } from "@/components/calendar/calendar-sync-status";
 import { GlassCard } from "@/components/ui/card";
 
+import { useMediaQuery } from "@/hooks/use-media-query";
+import { useEffect } from "react";
+
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export default function CalendarPage() {
@@ -66,6 +69,14 @@ export default function CalendarPage() {
   useCalendarSync();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarViewType>("month");
+  const isMobile = useMediaQuery("(max-width: 768px)");
+
+  // Automatically switch to Agenda/Day view on mobile if in Month view
+  useEffect(() => {
+    if (isMobile && view === "month") {
+      setView("agenda");
+    }
+  }, [isMobile, view]);
 
   // Dialog & Popover State
   const [newEventOpen, setNewEventOpen] = useState(false);
