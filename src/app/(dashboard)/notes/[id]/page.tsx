@@ -15,7 +15,7 @@ const Editor = dynamic(
   }
 );
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Share, Trash2, Download } from "lucide-react";
+import { MoreHorizontal, Share, Trash2, Download, ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useNotes, useNoteActions } from "@/store/selectors";
 import { format } from "date-fns";
@@ -27,6 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 export default function NoteEditorPage() {
   const params = useParams();
@@ -34,6 +35,7 @@ export default function NoteEditorPage() {
   const id = params.id as string;
   const notes = useNotes();
   const { deleteNote } = useNoteActions();
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   // Find note in store
   const note = notes.find((n) => n.id === id);
@@ -59,16 +61,28 @@ export default function NoteEditorPage() {
 
   return (
     <div className="bg-background flex h-full flex-col">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <div className="flex items-center gap-4">
-          <span className="text-muted-foreground text-sm">
-            Last edited {format(new Date(note.date), "MMM d, h:mm a")}
+      <header className="flex items-center justify-between border-b px-3 sm:px-6 py-3">
+        <div className="flex items-center gap-2 sm:gap-4">
+          {isMobile && (
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => router.push("/notes")}
+              className="mr-1 h-8 w-8"
+              aria-label="Back to notes"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <span className="text-muted-foreground text-xs sm:text-sm truncate">
+            {isMobile ? "Edited " : "Last edited "}
+            {format(new Date(note.date), isMobile ? "MMM d" : "MMM d, h:mm a")}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            <Share className="mr-2 h-4 w-4" />
-            Share
+        <div className="flex items-center gap-1 sm:gap-2">
+          <Button variant="ghost" size="sm" className="h-8 px-2 sm:h-9 sm:px-4">
+            <Share className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Share</span>
           </Button>
 
           <DropdownMenu>
