@@ -28,20 +28,23 @@ export default function KanbanPage() {
   const tasks = useTasks();
 
   return (
-    <div className="h-full flex flex-col p-6 overflow-hidden">
+    <div className="h-full flex flex-col overflow-hidden">
       <div className="flex-none mb-4">
         <Header
           title="Kanban Board"
-          subtitle="Drag and drop tasks between columns to update their status"
+          subtitle="Drag and drop tasks between columns"
         >
-          <div className="flex items-center gap-4">
-            <LivePresence room="kanban-main" />
-            <div className="h-6 w-[1px] bg-border" />
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2">
+              <LivePresence room="kanban-main" />
+              <div className="h-6 w-[1px] bg-border hidden sm:block" />
+            </div>
+            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2 bg-background/50 backdrop-blur-sm">
                   <Download size={16} />
-                  Export
+                  <span className="hidden sm:inline">Export</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -56,7 +59,8 @@ export default function KanbanPage() {
             <CreateTaskDialog>
               <Button variant="gradient" size="sm" className="gap-2 shadow-lg shadow-primary/20">
                 <Plus size={16} />
-                Add Task
+                <span className="hidden sm:inline">Add Task</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </CreateTaskDialog>
             <ViewSettings />
