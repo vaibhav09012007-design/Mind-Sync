@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { FocusSidebar } from "@/components/focus/focus-sidebar";
 import { FocusTimerSkeleton } from "@/components/ui/skeleton";
 import { GlassCard } from "@/components/ui/card";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ListChecks } from "lucide-react";
 
@@ -35,7 +35,11 @@ export default function FocusPage() {
                 </Button>
               </SheetTrigger>
               <SheetContent side="bottom" className="h-[80vh] p-0 border-white/10 bg-background/80 backdrop-blur-xl">
-                <div className="h-full overflow-hidden">
+                <SheetHeader className="sr-only">
+                  <SheetTitle>Focus Goals & Stats</SheetTitle>
+                  <SheetDescription>View your focus goals, daily progress, and session history.</SheetDescription>
+                </SheetHeader>
+                <div className="h-full overflow-y-auto p-4">
                   <FocusSidebar />
                 </div>
               </SheetContent>

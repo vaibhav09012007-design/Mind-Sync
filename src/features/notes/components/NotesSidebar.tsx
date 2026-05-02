@@ -30,7 +30,7 @@ export function NotesSidebar({ currentNoteId, onSelectNote, onCreateNote }: Note
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
-    <div className="bg-background/40 backdrop-blur-md flex h-full w-80 flex-col border-r border-white/10">
+    <div className="bg-background/40 backdrop-blur-md flex h-full w-full flex-col border-r border-white/10">
       <div className="space-y-4 p-4">
         <div className="flex items-center justify-between">
           <h2 className="flex items-center gap-2 text-2xl font-bold gradient-text w-fit">
