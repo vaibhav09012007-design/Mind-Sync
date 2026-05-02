@@ -5,7 +5,7 @@
  * Drag-and-drop task management with status columns
  */
 
-import { useState, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, useCallback, memo, useRef } from "react";
 import {
   DndContext,
   DragOverlay,
@@ -39,6 +39,8 @@ import {
   Clock,
   Plus,
   Lock,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -47,6 +49,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { BulkActionBar } from "@/components/kanban/bulk-action-bar";
 import { TaskPreviewDialog } from "@/components/kanban/task-preview-dialog";
+import { SwimlaneBoard } from "@/components/kanban/swimlane-board";
+import { useMediaQuery } from "@/hooks/use-media-query";
 
 // Sortable Task Card Component
 const SortableTaskCard = memo(function SortableTaskCard({
@@ -372,11 +376,6 @@ const KanbanColumn = memo(function KanbanColumn({
     </div>
   );
 });
-
-import { SwimlaneBoard } from "@/components/kanban/swimlane-board";
-import { useMediaQuery } from "@/hooks/use-media-query";
-import { ChevronLeft, ChevronRight, GripVertical, Calendar, Clock, Plus, Lock } from "lucide-react";
-import { useRef } from "react";
 
 // Main Kanban Board Component
 export function KanbanBoard() {
