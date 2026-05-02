@@ -394,33 +394,33 @@ export function FocusTimer() {
             data-mode={timerMode}
             className={cn(
               "relative mx-auto transition-all",
-              zenMode ? "h-96 w-96 scale-110" : "h-56 w-56"
+              zenMode ? "h-96 w-96 scale-110" : "h-48 w-48 sm:h-56 sm:w-56"
             )}
           >
             <svg className="h-full w-full -rotate-90 transform">
               <circle
-                cx={zenMode ? "192" : "112"}
-                cy={zenMode ? "192" : "112"}
-                r={zenMode ? "180" : "100"}
+                cx={zenMode ? "192" : "96"}
+                cy={zenMode ? "192" : "96"}
+                r={zenMode ? "180" : "88"}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={zenMode ? "12" : "8"}
                 className="text-muted/30"
               />
               <motion.circle
-                cx={zenMode ? "192" : "112"}
-                cy={zenMode ? "192" : "112"}
-                r={zenMode ? "180" : "100"}
+                cx={zenMode ? "192" : "96"}
+                cy={zenMode ? "192" : "96"}
+                r={zenMode ? "180" : "88"}
                 fill="none"
                 stroke="currentColor"
                 strokeWidth={zenMode ? "12" : "8"}
                 strokeLinecap="round"
                 className={currentConfig.color}
-                strokeDasharray={zenMode ? 1130 : 628}
-                initial={{ strokeDashoffset: zenMode ? 1130 : 628 }}
+                strokeDasharray={zenMode ? 1130 : 553}
+                initial={{ strokeDashoffset: zenMode ? 1130 : 553 }}
                 animate={{
                   strokeDashoffset:
-                    (zenMode ? 1130 : 628) - (progress / 100) * (zenMode ? 1130 : 628),
+                    (zenMode ? 1130 : 553) - (progress / 100) * (zenMode ? 1130 : 553),
                 }}
                 transition={{ duration: 0.5, ease: "linear" }}
               />
